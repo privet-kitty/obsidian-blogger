@@ -317,8 +317,9 @@ class WpProfileModal extends Modal {
     AppState.getInstance().codeVerifier = generateCodeVerifier();
 
     const server = createServer((req, res) => {
-      if (!req.url) return;
-      const url = new URL(req.url, WP_OAUTH2_REDIRECT_URI);
+      // See https://stackoverflow.com/questions/58377623/request-url-undefined-type-why
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      const url = new URL(req.url!, WP_OAUTH2_REDIRECT_URI);
       if (url.pathname === '/') {
         res.writeHead(200, {
           'Content-Type': 'text/html',
