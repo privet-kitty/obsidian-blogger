@@ -5,11 +5,10 @@ export const WP_OAUTH2_CLIENT_ID =
 export const WP_OAUTH2_CLIENT_SECRET = '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';
 export const WP_OAUTH2_TOKEN_ENDPOINT = 'https://oauth2.googleapis.com/token';
 export const WP_OAUTH2_AUTHORIZE_ENDPOINT = 'https://accounts.google.com/o/oauth2/v2/auth';
-export const WP_OAUTH2_VALIDATE_TOKEN_ENDPOINT =
-  'https://public-api.wordpress.com/oauth2/token-info';
-export const WP_OAUTH2_URL_ACTION = 'wordpress-plugin-oauth';
+export const WP_OAUTH2_VALIDATE_TOKEN_ENDPOINT = 'https://oauth2.googleapis.com/tokeninfo';
+// export const WP_OAUTH2_URL_ACTION = 'wordpress-plugin-oauth';
 export const WP_OAUTH2_REDIRECT_URI = 'http://127.0.0.1';
-export const WP_OAUTH2_OBSIDIAN_URI = `obsidian://${WP_OAUTH2_URL_ACTION}`;
+// export const WP_OAUTH2_OBSIDIAN_URI = `obsidian://${WP_OAUTH2_URL_ACTION}`;
 
 export const WP_DEFAULT_PROFILE_NAME = 'Default';
 

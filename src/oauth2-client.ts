@@ -136,7 +136,7 @@ export class OAuth2Client {
     }
     try {
       const response = await requestUrl({
-        url: `${this.options.validateTokenEndpoint}?client_id=${this.options.clientId}&token=${params.token}`,
+        url: `${this.options.validateTokenEndpoint}?access_token=${params.token}`,
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
