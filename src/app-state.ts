@@ -12,11 +12,6 @@ export class AppState {
 
   events = new Events();
 
-  /**
-   * Code verifier between classes.
-   */
-  codeVerifier: string | undefined;
-
   private constructor() {
     this.markdownParser.renderer.rules.image = (tokens, idx) => {
       const token = tokens[idx];

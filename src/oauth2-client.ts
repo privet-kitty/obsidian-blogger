@@ -7,7 +7,7 @@ import {
   WP_OAUTH2_CLIENT_ID,
   WP_OAUTH2_CLIENT_SECRET,
   WP_OAUTH2_TOKEN_ENDPOINT,
-  WP_OAUTH2_VALIDATE_TOKEN_ENDPOINT
+  WP_OAUTH2_VALIDATE_TOKEN_ENDPOINT,
 } from './consts';
 
 export interface OAuth2Token {
@@ -25,13 +25,14 @@ export interface GetAuthorizeCodeParams {
   redirectUri: string;
   scope?: string[];
   blog?: string;
-  codeVerifier?: string;
+  codeVerifier: string;
+  state?: string;
 }
 
 export interface GetTokenParams {
   code: string;
   redirectUri: string;
-  codeVerifier?: string;
+  codeVerifier: string;
 }
 
 export interface ValidateTokenParams {
@@ -47,21 +48,20 @@ export interface OAuth2Options {
 }
 
 export class OAuth2Client {
-
   static getWpOAuth2Client(plugin: WordpressPlugin): OAuth2Client {
-    return new OAuth2Client({
-      clientId: WP_OAUTH2_CLIENT_ID,
-      clientSecret: WP_OAUTH2_CLIENT_SECRET,
-      tokenEndpoint: WP_OAUTH2_TOKEN_ENDPOINT,
-      authorizeEndpoint: WP_OAUTH2_AUTHORIZE_ENDPOINT,
-      validateTokenEndpoint: WP_OAUTH2_VALIDATE_TOKEN_ENDPOINT
-    }, plugin);
+    return new OAuth2Client(
+      {
+        clientId: WP_OAUTH2_CLIENT_ID,
+        clientSecret: WP_OAUTH2_CLIENT_SECRET,
+        tokenEndpoint: WP_OAUTH2_TOKEN_ENDPOINT,
+        authorizeEndpoint: WP_OAUTH2_AUTHORIZE_ENDPOINT,
+        validateTokenEndpoint: WP_OAUTH2_VALIDATE_TOKEN_ENDPOINT,
+      },
+      plugin,
+    );
   }
 
-  constructor(
-    private readonly options: OAuth2Options,
-    private readonly plugin: WordpressPlugin
-  ) {
+  constructor(private readonly options: OAuth2Options, private readonly plugin: WordpressPlugin) {
     console.log(options);
   }
 
@@ -74,12 +74,14 @@ export class OAuth2Client {
       code_challenge?: string;
       blog?: string;
       scope?: string;
+      state?: string;
     } = {
       client_id: this.options.clientId,
       response_type: 'code',
       redirect_uri: params.redirectUri,
       blog: params.blog,
-      scope: undefined
+      scope: undefined,
+      state: params.state,
     };
     if (params.scope) {
       query.scope = params.scope.join(' ');
@@ -96,34 +98,36 @@ export class OAuth2Client {
     const body: {
       grant_type: 'authorization_code';
       client_id: string;
+      client_secret: string;
       code: string;
       redirect_uri: string;
+      code_verifier: string;
     } = {
       grant_type: 'authorization_code',
       client_id: this.options.clientId,
+      client_secret: this.options.clientSecret,
       code: params.code,
-      redirect_uri: params.redirectUri
+      redirect_uri: params.redirectUri,
+      code_verifier: params.codeVerifier,
     };
     return requestUrl({
       url: this.options.tokenEndpoint,
       method: 'POST',
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded',
-        'User-Agent': 'obsidian.md'
+        'User-Agent': 'obsidian.md',
       },
-      body: generateQueryString(body)
-    })
-      .then(response => {
-        console.log('getToken response', response);
-        const resp = response.json;
-        return {
-          accessToken: resp.access_token,
-          tokenType: resp.token_type,
-          blogId: resp.blog_id,
-          blogUrl: resp.blog_url,
-          scope: resp.scope
-        };
-      });
+      body: generateQueryString(body),
+    }).then((response) => {
+      const resp = response.json;
+      return {
+        accessToken: resp.access_token,
+        tokenType: resp.token_type,
+        blogId: resp.blog_id,
+        blogUrl: resp.blog_url,
+        scope: resp.scope,
+      };
+    });
   }
 
   async validateToken(params: ValidateTokenParams): Promise<WordPressClientResult<string>> {
@@ -136,14 +140,14 @@ export class OAuth2Client {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
-          'User-Agent': 'obsidian.md'
-        }
+          'User-Agent': 'obsidian.md',
+        },
       });
       console.log('validateToken response', response);
       return {
         code: WordPressClientReturnCode.OK,
         data: 'done',
-        response
+        response,
       };
     } catch (error) {
       return {
@@ -152,7 +156,7 @@ export class OAuth2Client {
           code: WordPressClientReturnCode.Error,
           message: this.plugin.i18n.t('error_invalidWpComToken'),
         },
-        response: error
+        response: error,
       };
     }
   }
@@ -170,8 +174,8 @@ async function getCodeChallenge(codeVerifier: string): Promise<['plain' | 'S256'
 
 function stringToBuffer(input: string): ArrayBuffer {
   const buf = new Uint8Array(input.length);
-  for(let i = 0; i < input.length; i++) {
-    buf[i] = input.charCodeAt(i) & 0xFF;
+  for (let i = 0; i < input.length; i++) {
+    buf[i] = input.charCodeAt(i) & 0xff;
   }
   return buf;
 }

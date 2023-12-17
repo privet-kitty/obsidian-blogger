@@ -2,17 +2,13 @@ import { Modal, Notice, Setting } from 'obsidian';
 import WordpressPlugin from './main';
 import { TranslateKey } from './i18n';
 import { WpProfile } from './wp-profile';
-import {
-  EventType,
-  WP_OAUTH2_OBSIDIAN_URI,
-  WP_OAUTH2_REDIRECT_URI,
-} from './consts';
+import { WP_OAUTH2_REDIRECT_URI } from './consts';
 import { WordPressClientReturnCode } from './wp-client';
-import { generateCodeVerifier, OAuth2Client } from './oauth2-client';
-import { AppState } from './app-state';
+import { generateCodeVerifier, OAuth2Client, WordPressOAuth2Token } from './oauth2-client';
 import { isValidUrl, showError } from './utils';
 import { ApiType } from './plugin-settings';
 import { createServer } from 'http';
+import { randomUUID } from 'crypto';
 
 export function openProfileModal(
   plugin: WordpressPlugin,
@@ -26,7 +22,7 @@ export function openProfileModal(
     isDefault: false,
     lastSelectedCategories: [1],
   },
-  atIndex = -1
+  atIndex = -1,
 ): Promise<{ profile: WpProfile; atIndex?: number }> {
   return new Promise((resolve, reject) => {
     const modal = new WpProfileModal(
@@ -38,19 +34,25 @@ export function openProfileModal(
         });
       },
       profile,
-      atIndex
+      atIndex,
     );
     modal.open();
   });
 }
+
+const getListeningPort = (server: ReturnType<typeof createServer>): number => {
+  const address = server.address();
+  if (!address || typeof address === 'string') {
+    throw new Error(`Failed to get local server port: ${address}`);
+  }
+  return address.port;
+};
 
 /**
  * WordPress profile modal.
  */
 class WpProfileModal extends Modal {
   private readonly profileData: WpProfile;
-
-  private readonly tokenGotRef;
 
   constructor(
     private readonly plugin: WordpressPlugin,
@@ -65,22 +67,11 @@ class WpProfileModal extends Modal {
       isDefault: false,
       lastSelectedCategories: [1],
     },
-    private readonly atIndex: number = -1
+    private readonly atIndex: number = -1,
   ) {
     super(plugin.app);
 
     this.profileData = Object.assign({}, profile);
-    this.tokenGotRef = AppState.getInstance().events.on(
-      EventType.OAUTH2_TOKEN_GOT,
-      async (token) => {
-        this.profileData.wpComOAuth2Token = token;
-        if (atIndex >= 0) {
-          // if token is undefined, just remove it
-          this.plugin.settings.profiles[atIndex].wpComOAuth2Token = token;
-          await this.plugin.saveSettings();
-        }
-      }
-    );
   }
 
   onOpen() {
@@ -116,7 +107,7 @@ class WpProfileModal extends Modal {
             .setValue(this.profileData.name ?? '')
             .onChange((value) => {
               this.profileData.name = value;
-            })
+            }),
         );
       new Setting(content)
         .setName(t('settings_url'))
@@ -129,7 +120,7 @@ class WpProfileModal extends Modal {
               if (this.profileData.endpoint !== value) {
                 this.profileData.endpoint = value;
               }
-            })
+            }),
         );
       new Setting(content)
         .setName(t('settings_apiType'))
@@ -137,18 +128,12 @@ class WpProfileModal extends Modal {
         .addDropdown((dropdown) => {
           dropdown
             .addOption(ApiType.XML_RPC, t('settings_apiTypeXmlRpc'))
-            .addOption(
-              ApiType.RestAPI_miniOrange,
-              t('settings_apiTypeRestMiniOrange')
-            )
+            .addOption(ApiType.RestAPI_miniOrange, t('settings_apiTypeRestMiniOrange'))
             .addOption(
               ApiType.RestApi_ApplicationPasswords,
-              t('settings_apiTypeRestApplicationPasswords')
+              t('settings_apiTypeRestApplicationPasswords'),
             )
-            .addOption(
-              ApiType.RestApi_WpComOAuth2,
-              t('settings_apiTypeRestWpComOAuth2')
-            )
+            .addOption(ApiType.RestApi_WpComOAuth2, t('settings_apiTypeRestWpComOAuth2'))
             .setValue(this.profileData.apiType)
             .onChange(async (value) => {
               let hasError = false;
@@ -167,9 +152,7 @@ class WpProfileModal extends Modal {
                 if (value === ApiType.RestApi_WpComOAuth2) {
                   if (this.profileData.wpComOAuth2Token) {
                     const endpointUrl = new URL(this.profileData.endpoint);
-                    const blogUrl = new URL(
-                      this.profileData.wpComOAuth2Token.blogUrl
-                    );
+                    const blogUrl = new URL(this.profileData.wpComOAuth2Token.blogUrl);
                     if (endpointUrl.host !== blogUrl.host) {
                       await this.refreshWpComToken();
                     }
@@ -194,81 +177,73 @@ class WpProfileModal extends Modal {
               .setValue(this.profileData.xmlRpcPath ?? '')
               .onChange((value) => {
                 this.profileData.xmlRpcPath = value;
-              })
+              }),
           );
       } else if (this.profileData.apiType === ApiType.RestApi_WpComOAuth2) {
         new Setting(content)
           .setName(t('settings_wpComOAuth2RefreshToken'))
           .setDesc(t('settings_wpComOAuth2RefreshTokenDesc'))
           .addButton((button) =>
-            button
-              .setButtonText(t('settings_wpComOAuth2ValidateTokenButtonText'))
-              .onClick(() => {
-                if (this.profileData.wpComOAuth2Token) {
-                  OAuth2Client.getWpOAuth2Client(this.plugin)
-                    .validateToken({
-                      token: this.profileData.wpComOAuth2Token.accessToken,
-                    })
-                    .then((result) => {
-                      if (result.code === WordPressClientReturnCode.Error) {
-                        showError(result.error?.message + '');
-                      } else {
-                        new Notice(t('message_wpComTokenValidated'));
-                      }
-                    });
-                }
-              })
+            button.setButtonText(t('settings_wpComOAuth2ValidateTokenButtonText')).onClick(() => {
+              if (this.profileData.wpComOAuth2Token) {
+                OAuth2Client.getWpOAuth2Client(this.plugin)
+                  .validateToken({
+                    token: this.profileData.wpComOAuth2Token.accessToken,
+                  })
+                  .then((result) => {
+                    if (result.code === WordPressClientReturnCode.Error) {
+                      showError(result.error?.message + '');
+                    } else {
+                      new Notice(t('message_wpComTokenValidated'));
+                    }
+                  });
+              }
+            }),
           )
           .addButton((button) =>
             button
               .setButtonText(t('settings_wpComOAuth2RefreshTokenButtonText'))
               .onClick(async () => {
                 await this.refreshWpComToken();
-              })
+              }),
           );
       }
 
       if (this.profileData.apiType !== ApiType.RestApi_WpComOAuth2) {
-        const usernameSetting = new Setting(content).setName(
-          t('profileModal_rememberUsername')
-        );
+        const usernameSetting = new Setting(content).setName(t('profileModal_rememberUsername'));
         if (this.profileData.saveUsername) {
           usernameSetting.addText((text) =>
             text.setValue(this.profileData.username ?? '').onChange((value) => {
               this.profileData.username = value;
-            })
+            }),
           );
         }
         usernameSetting.addToggle((toggle) =>
           toggle.setValue(this.profileData.saveUsername).onChange((save) => {
             this.profileData.saveUsername = save;
             renderProfile();
-          })
+          }),
         );
-        const passwordSetting = new Setting(content).setName(
-          t('profileModal_rememberPassword')
-        );
+        const passwordSetting = new Setting(content).setName(t('profileModal_rememberPassword'));
         if (this.profileData.savePassword) {
           passwordSetting.addText((text) =>
             text.setValue(this.profileData.password ?? '').onChange((value) => {
               this.profileData.password = value;
-            })
+            }),
           );
         }
         passwordSetting.addToggle((toggle) =>
           toggle.setValue(this.profileData.savePassword).onChange((save) => {
             this.profileData.savePassword = save;
             renderProfile();
-          })
+          }),
         );
       }
-      new Setting(content)
-        .setName(t('profileModal_setDefault'))
-        .addToggle((toggle) =>
-          toggle.setValue(this.profileData.isDefault).onChange((value) => {
-            this.profileData.isDefault = value;
-          })
-        );
+      new Setting(content).setName(t('profileModal_setDefault')).addToggle((toggle) =>
+        toggle.setValue(this.profileData.isDefault).onChange((value) => {
+          this.profileData.isDefault = value;
+        }),
+      );
 
       new Setting(content).addButton((button) =>
         button
@@ -279,21 +254,15 @@ class WpProfileModal extends Modal {
               showError(t('error_invalidUrl'));
             } else if (this.profileData.name.length === 0) {
               showError(t('error_noProfileName'));
-            } else if (
-              this.profileData.saveUsername &&
-              !this.profileData.username
-            ) {
+            } else if (this.profileData.saveUsername && !this.profileData.username) {
               showError(t('error_noUsername'));
-            } else if (
-              this.profileData.savePassword &&
-              !this.profileData.password
-            ) {
+            } else if (this.profileData.savePassword && !this.profileData.password) {
               showError(t('error_noPassword'));
             } else {
               this.onSubmit(this.profileData, this.atIndex);
               this.close();
             }
-          })
+          }),
       );
     };
 
@@ -306,21 +275,61 @@ class WpProfileModal extends Modal {
   }
 
   onClose() {
-    if (this.tokenGotRef) {
-      AppState.getInstance().events.offref(this.tokenGotRef);
-    }
     const { contentEl } = this;
     contentEl.empty();
   }
 
-  private async refreshWpComToken(): Promise<void> {
-    AppState.getInstance().codeVerifier = generateCodeVerifier();
+  private async registerToken(token?: WordPressOAuth2Token): Promise<void> {
+    this.profileData.wpComOAuth2Token = token;
+    if (this.atIndex >= 0) {
+      // if token is undefined, just remove it
+      this.plugin.settings.profiles[this.atIndex].wpComOAuth2Token = token;
+      await this.plugin.saveSettings();
+    }
+  }
 
-    const server = createServer((req, res) => {
-      // See https://stackoverflow.com/questions/58377623/request-url-undefined-type-why
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      const url = new URL(req.url!, WP_OAUTH2_REDIRECT_URI);
-      if (url.pathname === '/') {
+  private async getAndRegisterToken(
+    params: { [key: string]: string },
+    codeVerifier: string,
+    port: number,
+  ): Promise<void> {
+    if (params.error) {
+      showError(
+        this.plugin.i18n.t('error_wpComAuthFailed', {
+          error: params.error,
+          desc: params.error_description?.replace(/\+/g, ' ') ?? '<no error description>',
+        }),
+      );
+      this.registerToken(undefined);
+    } else if (params.code) {
+      const token = await OAuth2Client.getWpOAuth2Client(this.plugin)
+        .getToken({
+          code: params.code,
+          redirectUri: `${WP_OAUTH2_REDIRECT_URI}:${port}`,
+          codeVerifier,
+        })
+        .catch((error) => {
+          showError(`getToken error: ${error}`);
+          throw error;
+        });
+      console.log(token);
+      this.registerToken(token);
+    } else {
+      showError(
+        this.plugin.i18n.t('server_wpComOAuth2InvalidResponse', {
+          response: JSON.stringify(params),
+        }),
+      );
+      this.registerToken(undefined);
+    }
+  }
+
+  private async refreshWpComToken(): Promise<void> {
+    const codeVerifier = generateCodeVerifier();
+    const state = randomUUID();
+
+    const server = createServer(async (req, res) => {
+      const closeWithMessage = (message: string): void => {
         res.writeHead(200, {
           'Content-Type': 'text/html',
         });
@@ -330,26 +339,41 @@ class WpProfileModal extends Modal {
 </head>
 <body>
   <h1>WordPress OAuth2</h1>
-  <p>${this.plugin.i18n.t('listen_wpComOAuth2Redirecting')}</p>
-  <script>
-    window.location.href = "${WP_OAUTH2_OBSIDIAN_URI}/${url.search}";
-  </script>
+  <p>${message}</p>
 </body>
 </html>`);
         server.close();
+      };
+
+      // Request.url cannot be undefined. See https://stackoverflow.com/questions/58377623/request-url-undefined-type-why.
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      const url = new URL(req.url!, WP_OAUTH2_REDIRECT_URI);
+      if (url.pathname === '/') {
+        const response_state = url.searchParams.get('state');
+        if (state === response_state) {
+          await this.getAndRegisterToken(
+            Object.fromEntries(url.searchParams),
+            codeVerifier,
+            getListeningPort(server),
+          );
+          closeWithMessage(this.plugin.i18n.t('server_wpComOAuth2TokenObtained'));
+        } else {
+          closeWithMessage(
+            this.plugin.i18n.t('server_wpComOAuth2StateMismatch', {
+              req: state,
+              res: String(response_state),
+            }),
+          );
+        }
       }
     }).listen(0);
-    const address = server.address();
-    if (!address || typeof address === 'string') {
-      throw new Error(`Failed to get local server port: ${address}`);
-    }
-    const port = address.port;
 
     await OAuth2Client.getWpOAuth2Client(this.plugin).getAuthorizeCode({
-      redirectUri: `${WP_OAUTH2_REDIRECT_URI}:${port}`,
+      redirectUri: `${WP_OAUTH2_REDIRECT_URI}:${getListeningPort(server)}`,
       scope: ['https://www.googleapis.com/auth/blogger'],
       blog: this.profileData.endpoint,
-      codeVerifier: AppState.getInstance().codeVerifier,
+      codeVerifier,
+      state,
     });
   }
 }

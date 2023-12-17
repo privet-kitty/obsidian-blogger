@@ -3,18 +3,20 @@ import { WordpressSettingTab } from './settings';
 import { addIcons } from './icons';
 import { WordPressPostParams } from './wp-client';
 import { I18n } from './i18n';
-import { EventType, WP_OAUTH2_REDIRECT_URI, WP_OAUTH2_URL_ACTION } from './consts';
-import { OAuth2Client } from './oauth2-client';
 import { CommentStatus, PostStatus, PostTypeConst } from './wp-api';
 import { openProfileChooserModal } from './wp-profile-chooser-modal';
 import { AppState } from './app-state';
-import { DEFAULT_SETTINGS, SettingsVersion, upgradeSettings, WordpressPluginSettings } from './plugin-settings';
+import {
+  DEFAULT_SETTINGS,
+  SettingsVersion,
+  upgradeSettings,
+  WordpressPluginSettings,
+} from './plugin-settings';
 import { PassCrypto } from './pass-crypto';
 import { doClientPublish, setupMarkdownParser, showError } from './utils';
 import { cloneDeep } from 'lodash-es';
 
 export default class WordpressPlugin extends Plugin {
-
   #settings: WordpressPluginSettings | undefined;
   get settings() {
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
@@ -40,29 +42,29 @@ export default class WordpressPlugin extends Plugin {
 
     addIcons();
 
-    this.registerProtocolHandler();
+    // this.registerProtocolHandler();
     this.updateRibbonIcon();
 
     this.addCommand({
       id: 'defaultPublish',
       name: this.#i18n.t('command_publishWithDefault'),
       editorCallback: () => {
-        const defaultProfile = this.#settings?.profiles.find(it => it.isDefault);
+        const defaultProfile = this.#settings?.profiles.find((it) => it.isDefault);
         if (defaultProfile) {
           const params: WordPressPostParams = {
             status: this.#settings?.defaultPostStatus ?? PostStatus.Draft,
             commentStatus: this.#settings?.defaultCommentStatus ?? CommentStatus.Open,
-            categories: defaultProfile.lastSelectedCategories ?? [ 1 ],
+            categories: defaultProfile.lastSelectedCategories ?? [1],
             postType: PostTypeConst.Post,
             tags: [],
             title: '',
-            content: ''
+            content: '',
           };
           doClientPublish(this, defaultProfile, params);
         } else {
           showError(this.#i18n?.t('error_noDefaultProfile') ?? 'No default profile found.');
         }
-      }
+      },
     });
 
     this.addCommand({
@@ -70,14 +72,13 @@ export default class WordpressPlugin extends Plugin {
       name: this.#i18n.t('command_publish'),
       editorCallback: () => {
         this.openProfileChooser();
-      }
+      },
     });
 
     this.addSettingTab(new WordpressSettingTab(this));
   }
 
-  onunload() {
-  }
+  onunload() {}
 
   async loadSettings() {
     this.#settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData());
@@ -98,7 +99,7 @@ export default class WordpressPlugin extends Plugin {
     }
 
     AppState.getInstance().markdownParser.set({
-      html: this.#settings?.enableHtml ?? false
+      html: this.#settings?.enableHtml ?? false,
     });
   }
 
@@ -143,28 +144,27 @@ export default class WordpressPlugin extends Plugin {
     }
   }
 
-  private registerProtocolHandler(): void {
-    this.registerObsidianProtocolHandler(WP_OAUTH2_URL_ACTION, async (e) => {
-      if (e.action === WP_OAUTH2_URL_ACTION) {
-        if (e.state) {
-          if (e.error) {
-            showError(this.i18n.t('error_wpComAuthFailed', {
-              error: e.error,
-              desc: e.error_description.replace(/\+/g,' ')
-            }));
-            AppState.getInstance().events.trigger(EventType.OAUTH2_TOKEN_GOT, undefined);
-          } else if (e.code) {
-            const token = await OAuth2Client.getWpOAuth2Client(this).getToken({
-              code: e.code,
-              redirectUri: WP_OAUTH2_REDIRECT_URI,
-              codeVerifier: AppState.getInstance().codeVerifier
-            });
-            console.log(token);
-            AppState.getInstance().events.trigger(EventType.OAUTH2_TOKEN_GOT, token);
-          }
-        }
-      }
-    });
-  }
-
+  // private registerProtocolHandler(): void {
+  //   this.registerObsidianProtocolHandler(WP_OAUTH2_URL_ACTION, async (e) => {
+  //     if (e.action === WP_OAUTH2_URL_ACTION) {
+  //       if (e.state) {
+  //         if (e.error) {
+  //           showError(this.i18n.t('error_wpComAuthFailed', {
+  //             error: e.error,
+  //             desc: e.error_description.replace(/\+/g,' ')
+  //           }));
+  //           AppState.getInstance().events.trigger(EventType.OAUTH2_TOKEN_GOT, undefined);
+  //         } else if (e.code) {
+  //           const token = await OAuth2Client.getWpOAuth2Client(this).getToken({
+  //             code: e.code,
+  //             redirectUri: WP_OAUTH2_REDIRECT_URI,
+  //             codeVerifier: AppState.getInstance().codeVerifier
+  //           });
+  //           console.log(token);
+  //           AppState.getInstance().events.trigger(EventType.OAUTH2_TOKEN_GOT, token);
+  //         }
+  //       }
+  //     }
+  //   });
+  // }
 }
