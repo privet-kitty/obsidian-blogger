@@ -26,6 +26,7 @@
   "confirmModal_title": "Confirmation",
   "confirmModal_cancel": "Cancel",
   "confirmModal_confirm": "Confirm",
+  "listen_wpComOAuth2Redirecting": "Redirecting back to Obsidian...",
   "settings_title": "WordPress Publish",
   "settings_profiles": "Profiles",
   "settings_profilesDesc": "Manage WordPress profiles.",
