@@ -1,9 +1,9 @@
 export const ERROR_NOTICE_TIMEOUT = 15000;
 
-export const WP_OAUTH2_CLIENT_ID = '79085';
-export const WP_OAUTH2_CLIENT_SECRET = 'zg4mKy9O1mc1mmynShJTVxs8r1k3X4e3g1sv5URlkpZqlWdUdAA7C2SSBOo02P7X';
+export const WP_OAUTH2_CLIENT_ID = '635472657074-cg7b8f38s51i89bqiqq5co7uhrcalmoc.apps.googleusercontent.com';
+export const WP_OAUTH2_CLIENT_SECRET = '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';
 export const WP_OAUTH2_TOKEN_ENDPOINT = 'https://public-api.wordpress.com/oauth2/token';
-export const WP_OAUTH2_AUTHORIZE_ENDPOINT = 'https://public-api.wordpress.com/oauth2/authorize';
+export const WP_OAUTH2_AUTHORIZE_ENDPOINT = 'https://www.googleapis.com/auth/blogger';
 export const WP_OAUTH2_VALIDATE_TOKEN_ENDPOINT = 'https://public-api.wordpress.com/oauth2/token-info';
 export const WP_OAUTH2_URL_ACTION = 'wordpress-plugin-oauth';
 export const WP_OAUTH2_REDIRECT_URI = `obsidian://${WP_OAUTH2_URL_ACTION}`;
