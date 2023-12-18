@@ -33,6 +33,11 @@ export interface WpProfile {
   password?: string;
 
   /**
+   * WordPress blog ID.
+   */
+  blogId?: string;
+
+  /**
    * Encrypted password which will be saved locally.
    */
   encryptedPassword?: {

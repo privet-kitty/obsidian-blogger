@@ -1,11 +1,11 @@
-import { Modal, Notice, Setting } from 'obsidian';
+import { Modal, Notice, Setting, requestUrl } from 'obsidian';
 import WordpressPlugin from './main';
 import { TranslateKey } from './i18n';
 import { WpProfile } from './wp-profile';
-import { WP_OAUTH2_REDIRECT_URI } from './consts';
+import { BLOGGER_API_ENDPOINT, WP_OAUTH2_REDIRECT_URI } from './consts';
 import { WordPressClientReturnCode } from './wp-client';
 import { generateCodeVerifier, OAuth2Client, WordPressOAuth2Token } from './oauth2-client';
-import { isValidUrl, showError } from './utils';
+import { generateQueryString, isValidUrl, showError } from './utils';
 import { ApiType } from './plugin-settings';
 import { createServer } from 'http';
 import { randomUUID } from 'crypto';
@@ -48,6 +48,23 @@ const getListeningPort = (server: ReturnType<typeof createServer>): number => {
   return address.port;
 };
 
+const fetchBlogId = async (blogEndpoint: string): Promise<string> => {
+  const blogIdEndpoint = `${BLOGGER_API_ENDPOINT}/byurl?${generateQueryString({
+    url: blogEndpoint,
+  })}`;
+  console.log('REST GET', blogIdEndpoint);
+  const response = await requestUrl({
+    url: blogIdEndpoint,
+    method: 'GET',
+    headers: {
+      'content-type': 'application/json',
+      'user-agent': 'obsidian.md',
+    },
+  });
+  console.log('GET response', response);
+  return response.json.url;
+};
+
 /**
  * WordPress profile modal.
  */
@@ -87,7 +104,7 @@ class WpProfileModal extends Modal {
           return '';
       }
     };
-    let apiDesc = getApiTypeDesc(this.profileData.apiType);
+    const apiDesc = getApiTypeDesc(this.profileData.apiType);
 
     const renderProfile = () => {
       content.empty();
@@ -116,50 +133,40 @@ class WpProfileModal extends Modal {
               }
             }),
         );
-      new Setting(content)
-        .setName(t('settings_apiType'))
-        .setDesc(t('settings_apiTypeDesc'))
-        .addDropdown((dropdown) => {
-          dropdown
-            .addOption(ApiType.RestApi_WpComOAuth2, t('settings_apiTypeRestWpComOAuth2'))
-            .setValue(this.profileData.apiType)
-            .onChange(async (value) => {
-              let hasError = false;
-              let newApiType = value;
-              if (value === ApiType.RestApi_WpComOAuth2) {
-                if (!this.profileData.endpoint.includes('blogspot.com')) {
-                  showError(t('error_notWpCom'));
-                  hasError = true;
-                  newApiType = this.profileData.apiType;
-                }
-              }
-              this.profileData.apiType = newApiType as ApiType;
-              apiDesc = getApiTypeDesc(this.profileData.apiType);
-              renderProfile();
-              if (!hasError) {
-                if (value === ApiType.RestApi_WpComOAuth2) {
-                  await this.reauthorizeWpComToken();
-                }
-              }
-            });
-        });
+      const blogIdSetting = new Setting(content)
+        .setName(t('settings_blogId'))
+        .setDesc(`blogId:  ${this.profileData.blogId}`)
+        .addButton((button) =>
+          button.setButtonText(t('settings_wpComFetchBlogId')).onClick(async () => {
+            if (/^https:\/\/\w+\.blogspot\.com\/?$/.test(this.profileData.endpoint)) {
+              this.profileData.blogId = await fetchBlogId(this.profileData.endpoint);
+            } else {
+              showError(t('error_notWpCom'));
+              this.profileData.blogId = undefined;
+            }
+            blogIdSetting.setDesc(`blogId:  ${this.profileData.blogId}`);
+          }),
+        );
       content.createEl('p', {
         text: apiDesc,
         cls: 'setting-item-description',
       });
-      if (this.profileData.apiType === ApiType.RestApi_WpComOAuth2) {
-        new Setting(content)
-          .setName(t('settings_wpComOAuth2ReauthorizeToken'))
-          .setDesc(t('settings_wpComOAuth2ReauthorizeTokenDesc'))
-          .addButton((button) =>
-            button
-              .setButtonText(t('settings_wpComOAuth2ReauthorizeTokenButtonText'))
-              .onClick(async () => {
-                await this.reauthorizeWpComToken();
-              }),
-          )
-          .addButton((button) =>
-            button.setButtonText(t('settings_wpComOAuth2ValidateTokenButtonText')).onClick(() => {
+      new Setting(content)
+        .setName(t('settings_wpComOAuth2AuthorizeToken'))
+        .setDesc(t('settings_wpComOAuth2AuthorizeTokenDesc'))
+        .addButton((button) => {
+          const buttonText = this.profileData.wpComOAuth2Token
+            ? t('settings_wpComOAuth2ReauthorizeTokenButtonText')
+            : t('settings_wpComOAuth2AuthorizeTokenButtonText');
+          button.setButtonText(buttonText).onClick(async () => {
+            await this.reauthorizeWpComToken();
+          });
+        })
+        .addButton((button) => {
+          button
+            .setDisabled(!this.profileData.wpComOAuth2Token)
+            .setButtonText(t('settings_wpComOAuth2ValidateTokenButtonText'))
+            .onClick(() => {
               if (this.profileData.wpComOAuth2Token) {
                 OAuth2Client.getWpOAuth2Client(this.plugin)
                   .validateToken({
@@ -173,9 +180,8 @@ class WpProfileModal extends Modal {
                     }
                   });
               }
-            }),
-          );
-      }
+            });
+        });
 
       new Setting(content).setName(t('profileModal_setDefault')).addToggle((toggle) =>
         toggle.setValue(this.profileData.isDefault).onChange((value) => {

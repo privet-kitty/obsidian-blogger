@@ -9,6 +9,7 @@ export const WP_OAUTH2_VALIDATE_TOKEN_ENDPOINT = 'https://oauth2.googleapis.com/
 // export const WP_OAUTH2_URL_ACTION = 'wordpress-plugin-oauth';
 export const WP_OAUTH2_REDIRECT_URI = 'http://127.0.0.1';
 // export const WP_OAUTH2_OBSIDIAN_URI = `obsidian://${WP_OAUTH2_URL_ACTION}`;
+export const BLOGGER_API_ENDPOINT = 'https://www.googleapis.com/blogger/v3/blogs';
 
 export const WP_DEFAULT_PROFILE_NAME = 'Default';
 
