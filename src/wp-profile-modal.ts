@@ -57,7 +57,7 @@ class WpProfileModal extends Modal {
   constructor(
     private readonly plugin: WordpressPlugin,
     private readonly onSubmit: (profile: WpProfile, atIndex?: number) => void,
-    private readonly profile: WpProfile = {
+    profile: WpProfile = {
       name: '',
       apiType: ApiType.XML_RPC,
       endpoint: '',
@@ -294,33 +294,28 @@ class WpProfileModal extends Modal {
     port: number,
   ): Promise<void> {
     if (params.error) {
-      showError(
+      this.registerToken(undefined);
+      throw new Error(
         this.plugin.i18n.t('error_wpComAuthFailed', {
           error: params.error,
           desc: params.error_description?.replace(/\+/g, ' ') ?? '<no error description>',
         }),
       );
-      this.registerToken(undefined);
     } else if (params.code) {
-      const token = await OAuth2Client.getWpOAuth2Client(this.plugin)
-        .getToken({
-          code: params.code,
-          redirectUri: `${WP_OAUTH2_REDIRECT_URI}:${port}`,
-          codeVerifier,
-        })
-        .catch((error) => {
-          showError(`getToken error: ${error}`);
-          throw error;
-        });
+      const token = await OAuth2Client.getWpOAuth2Client(this.plugin).getToken({
+        code: params.code,
+        redirectUri: `${WP_OAUTH2_REDIRECT_URI}:${port}`,
+        codeVerifier,
+      });
       console.log(token);
       this.registerToken(token);
     } else {
-      showError(
+      this.registerToken(undefined);
+      throw new Error(
         this.plugin.i18n.t('server_wpComOAuth2InvalidResponse', {
           response: JSON.stringify(params),
         }),
       );
-      this.registerToken(undefined);
     }
   }
 
@@ -328,7 +323,8 @@ class WpProfileModal extends Modal {
     const codeVerifier = generateCodeVerifier();
     const state = randomUUID();
 
-    const server = createServer(async (req, res) => {
+    const server = createServer();
+    server.on('request', async (req, res) => {
       const closeWithMessage = (message: string): void => {
         res.writeHead(200, {
           'Content-Type': 'text/html',
@@ -345,28 +341,37 @@ class WpProfileModal extends Modal {
         server.close();
       };
 
-      // Request.url cannot be undefined. See https://stackoverflow.com/questions/58377623/request-url-undefined-type-why.
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      const url = new URL(req.url!, WP_OAUTH2_REDIRECT_URI);
-      if (url.pathname === '/') {
-        const response_state = url.searchParams.get('state');
-        if (state === response_state) {
+      // Exceptions should be displayed in the browser whenever possible.
+      try {
+        // Request.url cannot be undefined. See https://stackoverflow.com/questions/58377623/request-url-undefined-type-why.
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+        const url = new URL(req.url!, WP_OAUTH2_REDIRECT_URI);
+        if (url.pathname === '/') {
+          const response_state = url.searchParams.get('state');
+          if (state !== response_state) {
+            closeWithMessage(
+              this.plugin.i18n.t('server_wpComOAuth2StateMismatch', {
+                req: state,
+                res: String(response_state),
+              }),
+            );
+          }
           await this.getAndRegisterToken(
             Object.fromEntries(url.searchParams),
             codeVerifier,
             getListeningPort(server),
           );
           closeWithMessage(this.plugin.i18n.t('server_wpComOAuth2TokenObtained'));
-        } else {
-          closeWithMessage(
-            this.plugin.i18n.t('server_wpComOAuth2StateMismatch', {
-              req: state,
-              res: String(response_state),
-            }),
-          );
         }
+      } catch (e) {
+        closeWithMessage(
+          this.plugin.i18n.t('server_wpComOAuth2ServerError', {
+            error: JSON.stringify(e),
+          }),
+        );
       }
-    }).listen(0);
+    });
+    server.listen(0);
 
     await OAuth2Client.getWpOAuth2Client(this.plugin).getAuthorizeCode({
       redirectUri: `${WP_OAUTH2_REDIRECT_URI}:${getListeningPort(server)}`,

@@ -27,6 +27,7 @@
   "confirmModal_cancel": "Cancel",
   "confirmModal_confirm": "Confirm",
   "server_wpComOAuth2TokenObtained": "Blogger token obtained successfully! You can close this window now.",
+  "server_wpComOAuth2ServerError": "Blogger OAuth2 server error: <%= error %>",
   "server_wpComOAuth2StateMismatch": "Blogger OAuth2 request and response mismatch.: <%= req %> vs <%= res %>",
   "server_wpComOAuth2InvalidResponse": "Blogger authorization response is invalid.: <%= response %>",
   "settings_title": "WordPress Publish",
