@@ -150,7 +150,7 @@ class WpProfileModal extends Modal {
               renderProfile();
               if (!hasError) {
                 if (value === ApiType.RestApi_WpComOAuth2) {
-                  await this.refreshWpComToken();
+                  await this.reauthorizeWpComToken();
                 }
               }
             });
@@ -173,8 +173,8 @@ class WpProfileModal extends Modal {
           );
       } else if (this.profileData.apiType === ApiType.RestApi_WpComOAuth2) {
         new Setting(content)
-          .setName(t('settings_wpComOAuth2RefreshToken'))
-          .setDesc(t('settings_wpComOAuth2RefreshTokenDesc'))
+          .setName(t('settings_wpComOAuth2ReauthorizeToken'))
+          .setDesc(t('settings_wpComOAuth2ReauthorizeTokenDesc'))
           .addButton((button) =>
             button.setButtonText(t('settings_wpComOAuth2ValidateTokenButtonText')).onClick(() => {
               if (this.profileData.wpComOAuth2Token) {
@@ -194,9 +194,9 @@ class WpProfileModal extends Modal {
           )
           .addButton((button) =>
             button
-              .setButtonText(t('settings_wpComOAuth2RefreshTokenButtonText'))
+              .setButtonText(t('settings_wpComOAuth2ReauthorizeTokenButtonText'))
               .onClick(async () => {
-                await this.refreshWpComToken();
+                await this.reauthorizeWpComToken();
               }),
           );
       }
@@ -311,7 +311,7 @@ class WpProfileModal extends Modal {
     }
   }
 
-  private async refreshWpComToken(): Promise<void> {
+  private async reauthorizeWpComToken(): Promise<void> {
     const codeVerifier = generateCodeVerifier();
     const state = randomUUID();
 
