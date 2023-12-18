@@ -16,14 +16,13 @@ import {
   isValidUrl,
   openWithBrowser,
   processFile,
-  SafeAny,
   showError,
 } from './utils';
 import { WpProfile } from './wp-profile';
 import { AppState } from './app-state';
 import { ConfirmCode, openConfirmModal } from './confirm-modal';
 import fileTypeChecker from 'file-type-checker';
-import { MatterData, Media } from './types';
+import { MatterData, Media, SafeAny } from './types';
 import { openPostPublishedModal } from './post-published-modal';
 import { isFunction } from 'lodash-es';
 

@@ -10,9 +10,8 @@ import WordpressPlugin from './main';
 import { PostType, Term } from './wp-api';
 import { RestClient } from './rest-client';
 import { isFunction, isNumber, isString, template } from 'lodash-es';
-import { SafeAny } from './utils';
 import { WpProfile } from './wp-profile';
-import { FormItemNameMapper, FormItems, Media } from './types';
+import { FormItemNameMapper, FormItems, Media, SafeAny } from './types';
 import { BLOGGER_API_ENDPOINT } from './consts';
 import { OAuth2Client } from './oauth2-client';
 

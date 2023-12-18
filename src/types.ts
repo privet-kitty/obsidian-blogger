@@ -1,5 +1,7 @@
-import { SafeAny } from './utils';
 import { isArray, isString } from 'lodash-es';
+
+export type SafeAny = any; // eslint-disable-line @typescript-eslint/no-explicit-any
+export type Brand<K, T> = K & { __brand: T };
 
 export type MatterData = { [p: string]: SafeAny };
 
@@ -11,11 +13,14 @@ export interface Media {
 
 export function isMedia(obj: SafeAny): obj is Media {
   return (
-    typeof obj === 'object'
-    && obj !== null
-    && 'mimeType' in obj && typeof obj.mimeType === 'string'
-    && 'fileName' in obj && typeof obj.fileName === 'string'
-    && 'content' in obj && obj.content instanceof ArrayBuffer
+    typeof obj === 'object' &&
+    obj !== null &&
+    'mimeType' in obj &&
+    typeof obj.mimeType === 'string' &&
+    'fileName' in obj &&
+    typeof obj.fileName === 'string' &&
+    'content' in obj &&
+    obj.content instanceof ArrayBuffer
   );
 }
 
@@ -35,7 +40,7 @@ export class FormItems {
   append(name: string, data: string | Media): FormItems {
     const existing = this.#formData[name];
     if (existing) {
-      this.#formData[name] = [ existing ];
+      this.#formData[name] = [existing];
       this.#formData[name].push(data);
     } else {
       this.#formData[name] = data;
@@ -56,11 +61,17 @@ export class FormItems {
 
       body.push(encodedItemStart);
       if (isString(data)) {
-        body.push(encoder.encode(`Content-Disposition: form-data; name="${itemName}"${CRLF}${CRLF}`));
+        body.push(
+          encoder.encode(`Content-Disposition: form-data; name="${itemName}"${CRLF}${CRLF}`),
+        );
         body.push(encoder.encode(data));
       } else {
         const media = data;
-        body.push(encoder.encode(`Content-Disposition: form-data; name="${itemName}"; filename="${media.fileName}"${CRLF}Content-Type: ${media.mimeType}${CRLF}${CRLF}`));
+        body.push(
+          encoder.encode(
+            `Content-Disposition: form-data; name="${itemName}"; filename="${media.fileName}"${CRLF}Content-Type: ${media.mimeType}${CRLF}${CRLF}`,
+          ),
+        );
         body.push(media.content);
       }
       body.push(encoder.encode(CRLF));
@@ -69,9 +80,9 @@ export class FormItems {
     const encoder = new TextEncoder();
     const encodedItemStart = encoder.encode(`--${option.boundary}${CRLF}`);
     const body: ArrayBuffer[] = [];
-    Object.entries(this.#formData).forEach(([ name, data ]) => {
+    Object.entries(this.#formData).forEach(([name, data]) => {
       if (isArray(data)) {
-        data.forEach(item => {
+        data.forEach((item) => {
           itemPart(`${name}[]`, item, true);
         });
       } else {

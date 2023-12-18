@@ -1,5 +1,5 @@
+import { SafeAny } from './types';
 import { CommentStatus, PostStatus, PostType } from './wp-api';
-import { SafeAny } from './utils';
 
 export enum WordPressClientReturnCode {
   OK,

@@ -10,48 +10,64 @@ import { RegisterHTMLHandler } from 'mathjax-full/js/handlers/html';
 import { AssistiveMmlHandler } from 'mathjax-full/js/a11y/assistive-mml';
 import { mathjax } from 'mathjax-full/js/mathjax';
 import juice from 'juice';
-import { SafeAny } from './utils';
+import { SafeAny } from './types';
 import { MathJaxOutputType } from './plugin-settings';
-
 
 interface MarkdownItMathJax3PluginOptions {
   outputType: MathJaxOutputType;
 }
 
 interface ConvertOptions {
-  display: boolean
+  display: boolean;
 }
 
-export default function MarkdownItMathJax3Plugin(md: MarkdownIt, options: MarkdownItMathJax3PluginOptions): void {
+export default function MarkdownItMathJax3Plugin(
+  md: MarkdownIt,
+  options: MarkdownItMathJax3PluginOptions,
+): void {
   // set MathJax as the renderer for markdown-it-simplemath
   md.inline.ruler.after('escape', 'math_inline', mathInline);
   md.block.ruler.after('blockquote', 'math_block', mathBlock, {
     alt: ['paragraph', 'reference', 'blockquote', 'list'],
   });
   md.renderer.rules.math_inline = (tokens: Token[], idx: number) => {
-    return renderMath(tokens[idx].content, {
-      display: false
-    }, options);
+    return renderMath(
+      tokens[idx].content,
+      {
+        display: false,
+      },
+      options,
+    );
   };
   md.renderer.rules.math_block = (tokens: Token[], idx: number) => {
-    return renderMath(tokens[idx].content, {
-      display: true
-    }, options);
+    return renderMath(
+      tokens[idx].content,
+      {
+        display: true,
+      },
+      options,
+    );
   };
 }
 
-function renderMath(content: string, convertOptions: ConvertOptions, options: MarkdownItMathJax3PluginOptions): string {
+function renderMath(
+  content: string,
+  convertOptions: ConvertOptions,
+  options: MarkdownItMathJax3PluginOptions,
+): string {
   if (options.outputType === MathJaxOutputType.SVG) {
     const documentOptions = {
       InputJax: new TeX({ packages: AllPackages }),
-      OutputJax: new SVG({ fontCache: 'none' })
+      OutputJax: new SVG({ fontCache: 'none' }),
     };
     const adaptor = liteAdaptor();
     const handler = RegisterHTMLHandler(adaptor);
     AssistiveMmlHandler(handler);
     const mathDocument = mathjax.document(content, documentOptions);
     const html = adaptor.outerHTML(mathDocument.convert(content, convertOptions));
-    const stylesheet = adaptor.outerHTML(documentOptions.OutputJax.styleSheet(mathDocument) as SafeAny);
+    const stylesheet = adaptor.outerHTML(
+      documentOptions.OutputJax.styleSheet(mathDocument) as SafeAny,
+    );
     return juice(html + stylesheet);
   } else {
     if (convertOptions.display) {
@@ -74,9 +90,10 @@ function isValidDelimiter(state: StateInline, pos: number) {
 
   // Check non-whitespace conditions for opening and closing, and
   // check that closing delimiter isn't followed by a number
-  if (prevChar === 0x20 /* ' ' */
-    || prevChar === 0x09 /* \t */
-    || (nextChar >= 0x30 /* '0' */ && nextChar <= 0x39) /* '9' */
+  if (
+    prevChar === 0x20 /* ' ' */ ||
+    prevChar === 0x09 /* \t */ ||
+    (nextChar >= 0x30 /* '0' */ && nextChar <= 0x39) /* '9' */
   ) {
     canClose = false;
   }
@@ -86,7 +103,7 @@ function isValidDelimiter(state: StateInline, pos: number) {
 
   return {
     canOpen,
-    canClose
+    canClose,
   };
 }
 

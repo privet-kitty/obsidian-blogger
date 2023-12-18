@@ -13,8 +13,45 @@ import {
   WordpressPluginSettings,
 } from './plugin-settings';
 import { PassCrypto } from './pass-crypto';
-import { doClientPublish, setupMarkdownParser, showError } from './utils';
-import { cloneDeep } from 'lodash-es';
+import { setupMarkdownParser, showError } from './utils';
+import { cloneDeep, isString } from 'lodash-es';
+import { WpProfile } from './wp-profile';
+import { getWordPressClient } from './wp-clients';
+
+export function doClientPublish(
+  plugin: WordpressPlugin,
+  profile: WpProfile,
+  defaultPostParams?: WordPressPostParams,
+): void;
+export function doClientPublish(
+  plugin: WordpressPlugin,
+  profileName: string,
+  defaultPostParams?: WordPressPostParams,
+): void;
+export function doClientPublish(
+  plugin: WordpressPlugin,
+  profileOrName: WpProfile | string,
+  defaultPostParams?: WordPressPostParams,
+): void {
+  let profile: WpProfile | undefined;
+  if (isString(profileOrName)) {
+    profile = plugin.settings.profiles.find((it) => it.name === profileOrName);
+  } else {
+    profile = profileOrName;
+  }
+  if (profile) {
+    const client = getWordPressClient(plugin, profile);
+    if (client) {
+      client.publishPost(defaultPostParams).then();
+    }
+  } else {
+    const noSuchProfileMessage = plugin.i18n.t('error_noSuchProfile', {
+      profileName: String(profileOrName),
+    });
+    showError(noSuchProfileMessage);
+    throw new Error(noSuchProfileMessage);
+  }
+}
 
 export default class WordpressPlugin extends Plugin {
   #settings: WordpressPluginSettings | undefined;

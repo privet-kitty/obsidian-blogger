@@ -2,7 +2,7 @@ import { LanguageWithAuto } from './i18n';
 import { WpProfile } from './wp-profile';
 import { CommentStatus, PostStatus } from './wp-api';
 import { isNil, isUndefined } from 'lodash-es';
-import { SafeAny } from './utils';
+import { SafeAny } from './types';
 import { PassCrypto } from './pass-crypto';
 import { WP_DEFAULT_PROFILE_NAME } from './consts';
 

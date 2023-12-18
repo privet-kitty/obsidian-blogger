@@ -1,4 +1,4 @@
-import { Brand, generateQueryString, openWithBrowser } from './utils';
+import { generateQueryString, openWithBrowser } from './utils';
 import { requestUrl } from 'obsidian';
 import { WordPressClientResult, WordPressClientReturnCode } from './wp-client';
 import WordpressPlugin from './main';
@@ -9,6 +9,7 @@ import {
   WP_OAUTH2_TOKEN_ENDPOINT,
   WP_OAUTH2_VALIDATE_TOKEN_ENDPOINT,
 } from './consts';
+import { Brand } from './types';
 
 export interface OAuth2Token {
   accessToken: string;
