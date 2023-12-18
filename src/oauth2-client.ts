@@ -22,7 +22,7 @@ export interface WordPressOAuth2Token extends OAuth2Token {
 }
 
 export interface InternalOAuth2Token extends WordPressOAuth2Token {
-  expiresAt: Date;
+  expiresAt: number;
 }
 
 export type FreshInternalOAuth2Token = Brand<InternalOAuth2Token, 'FreshInternalOAuth2Token'>;
@@ -30,7 +30,7 @@ export type FreshInternalOAuth2Token = Brand<InternalOAuth2Token, 'FreshInternal
 const isFreshInternalOAuth2Token = (
   token: InternalOAuth2Token,
 ): token is FreshInternalOAuth2Token => {
-  return token.expiresAt.getTime() > Date.now();
+  return token.expiresAt > Date.now();
 };
 
 export interface GetAuthorizeCodeParams {
@@ -140,7 +140,7 @@ export class OAuth2Client {
     });
     const resp = response.json;
     const expiresIn = Number(resp.expires_in);
-    const expiresAt = new Date(requestTime + Math.max(0, expiresIn - 60) * 1000); // 1 minute margin
+    const expiresAt = requestTime + Math.max(0, expiresIn - 60) * 1000;
     const res = {
       accessToken: resp.access_token,
       tokenType: resp.token_type,
@@ -179,7 +179,7 @@ export class OAuth2Client {
     });
     const resp = response.json;
     const expiresIn = Number(resp.expires_in);
-    const expiresAt = new Date(requestTime + Math.max(0, expiresIn - 60) * 1000); // 1 minute margin
+    const expiresAt = requestTime + Math.max(0, expiresIn - 60) * 1000;
     const res = {
       accessToken: resp.access_token,
       tokenType: resp.token_type,

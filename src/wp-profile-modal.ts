@@ -144,7 +144,7 @@ class WpProfileModal extends Modal {
         .setDesc(`blogId: ${this.profileData.blogId || '<unknown>'}`)
         .addButton((button) =>
           button.setButtonText(t('settings_fetchBlogIdButtonText')).onClick(async () => {
-            if (!/^https:\/\/\w+\.blogspot\.com\/?$/.test(this.profileData.endpoint)) {
+            if (!/^https:\/\/[a-z0-9-]+\.blogspot\.com\/?$/.test(this.profileData.endpoint)) {
               showError(t('error_notWpCom'));
               this.profileData.blogId = undefined;
             } else if (!this.profileData.wpComOAuth2Token) {
