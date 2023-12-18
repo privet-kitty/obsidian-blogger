@@ -12,13 +12,17 @@ import {
 
 export interface OAuth2Token {
   accessToken: string;
+  tokenType: string;
 }
 
 export interface WordPressOAuth2Token extends OAuth2Token {
-  tokenType: string;
-  blogId: string;
-  blogUrl: string;
+  expiresIn: number;
+  refreshToken: string;
   scope: string;
+}
+
+export interface InternalOAuth2Token extends WordPressOAuth2Token {
+  expiresAt: Date;
 }
 
 export interface GetAuthorizeCodeParams {
@@ -94,7 +98,7 @@ export class OAuth2Client {
     openWithBrowser(this.options.authorizeEndpoint, query);
   }
 
-  getToken(params: GetTokenParams): Promise<WordPressOAuth2Token> {
+  getToken(params: GetTokenParams): Promise<InternalOAuth2Token> {
     const body: {
       grant_type: 'authorization_code';
       client_id: string;
@@ -110,6 +114,7 @@ export class OAuth2Client {
       redirect_uri: params.redirectUri,
       code_verifier: params.codeVerifier,
     };
+    const requestTime = Date.now();
     return requestUrl({
       url: this.options.tokenEndpoint,
       method: 'POST',
@@ -120,11 +125,14 @@ export class OAuth2Client {
       body: generateQueryString(body),
     }).then((response) => {
       const resp = response.json;
+      const expiresIn = Number(resp.expires_in);
+      const expiresAt = new Date(requestTime + expiresIn * 1000 - 60 * 1000); // 1 minute margin
       return {
         accessToken: resp.access_token,
         tokenType: resp.token_type,
-        blogId: resp.blog_id,
-        blogUrl: resp.blog_url,
+        expiresIn,
+        expiresAt,
+        refreshToken: resp.refresh_token,
         scope: resp.scope,
       };
     });

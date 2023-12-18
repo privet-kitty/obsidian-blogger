@@ -150,15 +150,7 @@ class WpProfileModal extends Modal {
               renderProfile();
               if (!hasError) {
                 if (value === ApiType.RestApi_WpComOAuth2) {
-                  if (this.profileData.wpComOAuth2Token) {
-                    const endpointUrl = new URL(this.profileData.endpoint);
-                    const blogUrl = new URL(this.profileData.wpComOAuth2Token.blogUrl);
-                    if (endpointUrl.host !== blogUrl.host) {
-                      await this.refreshWpComToken();
-                    }
-                  } else {
-                    await this.refreshWpComToken();
-                  }
+                  await this.refreshWpComToken();
                 }
               }
             });
