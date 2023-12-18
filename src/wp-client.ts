@@ -29,17 +29,10 @@ interface WpClientErrorResult extends _wpClientResult {
      */
     code: WordPressClientReturnCode | string;
     message: string;
-  }
+  };
 }
 
-export type WordPressClientResult<T> =
-  | WpClientOkResult<T>
-  | WpClientErrorResult;
-
-export interface WordPressAuthParams {
-  username: string | null;
-  password: string | null;
-}
+export type WordPressClientResult<T> = WpClientOkResult<T> | WpClientErrorResult;
 
 export interface WordPressPostParams {
   status: PostStatus;
@@ -71,7 +64,7 @@ export interface WordPressPostParams {
   profileName?: string;
 }
 
-export interface WordPressPublishParams extends WordPressAuthParams {
+export interface WordPressPublishParams {
   postParams: WordPressPostParams;
   matterData: { [p: string]: SafeAny };
 }
@@ -86,7 +79,6 @@ export interface WordPressMediaUploadResult {
 }
 
 export interface WordPressClient {
-
   /**
    * Publish a post to WordPress.
    *
@@ -95,12 +87,7 @@ export interface WordPressClient {
    *
    * @param defaultPostParams Use this parameter instead of popup publish modal if this is not undefined.
    */
-  publishPost(defaultPostParams?: WordPressPostParams): Promise<WordPressClientResult<WordPressPublishResult>>;
-
-  /**
-   * Checks if the login certificate is OK.
-   * @param certificate
-   */
-  validateUser(certificate: WordPressAuthParams): Promise<WordPressClientResult<boolean>>;
-
+  publishPost(
+    defaultPostParams?: WordPressPostParams,
+  ): Promise<WordPressClientResult<WordPressPublishResult>>;
 }

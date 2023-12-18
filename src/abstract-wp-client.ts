@@ -1,13 +1,12 @@
 import { Notice, TFile } from 'obsidian';
 import WordpressPlugin from './main';
 import {
-  WordPressAuthParams,
   WordPressClient,
   WordPressClientResult,
   WordPressClientReturnCode,
   WordPressMediaUploadResult,
   WordPressPostParams,
-  WordPressPublishResult
+  WordPressPublishResult,
 } from './wp-client';
 import { WpPublishModal } from './wp-publish-modal';
 import { PostType, PostTypeConst, Term } from './wp-api';
@@ -15,7 +14,8 @@ import { ERROR_NOTICE_TIMEOUT, WP_DEFAULT_PROFILE_NAME } from './consts';
 import {
   isPromiseFulfilledResult,
   isValidUrl,
-  openWithBrowser, processFile,
+  openWithBrowser,
+  processFile,
   SafeAny,
   showError,
 } from './utils';
@@ -25,11 +25,9 @@ import { ConfirmCode, openConfirmModal } from './confirm-modal';
 import fileTypeChecker from 'file-type-checker';
 import { MatterData, Media } from './types';
 import { openPostPublishedModal } from './post-published-modal';
-import { openLoginModal } from './wp-login-modal';
 import { isFunction } from 'lodash-es';
 
 export abstract class AbstractWordPressClient implements WordPressClient {
-
   /**
    * Client name.
    */
@@ -37,114 +35,66 @@ export abstract class AbstractWordPressClient implements WordPressClient {
 
   protected constructor(
     protected readonly plugin: WordpressPlugin,
-    protected readonly profile: WpProfile
-  ) { }
+    protected readonly profile: WpProfile,
+  ) {}
 
   abstract publish(
     title: string,
     content: string,
     postParams: WordPressPostParams,
-    certificate: WordPressAuthParams
   ): Promise<WordPressClientResult<WordPressPublishResult>>;
 
-  abstract getCategories(
-    certificate: WordPressAuthParams
-  ): Promise<Term[]>;
+  abstract getCategories(): Promise<Term[]>;
 
-  abstract getPostTypes(
-    certificate: WordPressAuthParams
-  ): Promise<PostType[]>;
+  abstract getPostTypes(): Promise<PostType[]>;
 
-  abstract validateUser(
-    certificate: WordPressAuthParams
-  ): Promise<WordPressClientResult<boolean>>;
+  abstract getTag(name: string): Promise<Term>;
 
-  abstract getTag(
-    name: string,
-    certificate: WordPressAuthParams
-  ): Promise<Term>;
-
-  abstract uploadMedia(
-    media: Media,
-    certificate: WordPressAuthParams
-  ): Promise<WordPressClientResult<WordPressMediaUploadResult>>;
-
-  protected needLogin(): boolean {
-    return true;
-  }
-
-  private async getAuth(): Promise<WordPressAuthParams> {
-    let auth: WordPressAuthParams = {
-      username: null,
-      password: null
-    };
-    try {
-      if (this.needLogin()) {
-        // Check if there's saved username and password
-        if (this.profile.username && this.profile.password) {
-          auth = {
-            username: this.profile.username,
-            password: this.profile.password
-          };
-          const authResult = await this.validateUser(auth);
-          if (authResult.code !== WordPressClientReturnCode.OK) {
-            throw new Error(this.plugin.i18n.t('error_invalidUser'));
-          }
-        }
-      }
-    } catch (error) {
-      showError(error);
-      const result = await openLoginModal(this.plugin, this.profile, async (auth) => {
-        const authResult = await this.validateUser(auth);
-        return authResult.code === WordPressClientReturnCode.OK;
-      });
-      auth = result.auth;
-    }
-    return auth;
-  }
+  abstract uploadMedia(media: Media): Promise<WordPressClientResult<WordPressMediaUploadResult>>;
 
   private async checkExistingProfile(matterData: MatterData) {
     const { profileName } = matterData;
     const isProfileNameMismatch = profileName && profileName !== this.profile.name;
     if (isProfileNameMismatch) {
-      const confirm = await openConfirmModal({
-        message: this.plugin.i18n.t('error_profileNotMatch'),
-        cancelText: this.plugin.i18n.t('profileNotMatch_useOld', {
-          profileName: matterData.profileName
-        }),
-        confirmText: this.plugin.i18n.t('profileNotMatch_useNew', {
-          profileName: this.profile.name
-        })
-      }, this.plugin);
+      const confirm = await openConfirmModal(
+        {
+          message: this.plugin.i18n.t('error_profileNotMatch'),
+          cancelText: this.plugin.i18n.t('profileNotMatch_useOld', {
+            profileName: matterData.profileName,
+          }),
+          confirmText: this.plugin.i18n.t('profileNotMatch_useNew', {
+            profileName: this.profile.name,
+          }),
+        },
+        this.plugin,
+      );
       if (confirm.code !== ConfirmCode.Cancel) {
         delete matterData.postId;
-        matterData.categories = this.profile.lastSelectedCategories ?? [ 1 ];
+        matterData.categories = this.profile.lastSelectedCategories ?? [1];
       }
     }
   }
 
   private async tryToPublish(params: {
-    postParams: WordPressPostParams,
-    auth: WordPressAuthParams,
-    updateMatterData?: (matter: MatterData) => void,
+    postParams: WordPressPostParams;
+    updateMatterData?: (matter: MatterData) => void;
   }): Promise<WordPressClientResult<WordPressPublishResult>> {
-    const { postParams, auth, updateMatterData } = params;
-    const tagTerms = await this.getTags(postParams.tags, auth);
-    postParams.tags = tagTerms.map(term => term.id);
-    await this.updatePostImages({
-      auth,
-      postParams
-    });
+    const { postParams, updateMatterData } = params;
+    const tagTerms = await this.getTags(postParams.tags);
+    postParams.tags = tagTerms.map((term) => term.id);
+    await this.updatePostImages(postParams);
     const result = await this.publish(
       postParams.title ?? 'A post from Obsidian!',
       AppState.getInstance().markdownParser.render(postParams.content) ?? '',
       postParams,
-      auth);
+    );
     if (result.code === WordPressClientReturnCode.Error) {
-      throw new Error(this.plugin.i18n.t('error_publishFailed', {
-        code: result.error.code as string,
-        message: result.error.message
-      }));
+      throw new Error(
+        this.plugin.i18n.t('error_publishFailed', {
+          code: result.error.code as string,
+          message: result.error.message,
+        }),
+      );
     } else {
       new Notice(this.plugin.i18n.t('message_publishSuccessfully'));
       // post id will be returned if creating, true if editing
@@ -154,7 +104,7 @@ export abstract class AbstractWordPressClient implements WordPressClient {
         // this.updateFrontMatter(modified);
         const file = this.plugin.app.workspace.getActiveFile();
         if (file) {
-          await this.plugin.app.fileManager.processFrontMatter(file, fm => {
+          await this.plugin.app.fileManager.processFrontMatter(file, (fm) => {
             fm.profileName = this.profile.name;
             fm.postId = postId;
             fm.postType = postParams.postType;
@@ -173,25 +123,19 @@ export abstract class AbstractWordPressClient implements WordPressClient {
         }
 
         if (this.plugin.settings.showWordPressEditConfirm) {
-          openPostPublishedModal(this.plugin)
-            .then(() => {
-              openWithBrowser(`${this.profile.endpoint}/wp-admin/post.php`, {
-                action: 'edit',
-                post: postId
-              });
+          openPostPublishedModal(this.plugin).then(() => {
+            openWithBrowser(`${this.profile.endpoint}/wp-admin/post.php`, {
+              action: 'edit',
+              post: postId,
             });
+          });
         }
       }
     }
     return result;
   }
 
-  private async updatePostImages(params: {
-    postParams: WordPressPostParams,
-    auth: WordPressAuthParams,
-  }): Promise<void> {
-    const { postParams, auth } = params;
-
+  private async updatePostImages(postParams: WordPressPostParams): Promise<void> {
     const activeFile = this.plugin.app.workspace.getActiveFile();
     if (activeFile === null) {
       throw new Error(this.plugin.i18n.t('error_noActiveFile'));
@@ -209,7 +153,7 @@ export abstract class AbstractWordPressClient implements WordPressClient {
           let filePath = (await this.plugin.app.vault.getAvailablePathForAttachments(
             fileName,
             ext,
-            activeFile
+            activeFile,
           )) as string;
           const pathRegex = /(.*) \d+\.(.*)/;
           filePath = filePath.replace(pathRegex, '$1.$2');
@@ -220,19 +164,25 @@ export abstract class AbstractWordPressClient implements WordPressClient {
             const result = await this.uploadMedia({
               mimeType: fileType?.mimeType ?? 'application/octet-stream',
               fileName: imgFile.name,
-              content: content
-            }, auth);
+              content: content,
+            });
             if (result.code === WordPressClientReturnCode.OK) {
               if (this.plugin.settings.replaceMediaLinks) {
-                postParams.content = postParams.content.replace(img.original, `![${imgFile.name}](${result.data.url})`);
+                postParams.content = postParams.content.replace(
+                  img.original,
+                  `![${imgFile.name}](${result.data.url})`,
+                );
               }
             } else {
               if (result.error.code === WordPressClientReturnCode.ServerInternalError) {
                 new Notice(result.error.message, ERROR_NOTICE_TIMEOUT);
               } else {
-                new Notice(this.plugin.i18n.t('error_mediaUploadFailed', {
-                  name: imgFile.name,
-                }), ERROR_NOTICE_TIMEOUT);
+                new Notice(
+                  this.plugin.i18n.t('error_mediaUploadFailed', {
+                    name: imgFile.name,
+                  }),
+                  ERROR_NOTICE_TIMEOUT,
+                );
               }
             }
           }
@@ -244,19 +194,18 @@ export abstract class AbstractWordPressClient implements WordPressClient {
     }
   }
 
-  async publishPost(defaultPostParams?: WordPressPostParams): Promise<WordPressClientResult<WordPressPublishResult>> {
+  async publishPost(
+    defaultPostParams?: WordPressPostParams,
+  ): Promise<WordPressClientResult<WordPressPublishResult>> {
     try {
       if (!this.profile.endpoint || this.profile.endpoint.length === 0) {
         throw new Error(this.plugin.i18n.t('error_noEndpoint'));
       }
       // const { activeEditor } = this.plugin.app.workspace;
-      const file = this.plugin.app.workspace.getActiveFile()
+      const file = this.plugin.app.workspace.getActiveFile();
       if (file === null) {
         throw new Error(this.plugin.i18n.t('error_noActiveFile'));
       }
-
-      // get auth info
-      const auth = await this.getAuth();
 
       // read note title, content and matter data
       const title = file.basename;
@@ -273,32 +222,32 @@ export abstract class AbstractWordPressClient implements WordPressClient {
         postParams = this.readFromFrontMatter(title, matterData, defaultPostParams);
         postParams.content = content;
         result = await this.tryToPublish({
-          auth,
-          postParams
+          postParams,
         });
       } else {
-        const categories = await this.getCategories(auth);
-        const selectedCategories = matterData.categories as number[]
-          ?? this.profile.lastSelectedCategories
-          ?? [ 1 ];
-        const postTypes = await this.getPostTypes(auth);
+        const categories = await this.getCategories();
+        const selectedCategories = (matterData.categories as number[]) ??
+          this.profile.lastSelectedCategories ?? [1];
+        const postTypes = await this.getPostTypes();
         if (postTypes.length === 0) {
           postTypes.push(PostTypeConst.Post);
         }
         const selectedPostType = matterData.postType ?? PostTypeConst.Post;
-        result = await new Promise(resolve => {
+        result = await new Promise((resolve) => {
           const publishModal = new WpPublishModal(
             this.plugin,
             { items: categories, selected: selectedCategories },
             { items: postTypes, selected: selectedPostType },
-            async (postParams: WordPressPostParams, updateMatterData: (matter: MatterData) => void) => {
+            async (
+              postParams: WordPressPostParams,
+              updateMatterData: (matter: MatterData) => void,
+            ) => {
               postParams = this.readFromFrontMatter(title, matterData, postParams);
               postParams.content = content;
               try {
                 const r = await this.tryToPublish({
-                  auth,
                   postParams,
-                  updateMatterData
+                  updateMatterData,
                 });
                 if (r.code === WordPressClientReturnCode.OK) {
                   publishModal.close();
@@ -312,14 +261,15 @@ export abstract class AbstractWordPressClient implements WordPressClient {
                 }
               }
             },
-            matterData);
+            matterData,
+          );
           publishModal.open();
         });
       }
       if (result) {
         return result;
       } else {
-        throw new Error(this.plugin.i18n.t("message_publishFailed"));
+        throw new Error(this.plugin.i18n.t('message_publishFailed'));
       }
     } catch (error) {
       if (error instanceof Error) {
@@ -330,22 +280,21 @@ export abstract class AbstractWordPressClient implements WordPressClient {
     }
   }
 
-  private async getTags(tags: string[], certificate: WordPressAuthParams): Promise<Term[]> {
-    const results = await Promise.allSettled(tags.map(name => this.getTag(name, certificate)));
+  private async getTags(tags: string[]): Promise<Term[]> {
+    const results = await Promise.allSettled(tags.map((name) => this.getTag(name)));
     const terms: Term[] = [];
-    results
-      .forEach(result => {
-        if (isPromiseFulfilledResult<Term>(result)) {
-          terms.push(result.value);
-        }
-      });
+    results.forEach((result) => {
+      if (isPromiseFulfilledResult<Term>(result)) {
+        terms.push(result.value);
+      }
+    });
     return terms;
   }
 
   private readFromFrontMatter(
     noteTitle: string,
     matterData: MatterData,
-    params: WordPressPostParams
+    params: WordPressPostParams,
   ): WordPressPostParams {
     const postParams = { ...params };
     postParams.title = noteTitle;
@@ -365,7 +314,8 @@ export abstract class AbstractWordPressClient implements WordPressClient {
     if (postParams.postType === PostTypeConst.Post) {
       // only 'post' supports categories and tags
       if (matterData.categories) {
-        postParams.categories = matterData.categories as number[] ?? this.profile.lastSelectedCategories;
+        postParams.categories =
+          (matterData.categories as number[]) ?? this.profile.lastSelectedCategories;
       }
       if (matterData.tags) {
         postParams.tags = matterData.tags as string[];
@@ -373,7 +323,6 @@ export abstract class AbstractWordPressClient implements WordPressClient {
     }
     return postParams;
   }
-
 }
 
 interface Image {

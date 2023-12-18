@@ -1,4 +1,4 @@
-import { WordPressOAuth2Token } from './oauth2-client';
+import { InternalOAuth2Token } from './oauth2-client';
 import { ApiType } from './plugin-settings';
 
 export interface WpProfile {
@@ -49,7 +49,7 @@ export interface WpProfile {
   /**
    * OAuth2 token for wordpress.com
    */
-  wpComOAuth2Token?: WordPressOAuth2Token;
+  wpComOAuth2Token?: InternalOAuth2Token;
 
   /**
    * Save username to local data.

@@ -12,16 +12,21 @@ import { format } from 'date-fns';
 import { MatterData } from './types';
 
 export type SafeAny = any; // eslint-disable-line @typescript-eslint/no-explicit-any
+export type Brand<K, T> = K & { __brand: T };
 
-export function openWithBrowser(url: string, queryParams: Record<string, undefined|number|string> = {}): void {
+export function openWithBrowser(
+  url: string,
+  queryParams: Record<string, undefined | number | string> = {},
+): void {
   window.open(`${url}?${generateQueryString(queryParams)}`);
 }
 
-export function generateQueryString(params: Record<string, undefined|number|string>): string {
+export function generateQueryString(params: Record<string, undefined | number | string>): string {
   return new URLSearchParams(
-    Object.fromEntries(
-      Object.entries(params).filter( ([k, v]) => v!==undefined)
-    ) as Record<string, string>
+    Object.fromEntries(Object.entries(params).filter(([k, v]) => v !== undefined)) as Record<
+      string,
+      string
+    >,
   ).toString();
 }
 
@@ -31,10 +36,9 @@ export function isPromiseFulfilledResult<T>(obj: SafeAny): obj is PromiseFulfill
 
 export function setupMarkdownParser(settings: WordpressPluginSettings): void {
   AppState.getInstance().markdownParser.use(MarkdownItMathJax3Plugin, {
-    outputType: settings.mathJaxOutputType
+    outputType: settings.mathJaxOutputType,
   });
 }
-
 
 export function rendererProfile(profile: WpProfile, container: HTMLElement): Setting {
   let name = profile.name;
@@ -52,29 +56,35 @@ export function rendererProfile(profile: WpProfile, container: HTMLElement): Set
       desc += ' / 🔒 ******';
     }
   }
-  return new Setting(container)
-    .setName(name)
-    .setDesc(desc);
+  return new Setting(container).setName(name).setDesc(desc);
 }
 
 export function isValidUrl(url: string): boolean {
   try {
     return Boolean(new URL(url));
-  } catch(e) {
+  } catch (e) {
     return false;
   }
 }
 
-export function doClientPublish(plugin: WordpressPlugin, profile: WpProfile, defaultPostParams?: WordPressPostParams): void;
-export function doClientPublish(plugin: WordpressPlugin, profileName: string, defaultPostParams?: WordPressPostParams): void;
+export function doClientPublish(
+  plugin: WordpressPlugin,
+  profile: WpProfile,
+  defaultPostParams?: WordPressPostParams,
+): void;
+export function doClientPublish(
+  plugin: WordpressPlugin,
+  profileName: string,
+  defaultPostParams?: WordPressPostParams,
+): void;
 export function doClientPublish(
   plugin: WordpressPlugin,
   profileOrName: WpProfile | string,
-  defaultPostParams?: WordPressPostParams
+  defaultPostParams?: WordPressPostParams,
 ): void {
   let profile: WpProfile | undefined;
   if (isString(profileOrName)) {
-    profile = plugin.settings.profiles.find(it => it.name === profileOrName);
+    profile = plugin.settings.profiles.find((it) => it.name === profileOrName);
   } else {
     profile = profileOrName;
   }
@@ -85,7 +95,7 @@ export function doClientPublish(
     }
   } else {
     const noSuchProfileMessage = plugin.i18n.t('error_noSuchProfile', {
-      profileName: String(profileOrName)
+      profileName: String(profileOrName),
     });
     showError(noSuchProfileMessage);
     throw new Error(noSuchProfileMessage);
@@ -111,20 +121,23 @@ export function showError<T>(error: unknown): WordPressClientResult<T> {
     error: {
       code: WordPressClientReturnCode.Error,
       message: errorMessage,
-    }
+    },
   };
 }
 
-export async function processFile(file: TFile, app: App): Promise<{ content: string, matter: MatterData }> {
+export async function processFile(
+  file: TFile,
+  app: App,
+): Promise<{ content: string; matter: MatterData }> {
   let fm = app.metadataCache.getFileCache(file)?.frontmatter;
   if (!fm) {
-    await app.fileManager.processFrontMatter(file, matter => {
-      fm = matter
+    await app.fileManager.processFrontMatter(file, (matter) => {
+      fm = matter;
     });
   }
   const raw = await app.vault.read(file);
   return {
     content: raw.replace(/^---[\s\S]+?---/, '').trim(),
-    matter: fm ?? {}
+    matter: fm ?? {},
   };
 }

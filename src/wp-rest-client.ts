@@ -1,5 +1,4 @@
 import {
-  WordPressAuthParams,
   WordPressClientResult,
   WordPressClientReturnCode,
   WordPressMediaUploadResult,
@@ -15,6 +14,7 @@ import { SafeAny } from './utils';
 import { WpProfile } from './wp-profile';
 import { FormItemNameMapper, FormItems, Media } from './types';
 import { BLOGGER_API_ENDPOINT } from './consts';
+import { OAuth2Client } from './oauth2-client';
 
 interface WpRestEndpoint {
   base: string | UrlGetter;
@@ -24,7 +24,6 @@ interface WpRestEndpoint {
   getCategories: string | UrlGetter;
   newTag: string | UrlGetter;
   getTag: string | UrlGetter;
-  validateUser: string | UrlGetter;
   uploadFile: string | UrlGetter;
   getPostTypes: string | UrlGetter;
 }
@@ -44,18 +43,26 @@ export class WpRestClient extends AbstractWordPressClient {
     });
   }
 
-  protected needLogin(): boolean {
-    if (this.context.needLoginModal !== undefined) {
-      return this.context.needLoginModal;
+  async getHeaders(): Promise<Record<string, string>> {
+    const token = this.profile.wpComOAuth2Token;
+    if (!token) {
+      throw new Error(this.plugin.i18n.t('error_invalidWpComToken'));
     }
-    return super.needLogin();
+    const fresh_token = await OAuth2Client.getWpOAuth2Client(this.plugin).ensureFreshToken(token);
+    if (token !== fresh_token) {
+      this.profile.wpComOAuth2Token = fresh_token;
+      await this.plugin.saveSettings();
+    }
+    const headers: Record<string, string> = {
+      authorization: `Bearer ${fresh_token.accessToken}`,
+    };
+    return headers;
   }
 
   async publish(
     title: string,
     content: string,
     postParams: WordPressPostParams,
-    certificate: WordPressAuthParams,
   ): Promise<WordPressClientResult<WordPressPublishResult>> {
     let url: string;
     if (postParams.postId) {
@@ -76,7 +83,7 @@ export class WpRestClient extends AbstractWordPressClient {
         tags: postParams.tags ?? [],
       },
       {
-        headers: this.context.getHeaders(certificate),
+        headers: await this.getHeaders(),
       },
     );
     console.log('WpRestClient response', resp);
@@ -99,52 +106,27 @@ export class WpRestClient extends AbstractWordPressClient {
     }
   }
 
-  async getCategories(certificate: WordPressAuthParams): Promise<Term[]> {
+  async getCategories(): Promise<Term[]> {
     const data = await this.client.httpGet(
       getUrl(this.context.endpoints?.getCategories, 'wp-json/wp/v2/categories'),
       {
-        headers: this.context.getHeaders(certificate),
+        headers: await this.getHeaders(),
       },
     );
     return this.context.responseParser.toTerms(data);
   }
 
-  async getPostTypes(certificate: WordPressAuthParams): Promise<PostType[]> {
+  async getPostTypes(): Promise<PostType[]> {
     const data: SafeAny = await this.client.httpGet(
       getUrl(this.context.endpoints?.getPostTypes, 'wp-json/wp/v2/types'),
       {
-        headers: this.context.getHeaders(certificate),
+        headers: await this.getHeaders(),
       },
     );
     return this.context.responseParser.toPostTypes(data);
   }
 
-  async validateUser(certificate: WordPressAuthParams): Promise<WordPressClientResult<boolean>> {
-    try {
-      const data = await this.client.httpGet(
-        getUrl(this.context.endpoints?.validateUser, `wp-json/wp/v2/users?search=xxx`),
-        {
-          headers: this.context.getHeaders(certificate),
-        },
-      );
-      return {
-        code: WordPressClientReturnCode.OK,
-        data: !!data,
-        response: data,
-      };
-    } catch (error) {
-      return {
-        code: WordPressClientReturnCode.Error,
-        error: {
-          code: WordPressClientReturnCode.Error,
-          message: this.plugin.i18n.t('error_invalidUser'),
-        },
-        response: error,
-      };
-    }
-  }
-
-  async getTag(name: string, certificate: WordPressAuthParams): Promise<Term> {
+  async getTag(name: string): Promise<Term> {
     const termResp: SafeAny = await this.client.httpGet(
       getUrl(this.context.endpoints?.getTag, 'wp-json/wp/v2/tags?number=1&search=<%= name %>', {
         name,
@@ -158,7 +140,7 @@ export class WpRestClient extends AbstractWordPressClient {
           name,
         },
         {
-          headers: this.context.getHeaders(certificate),
+          headers: await this.getHeaders(),
         },
       );
       console.log('WpRestClient newTag response', resp);
@@ -168,10 +150,7 @@ export class WpRestClient extends AbstractWordPressClient {
     }
   }
 
-  async uploadMedia(
-    media: Media,
-    certificate: WordPressAuthParams,
-  ): Promise<WordPressClientResult<WordPressMediaUploadResult>> {
+  async uploadMedia(media: Media): Promise<WordPressClientResult<WordPressMediaUploadResult>> {
     try {
       const formItems = new FormItems();
       formItems.append('file', media);
@@ -181,7 +160,7 @@ export class WpRestClient extends AbstractWordPressClient {
         formItems,
         {
           headers: {
-            ...this.context.getHeaders(certificate),
+            ...(await this.getHeaders()),
           },
           formItemNameMapper: this.context.formItemNameMapper,
         },
@@ -254,8 +233,6 @@ interface WpRestClientContext {
   needLoginModal?: boolean;
 
   formItemNameMapper?: FormItemNameMapper;
-
-  getHeaders(wp: WordPressAuthParams): Record<string, string>;
 }
 
 export class WpRestClientWpComOAuth2Context implements WpRestClientContext {
@@ -266,17 +243,16 @@ export class WpRestClientWpComOAuth2Context implements WpRestClientContext {
   endpoints: WpRestEndpoint = {
     base: BLOGGER_API_ENDPOINT,
     byUrl: () => `/sites/<%= site %>/posts/suggest`,
-    newPost: () => `/rest/v1.1/sites/${this.site}/posts/new`,
-    editPost: () => `/rest/v1.1/sites/${this.site}/posts/<%= postId %>`,
-    getCategories: () => `/rest/v1.1/sites/${this.site}/categories`,
-    newTag: () => `/rest/v1.1/sites/${this.site}/tags/new`,
-    getTag: () => `/rest/v1.1/sites/${this.site}/tags?number=1&search=<%= name %>`,
-    validateUser: () => `/rest/v1.1/sites/${this.site}/posts?number=1`,
-    uploadFile: () => `/rest/v1.1/sites/${this.site}/media/new`,
-    getPostTypes: () => `/rest/v1.1/sites/${this.site}/post-types`,
+    newPost: () => `/rest/v1.1/sites/${this.blogId}/posts/new`,
+    editPost: () => `/rest/v1.1/sites/${this.blogId}/posts/<%= postId %>`,
+    getCategories: () => `/rest/v1.1/sites/${this.blogId}/categories`,
+    newTag: () => `/rest/v1.1/sites/${this.blogId}/tags/new`,
+    getTag: () => `/rest/v1.1/sites/${this.blogId}/tags?number=1&search=<%= name %>`,
+    uploadFile: () => `/rest/v1.1/sites/${this.blogId}/media/new`,
+    getPostTypes: () => `/rest/v1.1/sites/${this.blogId}/post-types`,
   };
 
-  constructor(private readonly site: string, private readonly accessToken: string) {
+  constructor(private readonly blogId: string, private readonly accessToken: string) {
     console.log(`${this.name} loaded`);
   }
 
@@ -285,12 +261,6 @@ export class WpRestClientWpComOAuth2Context implements WpRestClientContext {
       return 'media[]';
     }
     return name;
-  }
-
-  getHeaders(wp: WordPressAuthParams): Record<string, string> {
-    return {
-      authorization: this.accessToken,
-    };
   }
 
   responseParser = {

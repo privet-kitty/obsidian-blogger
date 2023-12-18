@@ -1,4 +1,4 @@
-import { generateQueryString, openWithBrowser } from './utils';
+import { Brand, generateQueryString, openWithBrowser } from './utils';
 import { requestUrl } from 'obsidian';
 import { WordPressClientResult, WordPressClientReturnCode } from './wp-client';
 import WordpressPlugin from './main';
@@ -25,6 +25,14 @@ export interface InternalOAuth2Token extends WordPressOAuth2Token {
   expiresAt: Date;
 }
 
+export type FreshInternalOAuth2Token = Brand<InternalOAuth2Token, 'FreshInternalOAuth2Token'>;
+
+const isFreshInternalOAuth2Token = (
+  token: InternalOAuth2Token,
+): token is FreshInternalOAuth2Token => {
+  return token.expiresAt.getTime() > Date.now();
+};
+
 export interface GetAuthorizeCodeParams {
   redirectUri: string;
   scope?: string[];
@@ -37,6 +45,12 @@ export interface GetTokenParams {
   code: string;
   redirectUri: string;
   codeVerifier: string;
+}
+
+export interface RefreshTokenParams {
+  client_id: string;
+  client_secret: string;
+  refresh_token: string;
 }
 
 export interface ValidateTokenParams {
@@ -98,7 +112,7 @@ export class OAuth2Client {
     openWithBrowser(this.options.authorizeEndpoint, query);
   }
 
-  getToken(params: GetTokenParams): Promise<InternalOAuth2Token> {
+  async getToken(params: GetTokenParams): Promise<FreshInternalOAuth2Token> {
     const body: {
       grant_type: 'authorization_code';
       client_id: string;
@@ -115,7 +129,7 @@ export class OAuth2Client {
       code_verifier: params.codeVerifier,
     };
     const requestTime = Date.now();
-    return requestUrl({
+    const response = await requestUrl({
       url: this.options.tokenEndpoint,
       method: 'POST',
       headers: {
@@ -123,19 +137,73 @@ export class OAuth2Client {
         'User-Agent': 'obsidian.md',
       },
       body: generateQueryString(body),
-    }).then((response) => {
-      const resp = response.json;
-      const expiresIn = Number(resp.expires_in);
-      const expiresAt = new Date(requestTime + Math.max(0, expiresIn - 60) * 1000); // 1 minute margin
-      return {
-        accessToken: resp.access_token,
-        tokenType: resp.token_type,
-        expiresIn,
-        expiresAt,
-        refreshToken: resp.refresh_token,
-        scope: resp.scope,
-      };
     });
+    const resp = response.json;
+    const expiresIn = Number(resp.expires_in);
+    const expiresAt = new Date(requestTime + Math.max(0, expiresIn - 60) * 1000); // 1 minute margin
+    const res = {
+      accessToken: resp.access_token,
+      tokenType: resp.token_type,
+      expiresIn,
+      expiresAt,
+      refreshToken: resp.refresh_token,
+      scope: resp.scope,
+    };
+    if (!isFreshInternalOAuth2Token(res)) {
+      throw new Error(this.plugin.i18n.t('error_invalidWpComToken'));
+    }
+    return res;
+  }
+
+  async refreshToken(params: RefreshTokenParams): Promise<FreshInternalOAuth2Token> {
+    const body: {
+      grant_type: 'refresh_token';
+      client_id: string;
+      client_secret: string;
+      refresh_token: string;
+    } = {
+      grant_type: 'refresh_token',
+      client_id: this.options.clientId,
+      client_secret: this.options.clientSecret,
+      refresh_token: params.refresh_token,
+    };
+    const requestTime = Date.now();
+    const response = await requestUrl({
+      url: this.options.tokenEndpoint,
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+        'User-Agent': 'obsidian.md',
+      },
+      body: generateQueryString(body),
+    });
+    const resp = response.json;
+    const expiresIn = Number(resp.expires_in);
+    const expiresAt = new Date(requestTime + Math.max(0, expiresIn - 60) * 1000); // 1 minute margin
+    const res = {
+      accessToken: resp.access_token,
+      tokenType: resp.token_type,
+      expiresIn,
+      expiresAt,
+      refreshToken: resp.refresh_token,
+      scope: resp.scope,
+    };
+    if (!isFreshInternalOAuth2Token(res)) {
+      throw new Error(this.plugin.i18n.t('error_invalidWpComToken'));
+    }
+    return res;
+  }
+
+  async ensureFreshToken(token: InternalOAuth2Token): Promise<FreshInternalOAuth2Token> {
+    if (isFreshInternalOAuth2Token(token)) {
+      return token;
+    } else {
+      return this.refreshToken({
+        client_id: this.options.clientId,
+        client_secret: this.options.clientSecret,
+        refresh_token: token.refreshToken,
+      }) as Promise<FreshInternalOAuth2Token>;
+    }
   }
 
   async validateToken(params: ValidateTokenParams): Promise<WordPressClientResult<string>> {

@@ -4,7 +4,12 @@ import { TranslateKey } from './i18n';
 import { WpProfile } from './wp-profile';
 import { BLOGGER_API_ENDPOINT, WP_OAUTH2_REDIRECT_URI } from './consts';
 import { WordPressClientReturnCode } from './wp-client';
-import { generateCodeVerifier, OAuth2Client, WordPressOAuth2Token } from './oauth2-client';
+import {
+  FreshInternalOAuth2Token,
+  generateCodeVerifier,
+  InternalOAuth2Token,
+  OAuth2Client,
+} from './oauth2-client';
 import { generateQueryString, isValidUrl, showError } from './utils';
 import { ApiType } from './plugin-settings';
 import { createServer } from 'http';
@@ -46,25 +51,6 @@ const getListeningPort = (server: ReturnType<typeof createServer>): number => {
     throw new Error(`Failed to get local server port: ${address}`);
   }
   return address.port;
-};
-
-// TODO: integrate this into wp-rest-client.ts
-const fetchBlogId = async (blogEndpoint: string, accessToken: string): Promise<string> => {
-  const blogIdEndpoint = `${BLOGGER_API_ENDPOINT}/byurl?${generateQueryString({
-    url: blogEndpoint,
-  })}`;
-  console.log('REST GET', blogIdEndpoint);
-  const response = await requestUrl({
-    url: blogIdEndpoint,
-    method: 'GET',
-    headers: {
-      'content-type': 'application/json',
-      'user-agent': 'obsidian.md',
-      authorization: `Bearer ${accessToken}`,
-    },
-  });
-  console.log('GET response', response);
-  return response.json.id;
 };
 
 /**
@@ -165,9 +151,12 @@ class WpProfileModal extends Modal {
               showError(t('error_invalidWpComToken'));
               this.profileData.blogId = undefined;
             } else {
-              this.profileData.blogId = await fetchBlogId(
+              const fresh_token = await OAuth2Client.getWpOAuth2Client(
+                this.plugin,
+              ).ensureFreshToken(this.profileData.wpComOAuth2Token);
+              this.profileData.blogId = await this.fetchBlogId(
                 this.profileData.endpoint,
-                this.profileData.wpComOAuth2Token.accessToken,
+                fresh_token,
               ).catch((e) => {
                 showError(e);
                 return undefined;
@@ -217,7 +206,29 @@ class WpProfileModal extends Modal {
     contentEl.empty();
   }
 
-  private async registerToken(token?: WordPressOAuth2Token): Promise<void> {
+  // TODO: integrate this into wp-rest-client.ts
+  private async fetchBlogId(
+    blogEndpoint: string,
+    token: FreshInternalOAuth2Token,
+  ): Promise<string> {
+    const blogIdEndpoint = `${BLOGGER_API_ENDPOINT}/byurl?${generateQueryString({
+      url: blogEndpoint,
+    })}`;
+    console.log('REST GET', blogIdEndpoint);
+    const response = await requestUrl({
+      url: blogIdEndpoint,
+      method: 'GET',
+      headers: {
+        'content-type': 'application/json',
+        'user-agent': 'obsidian.md',
+        authorization: `Bearer ${token.accessToken}`,
+      },
+    });
+    console.log('GET response', response);
+    return response.json.id;
+  }
+
+  private async registerToken(token?: InternalOAuth2Token): Promise<void> {
     this.profileData.wpComOAuth2Token = token;
     if (this.atIndex >= 0) {
       // if token is undefined, just remove it
