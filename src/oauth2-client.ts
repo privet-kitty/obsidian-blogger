@@ -126,7 +126,7 @@ export class OAuth2Client {
     }).then((response) => {
       const resp = response.json;
       const expiresIn = Number(resp.expires_in);
-      const expiresAt = new Date(requestTime + expiresIn * 1000 - 60 * 1000); // 1 minute margin
+      const expiresAt = new Date(requestTime + Math.max(0, expiresIn - 60) * 1000); // 1 minute margin
       return {
         accessToken: resp.access_token,
         tokenType: resp.token_type,
