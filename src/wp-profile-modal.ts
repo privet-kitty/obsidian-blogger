@@ -48,7 +48,8 @@ const getListeningPort = (server: ReturnType<typeof createServer>): number => {
   return address.port;
 };
 
-const fetchBlogId = async (blogEndpoint: string): Promise<string> => {
+// TODO: integrate this into wp-rest-client.ts
+const fetchBlogId = async (blogEndpoint: string, accessToken: string): Promise<string> => {
   const blogIdEndpoint = `${BLOGGER_API_ENDPOINT}/byurl?${generateQueryString({
     url: blogEndpoint,
   })}`;
@@ -59,10 +60,11 @@ const fetchBlogId = async (blogEndpoint: string): Promise<string> => {
     headers: {
       'content-type': 'application/json',
       'user-agent': 'obsidian.md',
+      authorization: `Bearer ${accessToken}`,
     },
   });
   console.log('GET response', response);
-  return response.json.url;
+  return response.json.id;
 };
 
 /**
@@ -96,16 +98,6 @@ class WpProfileModal extends Modal {
       return this.plugin.i18n.t(key, vars);
     };
 
-    const getApiTypeDesc = (apiType: ApiType): string => {
-      switch (apiType) {
-        case ApiType.RestApi_WpComOAuth2:
-          return t('settings_apiTypeRestWpComOAuth2Desc');
-        default:
-          return '';
-      }
-    };
-    const apiDesc = getApiTypeDesc(this.profileData.apiType);
-
     const renderProfile = () => {
       content.empty();
 
@@ -133,24 +125,6 @@ class WpProfileModal extends Modal {
               }
             }),
         );
-      const blogIdSetting = new Setting(content)
-        .setName(t('settings_blogId'))
-        .setDesc(`blogId:  ${this.profileData.blogId}`)
-        .addButton((button) =>
-          button.setButtonText(t('settings_wpComFetchBlogId')).onClick(async () => {
-            if (/^https:\/\/\w+\.blogspot\.com\/?$/.test(this.profileData.endpoint)) {
-              this.profileData.blogId = await fetchBlogId(this.profileData.endpoint);
-            } else {
-              showError(t('error_notWpCom'));
-              this.profileData.blogId = undefined;
-            }
-            blogIdSetting.setDesc(`blogId:  ${this.profileData.blogId}`);
-          }),
-        );
-      content.createEl('p', {
-        text: apiDesc,
-        cls: 'setting-item-description',
-      });
       new Setting(content)
         .setName(t('settings_wpComOAuth2AuthorizeToken'))
         .setDesc(t('settings_wpComOAuth2AuthorizeTokenDesc'))
@@ -163,25 +137,45 @@ class WpProfileModal extends Modal {
           });
         })
         .addButton((button) => {
-          button
-            .setDisabled(!this.profileData.wpComOAuth2Token)
-            .setButtonText(t('settings_wpComOAuth2ValidateTokenButtonText'))
-            .onClick(() => {
-              if (this.profileData.wpComOAuth2Token) {
-                OAuth2Client.getWpOAuth2Client(this.plugin)
-                  .validateToken({
-                    token: this.profileData.wpComOAuth2Token.accessToken,
-                  })
-                  .then((result) => {
-                    if (result.code === WordPressClientReturnCode.Error) {
-                      showError(result.error?.message + '');
-                    } else {
-                      new Notice(t('message_wpComTokenValidated'));
-                    }
-                  });
-              }
-            });
+          button.setButtonText(t('settings_wpComOAuth2ValidateTokenButtonText')).onClick(() => {
+            if (this.profileData.wpComOAuth2Token) {
+              OAuth2Client.getWpOAuth2Client(this.plugin)
+                .validateToken({
+                  token: this.profileData.wpComOAuth2Token.accessToken,
+                })
+                .then((result) => {
+                  if (result.code === WordPressClientReturnCode.Error) {
+                    showError(result.error?.message + '');
+                  } else {
+                    new Notice(t('message_wpComTokenValidated'));
+                  }
+                });
+            }
+          });
         });
+      const blogIdSetting = new Setting(content)
+        .setName(t('settings_blogId'))
+        .setDesc(`blogId: ${this.profileData.blogId || '<unknown>'}`)
+        .addButton((button) =>
+          button.setButtonText(t('settings_fetchBlogIdButtonText')).onClick(async () => {
+            if (!/^https:\/\/\w+\.blogspot\.com\/?$/.test(this.profileData.endpoint)) {
+              showError(t('error_notWpCom'));
+              this.profileData.blogId = undefined;
+            } else if (!this.profileData.wpComOAuth2Token) {
+              showError(t('error_invalidWpComToken'));
+              this.profileData.blogId = undefined;
+            } else {
+              this.profileData.blogId = await fetchBlogId(
+                this.profileData.endpoint,
+                this.profileData.wpComOAuth2Token.accessToken,
+              ).catch((e) => {
+                showError(e);
+                return undefined;
+              });
+            }
+            blogIdSetting.setDesc(`blogId: ${this.profileData.blogId || '<unknown>'}`);
+          }),
+        );
 
       new Setting(content).setName(t('profileModal_setDefault')).addToggle((toggle) =>
         toggle.setValue(this.profileData.isDefault).onChange((value) => {

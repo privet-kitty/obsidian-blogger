@@ -14,9 +14,11 @@ import { isFunction, isNumber, isString, template } from 'lodash-es';
 import { SafeAny } from './utils';
 import { WpProfile } from './wp-profile';
 import { FormItemNameMapper, FormItems, Media } from './types';
+import { BLOGGER_API_ENDPOINT } from './consts';
 
 interface WpRestEndpoint {
   base: string | UrlGetter;
+  byUrl: string | UrlGetter;
   newPost: string | UrlGetter;
   editPost: string | UrlGetter;
   getCategories: string | UrlGetter;
@@ -262,7 +264,8 @@ export class WpRestClientWpComOAuth2Context implements WpRestClientContext {
   needLoginModal = false;
 
   endpoints: WpRestEndpoint = {
-    base: 'https://public-api.wordpress.com',
+    base: BLOGGER_API_ENDPOINT,
+    byUrl: () => `/sites/<%= site %>/posts/suggest`,
     newPost: () => `/rest/v1.1/sites/${this.site}/posts/new`,
     editPost: () => `/rest/v1.1/sites/${this.site}/posts/<%= postId %>`,
     getCategories: () => `/rest/v1.1/sites/${this.site}/categories`,
@@ -286,7 +289,7 @@ export class WpRestClientWpComOAuth2Context implements WpRestClientContext {
 
   getHeaders(wp: WordPressAuthParams): Record<string, string> {
     return {
-      authorization: `BEARER ${this.accessToken}`,
+      authorization: this.accessToken,
     };
   }
 
