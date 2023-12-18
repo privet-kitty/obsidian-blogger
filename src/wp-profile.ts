@@ -1,9 +1,7 @@
 import { WordPressOAuth2Token } from './oauth2-client';
 import { ApiType } from './plugin-settings';
-import { PostType } from './wp-api';
 
 export interface WpProfile {
-
   /**
    * Profile name.
    */

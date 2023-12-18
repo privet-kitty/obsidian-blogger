@@ -6,25 +6,20 @@ import { SafeAny } from './utils';
 import { PassCrypto } from './pass-crypto';
 import { WP_DEFAULT_PROFILE_NAME } from './consts';
 
-
 export const enum SettingsVersion {
-  V2 = '2'
+  V2 = '2',
 }
 
 export const enum ApiType {
-  XML_RPC = 'xml-rpc',
-  RestAPI_miniOrange = 'miniOrange',
-  RestApi_ApplicationPasswords = 'application-passwords',
-  RestApi_WpComOAuth2 = 'WpComOAuth2'
+  RestApi_WpComOAuth2 = 'WpComOAuth2',
 }
 
 export const enum MathJaxOutputType {
   TeX = 'tex',
-  SVG = 'svg'
+  SVG = 'svg',
 }
 
 export interface WordpressPluginSettings {
-
   version?: SettingsVersion;
 
   /**
@@ -80,12 +75,12 @@ export const DEFAULT_SETTINGS: WordpressPluginSettings = {
   mathJaxOutputType: MathJaxOutputType.SVG,
   enableHtml: false,
   replaceMediaLinks: true,
-}
+};
 
 export async function upgradeSettings(
   existingSettings: SafeAny,
-  to: SettingsVersion
-): Promise<{ needUpgrade: boolean, settings: WordpressPluginSettings }> {
+  to: SettingsVersion,
+): Promise<{ needUpgrade: boolean; settings: WordpressPluginSettings }> {
   console.log(existingSettings, to);
   if (isUndefined(existingSettings.version)) {
     // V1
@@ -99,7 +94,7 @@ export async function upgradeSettings(
         defaultPostType: 'post',
         rememberLastSelectedCategories: existingSettings.rememberLastSelectedCategories,
         showWordPressEditConfirm: existingSettings.showWordPressEditConfirm,
-        mathJaxOutputType: existingSettings.mathJaxOutputType
+        mathJaxOutputType: existingSettings.mathJaxOutputType,
       });
       if (existingSettings.endpoint) {
         const endpoint = existingSettings.endpoint;
@@ -120,22 +115,20 @@ export async function upgradeSettings(
           isDefault: true,
           lastSelectedCategories: lastSelectedCategories,
           username: username,
-          encryptedPassword: encryptedPassword
+          encryptedPassword: encryptedPassword,
         };
-        newSettings.profiles = [
-          profile
-        ];
+        newSettings.profiles = [profile];
       } else {
         newSettings.profiles = [];
       }
       return {
         needUpgrade: true,
-        settings: newSettings
+        settings: newSettings,
       };
     }
   }
   return {
     needUpgrade: false,
-    settings: existingSettings
+    settings: existingSettings,
   };
 }

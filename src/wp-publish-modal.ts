@@ -7,23 +7,24 @@ import { TranslateKey } from './i18n';
 import { MatterData } from './types';
 import { ConfirmCode, openConfirmModal } from './confirm-modal';
 
-
 /**
  * WordPress publish modal.
  */
 export class WpPublishModal extends Modal {
-
   constructor(
     private readonly plugin: WordpressPlugin,
     private readonly categories: {
-      items: Term[],
-      selected: number[]
+      items: Term[];
+      selected: number[];
     },
     private readonly postTypes: {
-      items: PostType[],
-      selected: PostType
+      items: PostType[];
+      selected: PostType;
     },
-    private readonly onSubmit: (params: WordPressPostParams, updateMatterData: (matter: MatterData) => void) => void,
+    private readonly onSubmit: (
+      params: WordPressPostParams,
+      updateMatterData: (matter: MatterData) => void,
+    ) => void,
     private readonly matterData: MatterData,
   ) {
     super(plugin.app);
@@ -37,7 +38,7 @@ export class WpPublishModal extends Modal {
       categories: this.categories.selected,
       tags: [],
       title: '',
-      content: ''
+      content: '',
     };
 
     this.display(params);
@@ -58,87 +59,77 @@ export class WpPublishModal extends Modal {
     contentEl.empty();
     contentEl.createEl('h1', { text: t('publishModal_title') });
 
-    new Setting(contentEl)
-      .setName(t('publishModal_postStatus'))
-      .addDropdown((dropdown) => {
-        dropdown
-          .addOption(PostStatus.Draft, t('publishModal_postStatusDraft'))
-          .addOption(PostStatus.Publish, t('publishModal_postStatusPublish'))
-          // .addOption(PostStatus.Future, 'future')
-          .setValue(this.plugin.settings.defaultPostStatus)
-          .onChange((value) => {
-            params.status = value as PostStatus;
-          });
-      });
-    new Setting(contentEl)
-      .setName(t('publishModal_commentStatus'))
-      .addDropdown((dropdown) => {
-        dropdown
-          .addOption(CommentStatus.Open, t('publishModal_commentStatusOpen'))
-          .addOption(CommentStatus.Closed, t('publishModal_commentStatusClosed'))
-          .setValue(this.plugin.settings.defaultCommentStatus)
-          .onChange((value) => {
-            params.commentStatus = value as CommentStatus;
-          });
-      });
+    new Setting(contentEl).setName(t('publishModal_postStatus')).addDropdown((dropdown) => {
+      dropdown
+        .addOption(PostStatus.Draft, t('publishModal_postStatusDraft'))
+        .addOption(PostStatus.Publish, t('publishModal_postStatusPublish'))
+        // .addOption(PostStatus.Future, 'future')
+        .setValue(this.plugin.settings.defaultPostStatus)
+        .onChange((value) => {
+          params.status = value as PostStatus;
+        });
+    });
+    new Setting(contentEl).setName(t('publishModal_commentStatus')).addDropdown((dropdown) => {
+      dropdown
+        .addOption(CommentStatus.Open, t('publishModal_commentStatusOpen'))
+        .addOption(CommentStatus.Closed, t('publishModal_commentStatusClosed'))
+        .setValue(this.plugin.settings.defaultCommentStatus)
+        .onChange((value) => {
+          params.commentStatus = value as CommentStatus;
+        });
+    });
 
     if (!this.matterData?.postId) {
-      new Setting(contentEl)
-        .setName(t('publishModal_postType'))
-        .addDropdown((dropdown) => {
-          this.postTypes.items.forEach(it => {
-            dropdown.addOption(it, it);
-          });
-          dropdown
-            .setValue(params.postType)
-            .onChange((value) => {
-              params.postType = value as PostType;
-              this.display(params);
-            });
+      new Setting(contentEl).setName(t('publishModal_postType')).addDropdown((dropdown) => {
+        this.postTypes.items.forEach((it) => {
+          dropdown.addOption(it, it);
         });
+        dropdown.setValue(params.postType).onChange((value) => {
+          params.postType = value as PostType;
+          this.display(params);
+        });
+      });
     }
 
     if (params.postType !== 'page') {
       if (this.categories.items.length > 0) {
-        new Setting(contentEl)
-          .setName(t('publishModal_category'))
-          .addDropdown((dropdown) => {
-            this.categories.items.forEach(it => {
-              dropdown.addOption(it.id, it.name);
-            });
-            dropdown
-              .setValue(String(params.categories[0]))
-              .onChange((value) => {
-                params.categories = [ toNumber(value) ];
-              });
+        new Setting(contentEl).setName(t('publishModal_category')).addDropdown((dropdown) => {
+          this.categories.items.forEach((it) => {
+            dropdown.addOption(it.id, it.name);
           });
+          dropdown.setValue(String(params.categories[0])).onChange((value) => {
+            params.categories = [toNumber(value)];
+          });
+        });
       }
     }
-    new Setting(contentEl)
-      .addButton(button => button
+    new Setting(contentEl).addButton((button) =>
+      button
         .setButtonText(t('publishModal_publishButtonText'))
         .setCta()
         .onClick(() => {
-          if (this.matterData.postType
-            && this.matterData.postType !== PostTypeConst.Post
-            && (this.matterData.tags || this.matterData.categories)
+          if (
+            this.matterData.postType &&
+            this.matterData.postType !== PostTypeConst.Post &&
+            (this.matterData.tags || this.matterData.categories)
           ) {
-            openConfirmModal({
-              message: t('publishModal_wrongMatterDataForPage')
-            }, this.plugin)
-              .then(result => {
-                if (result.code === ConfirmCode.Confirm) {
-                  this.onSubmit(params, fm => {
-                    delete fm.categories;
-                    delete fm.tags;
-                  });
-                }
-              });
+            openConfirmModal(
+              {
+                message: t('publishModal_wrongMatterDataForPage'),
+              },
+              this.plugin,
+            ).then((result) => {
+              if (result.code === ConfirmCode.Confirm) {
+                this.onSubmit(params, (fm) => {
+                  delete fm.categories;
+                  delete fm.tags;
+                });
+              }
+            });
           } else {
-            this.onSubmit(params, fm => {});
+            this.onSubmit(params, (fm) => {});
           }
-        })
-      );
+        }),
+    );
   }
-
 }

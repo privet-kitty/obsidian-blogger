@@ -4,17 +4,16 @@ import {
   WordPressClientReturnCode,
   WordPressMediaUploadResult,
   WordPressPostParams,
-  WordPressPublishResult
+  WordPressPublishResult,
 } from './wp-client';
 import { AbstractWordPressClient } from './abstract-wp-client';
 import WordpressPlugin from './main';
 import { PostType, Term } from './wp-api';
 import { RestClient } from './rest-client';
-import { isArray, isFunction, isNumber, isObject, isString, template } from 'lodash-es';
+import { isFunction, isNumber, isString, template } from 'lodash-es';
 import { SafeAny } from './utils';
 import { WpProfile } from './wp-profile';
 import { FormItemNameMapper, FormItems, Media } from './types';
-
 
 interface WpRestEndpoint {
   base: string | UrlGetter;
@@ -29,18 +28,17 @@ interface WpRestEndpoint {
 }
 
 export class WpRestClient extends AbstractWordPressClient {
-
   private readonly client: RestClient;
 
   constructor(
     readonly plugin: WordpressPlugin,
     readonly profile: WpProfile,
-    private readonly context: WpRestClientContext
+    private readonly context: WpRestClientContext,
   ) {
     super(plugin, profile);
     this.name = 'WpRestClient';
     this.client = new RestClient({
-      url: new URL(getUrl(this.context.endpoints?.base, profile.endpoint))
+      url: new URL(getUrl(this.context.endpoints?.base, profile.endpoint)),
     });
   }
 
@@ -48,19 +46,19 @@ export class WpRestClient extends AbstractWordPressClient {
     if (this.context.needLoginModal !== undefined) {
       return this.context.needLoginModal;
     }
-    return  super.needLogin();
+    return super.needLogin();
   }
 
   async publish(
     title: string,
     content: string,
     postParams: WordPressPostParams,
-    certificate: WordPressAuthParams
+    certificate: WordPressAuthParams,
   ): Promise<WordPressClientResult<WordPressPublishResult>> {
     let url: string;
     if (postParams.postId) {
       url = getUrl(this.context.endpoints?.editPost, 'wp-json/wp/v2/posts/<%= postId %>', {
-        postId: postParams.postId
+        postId: postParams.postId,
       });
     } else {
       url = getUrl(this.context.endpoints?.newPost, 'wp-json/wp/v2/posts');
@@ -73,27 +71,28 @@ export class WpRestClient extends AbstractWordPressClient {
         status: postParams.status,
         comment_status: postParams.commentStatus,
         categories: postParams.categories,
-        tags: postParams.tags ?? []
+        tags: postParams.tags ?? [],
       },
       {
-        headers: this.context.getHeaders(certificate)
-      });
+        headers: this.context.getHeaders(certificate),
+      },
+    );
     console.log('WpRestClient response', resp);
     try {
       const result = this.context.responseParser.toWordPressPublishResult(postParams, resp);
       return {
         code: WordPressClientReturnCode.OK,
         data: result,
-        response: resp
+        response: resp,
       };
     } catch (e) {
       return {
         code: WordPressClientReturnCode.Error,
         error: {
           code: WordPressClientReturnCode.ServerInternalError,
-          message: this.plugin.i18n.t('error_cannotParseResponse')
+          message: this.plugin.i18n.t('error_cannotParseResponse'),
         },
-        response: resp
+        response: resp,
       };
     }
   }
@@ -102,8 +101,9 @@ export class WpRestClient extends AbstractWordPressClient {
     const data = await this.client.httpGet(
       getUrl(this.context.endpoints?.getCategories, 'wp-json/wp/v2/categories'),
       {
-        headers: this.context.getHeaders(certificate)
-      });
+        headers: this.context.getHeaders(certificate),
+      },
+    );
     return this.context.responseParser.toTerms(data);
   }
 
@@ -111,8 +111,9 @@ export class WpRestClient extends AbstractWordPressClient {
     const data: SafeAny = await this.client.httpGet(
       getUrl(this.context.endpoints?.getPostTypes, 'wp-json/wp/v2/types'),
       {
-        headers: this.context.getHeaders(certificate)
-      });
+        headers: this.context.getHeaders(certificate),
+      },
+    );
     return this.context.responseParser.toPostTypes(data);
   }
 
@@ -121,21 +122,22 @@ export class WpRestClient extends AbstractWordPressClient {
       const data = await this.client.httpGet(
         getUrl(this.context.endpoints?.validateUser, `wp-json/wp/v2/users?search=xxx`),
         {
-          headers: this.context.getHeaders(certificate)
-        });
+          headers: this.context.getHeaders(certificate),
+        },
+      );
       return {
         code: WordPressClientReturnCode.OK,
         data: !!data,
-        response: data
+        response: data,
       };
-    } catch(error) {
+    } catch (error) {
       return {
         code: WordPressClientReturnCode.Error,
         error: {
           code: WordPressClientReturnCode.Error,
           message: this.plugin.i18n.t('error_invalidUser'),
         },
-        response: error
+        response: error,
       };
     }
   }
@@ -143,7 +145,7 @@ export class WpRestClient extends AbstractWordPressClient {
   async getTag(name: string, certificate: WordPressAuthParams): Promise<Term> {
     const termResp: SafeAny = await this.client.httpGet(
       getUrl(this.context.endpoints?.getTag, 'wp-json/wp/v2/tags?number=1&search=<%= name %>', {
-        name
+        name,
       }),
     );
     const exists = this.context.responseParser.toTerms(termResp);
@@ -151,11 +153,12 @@ export class WpRestClient extends AbstractWordPressClient {
       const resp = await this.client.httpPost(
         getUrl(this.context.endpoints?.newTag, 'wp-json/wp/v2/tags'),
         {
-          name
+          name,
         },
         {
-          headers: this.context.getHeaders(certificate)
-        });
+          headers: this.context.getHeaders(certificate),
+        },
+      );
       console.log('WpRestClient newTag response', resp);
       return this.context.responseParser.toTerm(resp);
     } else {
@@ -163,7 +166,10 @@ export class WpRestClient extends AbstractWordPressClient {
     }
   }
 
-  async uploadMedia(media: Media, certificate: WordPressAuthParams): Promise<WordPressClientResult<WordPressMediaUploadResult>> {
+  async uploadMedia(
+    media: Media,
+    certificate: WordPressAuthParams,
+  ): Promise<WordPressClientResult<WordPressMediaUploadResult>> {
     try {
       const formItems = new FormItems();
       formItems.append('file', media);
@@ -173,15 +179,16 @@ export class WpRestClient extends AbstractWordPressClient {
         formItems,
         {
           headers: {
-            ...this.context.getHeaders(certificate)
+            ...this.context.getHeaders(certificate),
           },
-          formItemNameMapper: this.context.formItemNameMapper
-        });
+          formItemNameMapper: this.context.formItemNameMapper,
+        },
+      );
       const result = this.context.responseParser.toWordPressMediaUploadResult(response);
       return {
         code: WordPressClientReturnCode.OK,
         data: result,
-        response
+        response,
       };
     } catch (e: SafeAny) {
       console.error('uploadMedia', e);
@@ -189,13 +196,12 @@ export class WpRestClient extends AbstractWordPressClient {
         code: WordPressClientReturnCode.Error,
         error: {
           code: WordPressClientReturnCode.ServerInternalError,
-          message: e.toString()
+          message: e.toString(),
         },
-        response: undefined
+        response: undefined,
       };
     }
   }
-
 }
 
 type UrlGetter = () => string;
@@ -203,7 +209,7 @@ type UrlGetter = () => string;
 function getUrl(
   url: string | UrlGetter | undefined,
   defaultValue: string,
-  params?: { [p: string]: string | number }
+  params?: { [p: string]: string | number },
 ): string {
   let resultUrl: string;
   if (isString(url)) {
@@ -225,7 +231,10 @@ interface WpRestClientContext {
   name: string;
 
   responseParser: {
-    toWordPressPublishResult: (postParams: WordPressPostParams, response: SafeAny) => WordPressPublishResult;
+    toWordPressPublishResult: (
+      postParams: WordPressPostParams,
+      response: SafeAny,
+    ) => WordPressPublishResult;
     /**
      * Convert response to `WordPressMediaUploadResult`.
      *
@@ -245,68 +254,6 @@ interface WpRestClientContext {
   formItemNameMapper?: FormItemNameMapper;
 
   getHeaders(wp: WordPressAuthParams): Record<string, string>;
-
-}
-
-class WpRestClientCommonContext implements WpRestClientContext {
-  name = 'WpRestClientCommonContext';
-
-  getHeaders(wp: WordPressAuthParams): Record<string, string> {
-    return {
-      'authorization': `Basic ${btoa(`${wp.username}:${wp.password}`)}`
-    };
-  }
-
-  responseParser = {
-    toWordPressPublishResult: (postParams: WordPressPostParams, response: SafeAny): WordPressPublishResult => {
-      if (response.id) {
-        return {
-          postId: postParams.postId ?? response.id,
-          categories: postParams.categories ?? response.categories
-        }
-      }
-      throw new Error('xx');
-    },
-    toWordPressMediaUploadResult: (response: SafeAny): WordPressMediaUploadResult => {
-      return {
-        url: response.source_url
-      };
-    },
-    toTerms: (response: SafeAny): Term[] => {
-      if (isArray(response)) {
-        return response as Term[];
-      }
-      return [];
-    },
-    toTerm: (response: SafeAny): Term => ({
-      ...response,
-      id: response.id
-    }),
-    toPostTypes: (response: SafeAny): PostType[] => {
-      if (isObject(response)) {
-        return Object.keys(response);
-      }
-      return [];
-    }
-  };
-}
-
-export class WpRestClientMiniOrangeContext extends WpRestClientCommonContext {
-  name = 'WpRestClientMiniOrangeContext';
-
-  constructor() {
-    super();
-    console.log(`${this.name} loaded`);
-  }
-}
-
-export class WpRestClientAppPasswordContext extends WpRestClientCommonContext {
-  name = 'WpRestClientAppPasswordContext';
-
-  constructor() {
-    super();
-    console.log(`${this.name} loaded`);
-  }
 }
 
 export class WpRestClientWpComOAuth2Context implements WpRestClientContext {
@@ -326,10 +273,7 @@ export class WpRestClientWpComOAuth2Context implements WpRestClientContext {
     getPostTypes: () => `/rest/v1.1/sites/${this.site}/post-types`,
   };
 
-  constructor(
-    private readonly site: string,
-    private readonly accessToken: string
-  ) {
+  constructor(private readonly site: string, private readonly accessToken: string) {
     console.log(`${this.name} loaded`);
   }
 
@@ -342,16 +286,21 @@ export class WpRestClientWpComOAuth2Context implements WpRestClientContext {
 
   getHeaders(wp: WordPressAuthParams): Record<string, string> {
     return {
-      'authorization': `BEARER ${this.accessToken}`
+      authorization: `BEARER ${this.accessToken}`,
     };
   }
 
   responseParser = {
-    toWordPressPublishResult: (postParams: WordPressPostParams, response: SafeAny): WordPressPublishResult => {
+    toWordPressPublishResult: (
+      postParams: WordPressPostParams,
+      response: SafeAny,
+    ): WordPressPublishResult => {
       if (response.ID) {
         return {
           postId: postParams.postId ?? response.ID,
-          categories: postParams.categories ?? Object.values(response.categories).map((cat: SafeAny) => cat.ID)
+          categories:
+            postParams.categories ??
+            Object.values(response.categories).map((cat: SafeAny) => cat.ID),
         };
       }
       throw new Error('xx');
@@ -360,7 +309,7 @@ export class WpRestClientWpComOAuth2Context implements WpRestClientContext {
       if (response.media.length > 0) {
         const media = response.media[0];
         return {
-          url: media.link
+          url: media.link,
         };
       } else if (response.errors) {
         throw new Error(response.errors.error.message);
@@ -369,26 +318,22 @@ export class WpRestClientWpComOAuth2Context implements WpRestClientContext {
     },
     toTerms: (response: SafeAny): Term[] => {
       if (isNumber(response.found)) {
-        return response
-          .categories
-          .map((it: Term & { ID: number; }) => ({
-            ...it,
-            id: String(it.ID)
-          }));
+        return response.categories.map((it: Term & { ID: number }) => ({
+          ...it,
+          id: String(it.ID),
+        }));
       }
       return [];
     },
     toTerm: (response: SafeAny): Term => ({
       ...response,
-      id: response.ID
+      id: response.ID,
     }),
     toPostTypes: (response: SafeAny): PostType[] => {
       if (isNumber(response.found)) {
-        return response
-          .post_types
-          .map((it: { name: string }) => (it.name));
+        return response.post_types.map((it: { name: string }) => it.name);
       }
       return [];
-    }
+    },
   };
 }
