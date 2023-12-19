@@ -197,6 +197,9 @@ export abstract class AbstractBloggerClient implements BloggerClient {
     if (matterData.postId) {
       postParams.postId = matterData.postId;
     }
+    if (matterData.labels) {
+      postParams.labels = matterData.labels;
+    }
     postParams.profileName = matterData.profileName ?? WP_DEFAULT_PROFILE_NAME;
     return postParams;
   }
@@ -228,7 +231,11 @@ export class BloggerRestClient extends AbstractBloggerClient {
     if (!token) {
       throw new Error(AppState.get().i18n.t('error_invalidGoogleToken'));
     }
-    const fresh_token = await OAuth2Client.getGoogleOAuth2Client().ensureFreshToken(token);
+    const fresh_token = await OAuth2Client.getGoogleOAuth2Client()
+      .ensureFreshToken(token)
+      .catch(() => {
+        throw new Error(AppState.get().i18n.t('error_invalidGoogleToken'));
+      });
     if (token !== fresh_token) {
       this.profile.googleOAuth2Token = fresh_token;
       await this.plugin.saveSettings();
