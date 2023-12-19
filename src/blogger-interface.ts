@@ -4,12 +4,6 @@ export const enum PostStatus {
   // Future = 'future'
 }
 
-export const enum PostTypeConst {
-  Post = 'post',
-  Page = 'page',
-}
-export type PostType = string;
-
 export interface Term {
   id: string;
   name: string;

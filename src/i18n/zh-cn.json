@@ -88,7 +88,6 @@
   "publishModal_postStatusDraft": "草稿",
   "publishModal_postStatusPublish": "正式发布",
   "publishModal_category": "分类",
-  "publishModal_postType": "类型",
   "publishModal_publishButtonText": "发布",
   "publishModal_wrongMatterDataForPage": "元数据中包含了标签或分类，page 类型不允许该数据。确定要删除这些数据吗？",
   "publishedModal_title": "文章发布成功",

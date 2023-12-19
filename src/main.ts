@@ -3,7 +3,7 @@ import { BloggerSettingTab } from './settings';
 import { addIcons } from './icons';
 import { BloggerPostParams } from './blogger-client-interface';
 import { I18n } from './i18n';
-import { PostStatus, PostTypeConst } from './blogger-interface';
+import { PostStatus } from './blogger-interface';
 import { openProfileChooserModal } from './blogger-profile-chooser-modal';
 import { AppState } from './app-state';
 import {
@@ -91,7 +91,6 @@ export default class BloggerPlugin extends Plugin {
           const params: BloggerPostParams = {
             status: this.#settings?.defaultPostStatus ?? PostStatus.Draft,
             categories: defaultProfile.lastSelectedCategories ?? [1],
-            postType: PostTypeConst.Post,
             tags: [],
             title: '',
             content: '',

@@ -7,7 +7,7 @@ import {
   BloggerClient,
 } from './blogger-client-interface';
 import BloggerPlugin from './main';
-import { PostType, PostTypeConst, Term } from './blogger-interface';
+import { Term } from './blogger-interface';
 import { RestClient } from './rest-client';
 import { isFunction, isNumber, isString, template } from 'lodash-es';
 import { BloggerProfile } from './blogger-profile';
@@ -47,8 +47,6 @@ export abstract class AbstractBloggerClient implements BloggerClient {
   ): Promise<BloggerClientResult<BloggerPublishResult>>;
 
   abstract getCategories(): Promise<Term[]>;
-
-  abstract getPostTypes(): Promise<PostType[]>;
 
   abstract getTag(name: string): Promise<Term>;
 
@@ -109,10 +107,6 @@ export abstract class AbstractBloggerClient implements BloggerClient {
           await this.plugin.app.fileManager.processFrontMatter(file, (fm) => {
             fm.profileName = this.profile.name;
             fm.postId = postId;
-            fm.postType = postParams.postType;
-            if (postParams.postType === PostTypeConst.Post) {
-              fm.categories = postParams.categories;
-            }
             if (isFunction(updateMatterData)) {
               updateMatterData(fm);
             }
@@ -230,16 +224,10 @@ export abstract class AbstractBloggerClient implements BloggerClient {
         const categories = await this.getCategories();
         const selectedCategories = (matterData.categories as number[]) ??
           this.profile.lastSelectedCategories ?? [1];
-        const postTypes = await this.getPostTypes();
-        if (postTypes.length === 0) {
-          postTypes.push(PostTypeConst.Post);
-        }
-        const selectedPostType = matterData.postType ?? PostTypeConst.Post;
         result = await new Promise((resolve) => {
           const publishModal = new BloggerPublishModal(
             this.plugin,
             { items: categories, selected: selectedCategories },
-            { items: postTypes, selected: selectedPostType },
             async (
               postParams: BloggerPostParams,
               updateMatterData: (matter: MatterData) => void,
@@ -307,22 +295,6 @@ export abstract class AbstractBloggerClient implements BloggerClient {
       postParams.postId = matterData.postId;
     }
     postParams.profileName = matterData.profileName ?? WP_DEFAULT_PROFILE_NAME;
-    if (matterData.postType) {
-      postParams.postType = matterData.postType;
-    } else {
-      // if there is no post type in matter-data, assign it as 'post'
-      postParams.postType = PostTypeConst.Post;
-    }
-    if (postParams.postType === PostTypeConst.Post) {
-      // only 'post' supports categories and tags
-      if (matterData.categories) {
-        postParams.categories =
-          (matterData.categories as number[]) ?? this.profile.lastSelectedCategories;
-      }
-      if (matterData.tags) {
-        postParams.tags = matterData.tags as string[];
-      }
-    }
     return postParams;
   }
 }
@@ -385,7 +357,6 @@ interface BloggerRestEndpoint {
   newTag: string | UrlGetter;
   getTag: string | UrlGetter;
   uploadFile: string | UrlGetter;
-  getPostTypes: string | UrlGetter;
 }
 
 export class BloggerRestClient extends AbstractBloggerClient {
@@ -475,16 +446,6 @@ export class BloggerRestClient extends AbstractBloggerClient {
       },
     );
     return this.context.responseParser.toTerms(data);
-  }
-
-  async getPostTypes(): Promise<PostType[]> {
-    const data: SafeAny = await this.client.httpGet(
-      getUrl(this.context.endpoints?.getPostTypes, 'blogger-json/wp/v2/types'),
-      {
-        headers: await this.getHeaders(),
-      },
-    );
-    return this.context.responseParser.toPostTypes(data);
   }
 
   async getTag(name: string): Promise<Term> {
@@ -590,7 +551,6 @@ interface BloggerRestClientContext {
     toBloggerMediaUploadResult: (response: SafeAny) => BloggerMediaUploadResult;
     toTerms: (response: SafeAny) => Term[];
     toTerm: (response: SafeAny) => Term;
-    toPostTypes: (response: SafeAny) => PostType[];
   };
 
   endpoints?: Partial<BloggerRestEndpoint>;
@@ -614,7 +574,6 @@ export class BloggerRestClientGoogleOAuth2Context implements BloggerRestClientCo
     newTag: () => `/rest/v1.1/sites/${this.blogId}/tags/new`,
     getTag: () => `/rest/v1.1/sites/${this.blogId}/tags?number=1&search=<%= name %>`,
     uploadFile: () => `/rest/v1.1/sites/${this.blogId}/media/new`,
-    getPostTypes: () => `/rest/v1.1/sites/${this.blogId}/post-types`,
   };
 
   constructor(private readonly blogId: string, private readonly accessToken: string) {
@@ -667,11 +626,5 @@ export class BloggerRestClientGoogleOAuth2Context implements BloggerRestClientCo
       ...response,
       id: response.ID,
     }),
-    toPostTypes: (response: SafeAny): PostType[] => {
-      if (isNumber(response.found)) {
-        return response.post_types.map((it: { name: string }) => it.name);
-      }
-      return [];
-    },
   };
 }

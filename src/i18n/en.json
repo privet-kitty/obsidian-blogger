@@ -96,7 +96,6 @@
   "publishModal_postStatusDraft": "Draft",
   "publishModal_postStatusPublish": "Publish",
   "publishModal_category": "Category",
-  "publishModal_postType": "Post Type",
   "publishModal_publishButtonText": "Publish",
   "publishModal_wrongMatterDataForPage": "There are tags or categories in matter-data which are not allowed for page. Are you sure to delete these data?",
   "publishedModal_title": "Post published successfully!",

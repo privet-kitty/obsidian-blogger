@@ -84,7 +84,6 @@ export async function upgradeSettings(
         lang: existingSettings.lang,
         showRibbonIcon: existingSettings.showRibbonIcon,
         defaultPostStatus: existingSettings.defaultPostStatus,
-        defaultPostType: 'post',
         rememberLastSelectedCategories: existingSettings.rememberLastSelectedCategories,
         showBloggerEditConfirm: existingSettings.showBloggerEditConfirm,
         mathJaxOutputType: existingSettings.mathJaxOutputType,

@@ -1,5 +1,5 @@
 import { SafeAny } from './types';
-import { PostStatus, PostType } from './blogger-interface';
+import { PostStatus } from './blogger-interface';
 
 export enum BloggerClientReturnCode {
   OK,
@@ -37,7 +37,6 @@ export type BloggerClientResult<T> = BloggerClientOkResult<T> | BloggerClientErr
 export interface BloggerPostParams {
   status: PostStatus;
   categories: number[];
-  postType: PostType;
   tags: string[];
 
   /**

@@ -1,11 +1,10 @@
 import { Modal, Setting } from 'obsidian';
 import BloggerPlugin from './main';
 import { BloggerPostParams } from './blogger-client-interface';
-import { PostStatus, PostType, PostTypeConst, Term } from './blogger-interface';
+import { PostStatus, Term } from './blogger-interface';
 import { toNumber } from 'lodash-es';
 import { TranslateKey } from './i18n';
 import { MatterData } from './types';
-import { ConfirmCode, openConfirmModal } from './confirm-modal';
 
 /**
  * Blogger publish modal.
@@ -16,10 +15,6 @@ export class BloggerPublishModal extends Modal {
     private readonly categories: {
       items: Term[];
       selected: number[];
-    },
-    private readonly postTypes: {
-      items: PostType[];
-      selected: PostType;
     },
     private readonly onSubmit: (
       params: BloggerPostParams,
@@ -33,7 +28,6 @@ export class BloggerPublishModal extends Modal {
   onOpen() {
     const params: BloggerPostParams = {
       status: this.plugin.settings.defaultPostStatus,
-      postType: this.postTypes.selected,
       categories: this.categories.selected,
       tags: [],
       title: '',
@@ -69,56 +63,22 @@ export class BloggerPublishModal extends Modal {
         });
     });
 
-    if (!this.matterData?.postId) {
-      new Setting(contentEl).setName(t('publishModal_postType')).addDropdown((dropdown) => {
-        this.postTypes.items.forEach((it) => {
-          dropdown.addOption(it, it);
+    if (this.categories.items.length > 0) {
+      new Setting(contentEl).setName(t('publishModal_category')).addDropdown((dropdown) => {
+        this.categories.items.forEach((it) => {
+          dropdown.addOption(it.id, it.name);
         });
-        dropdown.setValue(params.postType).onChange((value) => {
-          params.postType = value as PostType;
-          this.display(params);
+        dropdown.setValue(String(params.categories[0])).onChange((value) => {
+          params.categories = [toNumber(value)];
         });
       });
-    }
-
-    if (params.postType !== 'page') {
-      if (this.categories.items.length > 0) {
-        new Setting(contentEl).setName(t('publishModal_category')).addDropdown((dropdown) => {
-          this.categories.items.forEach((it) => {
-            dropdown.addOption(it.id, it.name);
-          });
-          dropdown.setValue(String(params.categories[0])).onChange((value) => {
-            params.categories = [toNumber(value)];
-          });
-        });
-      }
     }
     new Setting(contentEl).addButton((button) =>
       button
         .setButtonText(t('publishModal_publishButtonText'))
         .setCta()
         .onClick(() => {
-          if (
-            this.matterData.postType &&
-            this.matterData.postType !== PostTypeConst.Post &&
-            (this.matterData.tags || this.matterData.categories)
-          ) {
-            openConfirmModal(
-              {
-                message: t('publishModal_wrongMatterDataForPage'),
-              },
-              this.plugin,
-            ).then((result) => {
-              if (result.code === ConfirmCode.Confirm) {
-                this.onSubmit(params, (fm) => {
-                  delete fm.categories;
-                  delete fm.tags;
-                });
-              }
-            });
-          } else {
-            this.onSubmit(params, (fm) => {});
-          }
+          this.onSubmit(params, (fm) => {});
         }),
     );
   }
