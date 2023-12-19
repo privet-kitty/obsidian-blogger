@@ -7,9 +7,8 @@ import {
   BloggerClient,
 } from './blogger-client-interface';
 import BloggerPlugin from './main';
-import { Term } from './blogger-interface';
 import { RestClient } from './rest-client';
-import { isFunction, isNumber, isString, template } from 'lodash-es';
+import { isFunction, isString, template } from 'lodash-es';
 import { BloggerProfile } from './blogger-profile';
 import { FormItemNameMapper, FormItems, Media, SafeAny, MatterData } from './types';
 import { BLOGGER_API_ENDPOINT } from './consts';
@@ -17,13 +16,7 @@ import { OAuth2Client } from './oauth2-client';
 import { Notice, TFile } from 'obsidian';
 import { BloggerPublishModal } from './blogger-publish-modal';
 import { ERROR_NOTICE_TIMEOUT, WP_DEFAULT_PROFILE_NAME } from './consts';
-import {
-  isPromiseFulfilledResult,
-  isValidUrl,
-  openWithBrowser,
-  processFile,
-  showError,
-} from './utils';
+import { isValidUrl, openWithBrowser, processFile, showError } from './utils';
 import { AppState } from './app-state';
 import { ConfirmCode, openConfirmModal } from './confirm-modal';
 import fileTypeChecker from 'file-type-checker';
@@ -46,10 +39,6 @@ export abstract class AbstractBloggerClient implements BloggerClient {
     postParams: BloggerPostParams,
   ): Promise<BloggerClientResult<BloggerPublishResult>>;
 
-  abstract getCategories(): Promise<Term[]>;
-
-  abstract getTag(name: string): Promise<Term>;
-
   abstract uploadMedia(media: Media): Promise<BloggerClientResult<BloggerMediaUploadResult>>;
 
   private async checkExistingProfile(matterData: MatterData) {
@@ -70,7 +59,6 @@ export abstract class AbstractBloggerClient implements BloggerClient {
       );
       if (confirm.code !== ConfirmCode.Cancel) {
         delete matterData.postId;
-        matterData.categories = this.profile.lastSelectedCategories ?? [1];
       }
     }
   }
@@ -80,8 +68,6 @@ export abstract class AbstractBloggerClient implements BloggerClient {
     updateMatterData?: (matter: MatterData) => void;
   }): Promise<BloggerClientResult<BloggerPublishResult>> {
     const { postParams, updateMatterData } = params;
-    const tagTerms = await this.getTags(postParams.tags);
-    postParams.tags = tagTerms.map((term) => term.id);
     await this.updatePostImages(postParams);
     const result = await this.publish(
       postParams.title ?? 'A post from Obsidian!',
@@ -111,11 +97,6 @@ export abstract class AbstractBloggerClient implements BloggerClient {
               updateMatterData(fm);
             }
           });
-        }
-
-        if (this.plugin.settings.rememberLastSelectedCategories) {
-          this.profile.lastSelectedCategories = (result.data as SafeAny).categories;
-          await this.plugin.saveSettings();
         }
 
         if (this.plugin.settings.showBloggerEditConfirm) {
@@ -221,13 +202,9 @@ export abstract class AbstractBloggerClient implements BloggerClient {
           postParams,
         });
       } else {
-        const categories = await this.getCategories();
-        const selectedCategories = (matterData.categories as number[]) ??
-          this.profile.lastSelectedCategories ?? [1];
         result = await new Promise((resolve) => {
           const publishModal = new BloggerPublishModal(
             this.plugin,
-            { items: categories, selected: selectedCategories },
             async (
               postParams: BloggerPostParams,
               updateMatterData: (matter: MatterData) => void,
@@ -268,17 +245,6 @@ export abstract class AbstractBloggerClient implements BloggerClient {
         throw error;
       }
     }
-  }
-
-  private async getTags(tags: string[]): Promise<Term[]> {
-    const results = await Promise.allSettled(tags.map((name) => this.getTag(name)));
-    const terms: Term[] = [];
-    results.forEach((result) => {
-      if (isPromiseFulfilledResult<Term>(result)) {
-        terms.push(result.value);
-      }
-    });
-    return terms;
   }
 
   private readFromFrontMatter(
@@ -353,7 +319,6 @@ interface BloggerRestEndpoint {
   byUrl: string | UrlGetter;
   newPost: string | UrlGetter;
   editPost: string | UrlGetter;
-  getCategories: string | UrlGetter;
   newTag: string | UrlGetter;
   getTag: string | UrlGetter;
   uploadFile: string | UrlGetter;
@@ -411,7 +376,6 @@ export class BloggerRestClient extends AbstractBloggerClient {
         title,
         content,
         status: postParams.status,
-        categories: postParams.categories,
         tags: postParams.tags ?? [],
       },
       {
@@ -435,44 +399,6 @@ export class BloggerRestClient extends AbstractBloggerClient {
         },
         response: resp,
       };
-    }
-  }
-
-  async getCategories(): Promise<Term[]> {
-    const data = await this.client.httpGet(
-      getUrl(this.context.endpoints?.getCategories, 'blogger-json/wp/v2/categories'),
-      {
-        headers: await this.getHeaders(),
-      },
-    );
-    return this.context.responseParser.toTerms(data);
-  }
-
-  async getTag(name: string): Promise<Term> {
-    const termResp: SafeAny = await this.client.httpGet(
-      getUrl(
-        this.context.endpoints?.getTag,
-        'blogger-json/wp/v2/tags?number=1&search=<%= name %>',
-        {
-          name,
-        },
-      ),
-    );
-    const exists = this.context.responseParser.toTerms(termResp);
-    if (exists.length === 0) {
-      const resp = await this.client.httpPost(
-        getUrl(this.context.endpoints?.newTag, 'blogger-json/wp/v2/tags'),
-        {
-          name,
-        },
-        {
-          headers: await this.getHeaders(),
-        },
-      );
-      console.log('BloggerRestClient newTag response', resp);
-      return this.context.responseParser.toTerm(resp);
-    } else {
-      return exists[0];
     }
   }
 
@@ -549,8 +475,6 @@ interface BloggerRestClientContext {
      * @param response response from remote server
      */
     toBloggerMediaUploadResult: (response: SafeAny) => BloggerMediaUploadResult;
-    toTerms: (response: SafeAny) => Term[];
-    toTerm: (response: SafeAny) => Term;
   };
 
   endpoints?: Partial<BloggerRestEndpoint>;
@@ -570,7 +494,6 @@ export class BloggerRestClientGoogleOAuth2Context implements BloggerRestClientCo
     byUrl: () => `/sites/<%= site %>/posts/suggest`,
     newPost: () => `/rest/v1.1/sites/${this.blogId}/posts/new`,
     editPost: () => `/rest/v1.1/sites/${this.blogId}/posts/<%= postId %>`,
-    getCategories: () => `/rest/v1.1/sites/${this.blogId}/categories`,
     newTag: () => `/rest/v1.1/sites/${this.blogId}/tags/new`,
     getTag: () => `/rest/v1.1/sites/${this.blogId}/tags?number=1&search=<%= name %>`,
     uploadFile: () => `/rest/v1.1/sites/${this.blogId}/media/new`,
@@ -595,9 +518,6 @@ export class BloggerRestClientGoogleOAuth2Context implements BloggerRestClientCo
       if (response.ID) {
         return {
           postId: postParams.postId ?? response.ID,
-          categories:
-            postParams.categories ??
-            Object.values(response.categories).map((cat: SafeAny) => cat.ID),
         };
       }
       throw new Error('xx');
@@ -613,18 +533,5 @@ export class BloggerRestClientGoogleOAuth2Context implements BloggerRestClientCo
       }
       throw new Error('Upload failed');
     },
-    toTerms: (response: SafeAny): Term[] => {
-      if (isNumber(response.found)) {
-        return response.categories.map((it: Term & { ID: number }) => ({
-          ...it,
-          id: String(it.ID),
-        }));
-      }
-      return [];
-    },
-    toTerm: (response: SafeAny): Term => ({
-      ...response,
-      id: response.ID,
-    }),
   };
 }

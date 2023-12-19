@@ -36,7 +36,6 @@ export type BloggerClientResult<T> = BloggerClientOkResult<T> | BloggerClientErr
 
 export interface BloggerPostParams {
   status: PostStatus;
-  categories: number[];
   tags: string[];
 
   /**
@@ -69,7 +68,6 @@ export interface BloggerPublishParams {
 
 export interface BloggerPublishResult {
   postId: string;
-  categories: number[];
 }
 
 export interface BloggerMediaUploadResult {

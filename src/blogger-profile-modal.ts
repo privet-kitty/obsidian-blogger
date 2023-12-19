@@ -25,7 +25,6 @@ export function openProfileModal(
     saveUsername: false,
     savePassword: false,
     isDefault: false,
-    lastSelectedCategories: [1],
   },
   atIndex = -1,
 ): Promise<{ profile: BloggerProfile; atIndex?: number }> {
@@ -70,7 +69,6 @@ class BloggerProfileModal extends Modal {
       saveUsername: false,
       savePassword: false,
       isDefault: false,
-      lastSelectedCategories: [1],
     },
     private readonly atIndex: number = -1,
   ) {

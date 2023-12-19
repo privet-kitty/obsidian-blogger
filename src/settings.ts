@@ -4,7 +4,6 @@ import { PostStatus } from './blogger-interface';
 import { TranslateKey } from './i18n';
 import { BloggerProfileManageModal } from './blogger-profile-manage-modal';
 import { MathJaxOutputType } from './plugin-settings';
-import { BloggerProfile } from './blogger-profile';
 import { setupMarkdownParser } from './utils';
 import { AppState } from './app-state';
 
@@ -72,28 +71,6 @@ export class BloggerSettingTab extends PluginSettingTab {
             await this.plugin.saveSettings();
           });
       });
-
-    new Setting(containerEl)
-      .setName(t('settings_rememberLastSelectedCategories'))
-      .setDesc(t('settings_rememberLastSelectedCategoriesDesc'))
-      .addToggle((toggle) =>
-        toggle
-          .setValue(this.plugin.settings.rememberLastSelectedCategories)
-          .onChange(async (value) => {
-            this.plugin.settings.rememberLastSelectedCategories = value;
-            if (!value) {
-              this.plugin.settings.profiles.forEach((profile: BloggerProfile) => {
-                if (
-                  !profile.lastSelectedCategories ||
-                  profile.lastSelectedCategories.length === 0
-                ) {
-                  profile.lastSelectedCategories = [1];
-                }
-              });
-            }
-            await this.plugin.saveSettings();
-          }),
-      );
 
     new Setting(containerEl)
       .setName(t('settings_showBloggerEditPageModal'))

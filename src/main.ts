@@ -90,7 +90,6 @@ export default class BloggerPlugin extends Plugin {
         if (defaultProfile) {
           const params: BloggerPostParams = {
             status: this.#settings?.defaultPostStatus ?? PostStatus.Draft,
-            categories: defaultProfile.lastSelectedCategories ?? [1],
             tags: [],
             title: '',
             content: '',

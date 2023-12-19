@@ -40,11 +40,6 @@ export interface BloggerPluginSettings {
   defaultPostStatus: PostStatus;
 
   /**
-   * Remember last selected post categories.
-   */
-  rememberLastSelectedCategories: boolean;
-
-  /**
    * If Blogger edit confirm modal will be shown when published successfully.
    */
   showBloggerEditConfirm: boolean;
@@ -64,7 +59,6 @@ export const DEFAULT_SETTINGS: BloggerPluginSettings = {
   profiles: [],
   showRibbonIcon: false,
   defaultPostStatus: PostStatus.Draft,
-  rememberLastSelectedCategories: true,
   showBloggerEditConfirm: false,
   mathJaxOutputType: MathJaxOutputType.SVG,
   enableHtml: false,
@@ -84,7 +78,6 @@ export async function upgradeSettings(
         lang: existingSettings.lang,
         showRibbonIcon: existingSettings.showRibbonIcon,
         defaultPostStatus: existingSettings.defaultPostStatus,
-        rememberLastSelectedCategories: existingSettings.rememberLastSelectedCategories,
         showBloggerEditConfirm: existingSettings.showBloggerEditConfirm,
         mathJaxOutputType: existingSettings.mathJaxOutputType,
       });
@@ -94,7 +87,6 @@ export async function upgradeSettings(
         const xmlRpcPath = existingSettings.xmlRpcPath;
         const username = existingSettings.username;
         const password = existingSettings.password;
-        const lastSelectedCategories = existingSettings.lastSelectedCategories;
         const crypto = new PassCrypto();
         const encryptedPassword = await crypto.encrypt(password);
         const profile = {
@@ -105,7 +97,6 @@ export async function upgradeSettings(
           saveUsername: !isNil(username),
           savePassword: !isNil(password),
           isDefault: true,
-          lastSelectedCategories: lastSelectedCategories,
           username: username,
           encryptedPassword: encryptedPassword,
         };

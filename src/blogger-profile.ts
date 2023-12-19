@@ -65,9 +65,4 @@ export interface BloggerProfile {
    * Is default profile.
    */
   isDefault: boolean;
-
-  /**
-   * Last selected post categories.
-   */
-  lastSelectedCategories: number[];
 }
