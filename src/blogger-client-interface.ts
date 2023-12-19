@@ -36,7 +36,7 @@ export type BloggerClientResult<T> = BloggerClientOkResult<T> | BloggerClientErr
 
 export interface BloggerPostParams {
   status: PostStatus;
-  tags: string[];
+  labels: string[];
 
   /**
    * Post title.

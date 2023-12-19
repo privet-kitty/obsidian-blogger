@@ -90,7 +90,7 @@ export default class BloggerPlugin extends Plugin {
         if (defaultProfile) {
           const params: BloggerPostParams = {
             status: this.#settings?.defaultPostStatus ?? PostStatus.Draft,
-            tags: [],
+            labels: [],
             title: '',
             content: '',
           };

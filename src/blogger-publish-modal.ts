@@ -23,7 +23,7 @@ export class BloggerPublishModal extends Modal {
   onOpen() {
     const params: BloggerPostParams = {
       status: this.plugin.settings.defaultPostStatus,
-      tags: [],
+      labels: [],
       title: '',
       content: '',
     };
