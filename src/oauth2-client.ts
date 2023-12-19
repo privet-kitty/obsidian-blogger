@@ -1,6 +1,5 @@
 import { generateQueryString, openWithBrowser } from './utils';
 import { requestUrl } from 'obsidian';
-import { BloggerClientResult, BloggerClientReturnCode } from './blogger-client-interface';
 import {
   WP_OAUTH2_AUTHORIZE_ENDPOINT,
   WP_OAUTH2_CLIENT_ID,
@@ -63,7 +62,7 @@ export interface OAuth2Options {
   clientSecret: string;
   tokenEndpoint: string;
   authorizeEndpoint: string;
-  validateTokenEndpoint?: string;
+  validateTokenEndpoint: string;
 }
 
 export class OAuth2Client {
@@ -204,35 +203,16 @@ export class OAuth2Client {
     }
   }
 
-  async validateToken(params: ValidateTokenParams): Promise<BloggerClientResult<string>> {
-    if (!this.options.validateTokenEndpoint) {
-      throw new Error('No validate token endpoint set.');
-    }
-    try {
-      const response = await requestUrl({
-        url: `${this.options.validateTokenEndpoint}?access_token=${params.token}`,
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          'User-Agent': 'obsidian.md',
-        },
-      });
-      console.log('validateToken response', response);
-      return {
-        code: BloggerClientReturnCode.OK,
-        data: 'done',
-        response,
-      };
-    } catch (error) {
-      return {
-        code: BloggerClientReturnCode.Error,
-        error: {
-          code: BloggerClientReturnCode.Error,
-          message: AppState.get().i18n.t('error_invalidGoogleToken'),
-        },
-        response: error,
-      };
-    }
+  async validateToken(params: ValidateTokenParams): Promise<void> {
+    const response = await requestUrl({
+      url: `${this.options.validateTokenEndpoint}?access_token=${params.token}`,
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'User-Agent': 'obsidian.md',
+      },
+    });
+    console.log('validateToken response', response);
   }
 }
 

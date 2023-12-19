@@ -125,12 +125,11 @@ class BloggerProfileModal extends Modal {
                 .validateToken({
                   token: this.profileData.googleOAuth2Token.accessToken,
                 })
-                .then((result) => {
-                  if (result.code === BloggerClientReturnCode.Error) {
-                    showError(result.error?.message + '');
-                  } else {
-                    new Notice(t('message_googleTokenValidated'));
-                  }
+                .then(() => {
+                  new Notice(t('message_googleTokenValidated'));
+                })
+                .catch((e) => {
+                  showError(e);
                 });
             }
           });
