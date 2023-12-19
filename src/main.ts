@@ -185,7 +185,7 @@ export default class BloggerPlugin extends Plugin {
   //     if (e.action === WP_OAUTH2_URL_ACTION) {
   //       if (e.state) {
   //         if (e.error) {
-  //           showError(this.i18n.t('error_wpComAuthFailed', {
+  //           showError(this.i18n.t('error_googleAuthFailed', {
   //             error: e.error,
   //             desc: e.error_description.replace(/\+/g,' ')
   //           }));

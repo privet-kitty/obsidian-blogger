@@ -1,5 +1,5 @@
 import BloggerPlugin from './main';
-import { WpRestClient, WpRestClientWpComOAuth2Context } from './wp-rest-client';
+import { WpRestClient, WpRestClientGoogleOAuth2Context } from './wp-rest-client';
 import { BloggerClient } from './wp-client';
 import { WpProfile } from './wp-profile';
 import { showError } from './utils';
@@ -9,8 +9,8 @@ export function getBloggerClient(plugin: BloggerPlugin, profile: WpProfile): Blo
     showError(plugin.i18n.t('error_noEndpoint'));
     return null;
   }
-  if (!profile.wpComOAuth2Token) {
-    showError(plugin.i18n.t('error_invalidWpComToken'));
+  if (!profile.googleOAuth2Token) {
+    showError(plugin.i18n.t('error_invalidGoogleToken'));
     return null;
   }
   if (!profile.blogId) {
@@ -20,6 +20,6 @@ export function getBloggerClient(plugin: BloggerPlugin, profile: WpProfile): Blo
   return new WpRestClient(
     plugin,
     profile,
-    new WpRestClientWpComOAuth2Context(profile.blogId, profile.wpComOAuth2Token.accessToken),
+    new WpRestClientGoogleOAuth2Context(profile.blogId, profile.googleOAuth2Token.accessToken),
   );
 }

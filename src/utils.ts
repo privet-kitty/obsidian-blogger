@@ -41,7 +41,7 @@ export function rendererProfile(profile: WpProfile, container: HTMLElement): Set
     name += ' ✔️';
   }
   let desc = profile.endpoint;
-  if (profile.wpComOAuth2Token) {
+  if (profile.googleOAuth2Token) {
     desc += ` / 🆔 / 🔒`;
   } else {
     if (profile.saveUsername) {

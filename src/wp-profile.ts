@@ -49,7 +49,7 @@ export interface WpProfile {
   /**
    * OAuth2 token for Google
    */
-  wpComOAuth2Token?: InternalOAuth2Token;
+  googleOAuth2Token?: InternalOAuth2Token;
 
   /**
    * Save username to local data.

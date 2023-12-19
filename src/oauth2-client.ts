@@ -151,7 +151,7 @@ export class OAuth2Client {
       scope: resp.scope,
     };
     if (!isFreshInternalOAuth2Token(res)) {
-      throw new Error(this.plugin.i18n.t('error_invalidWpComToken'));
+      throw new Error(this.plugin.i18n.t('error_invalidGoogleToken'));
     }
     return res;
   }
@@ -190,7 +190,7 @@ export class OAuth2Client {
       scope: resp.scope,
     };
     if (!isFreshInternalOAuth2Token(res)) {
-      throw new Error(this.plugin.i18n.t('error_invalidWpComToken'));
+      throw new Error(this.plugin.i18n.t('error_invalidGoogleToken'));
     }
     return res;
   }
@@ -231,7 +231,7 @@ export class OAuth2Client {
         code: BloggerClientReturnCode.Error,
         error: {
           code: BloggerClientReturnCode.Error,
-          message: this.plugin.i18n.t('error_invalidWpComToken'),
+          message: this.plugin.i18n.t('error_invalidGoogleToken'),
         },
         response: error,
       };

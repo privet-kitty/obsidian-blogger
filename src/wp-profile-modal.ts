@@ -19,7 +19,7 @@ export function openProfileModal(
   plugin: BloggerPlugin,
   profile: WpProfile = {
     name: '',
-    apiType: ApiType.RestApi_WpComOAuth2,
+    apiType: ApiType.RestApi_GoogleOAuth2,
     endpoint: '',
     xmlRpcPath: '/xmlrpc.php',
     saveUsername: false,
@@ -64,7 +64,7 @@ class WpProfileModal extends Modal {
     private readonly onSubmit: (profile: WpProfile, atIndex?: number) => void,
     profile: WpProfile = {
       name: '',
-      apiType: ApiType.RestApi_WpComOAuth2,
+      apiType: ApiType.RestApi_GoogleOAuth2,
       endpoint: '',
       xmlRpcPath: '/xmlrpc.php',
       saveUsername: false,
@@ -112,28 +112,28 @@ class WpProfileModal extends Modal {
             }),
         );
       new Setting(content)
-        .setName(t('settings_wpComOAuth2AuthorizeToken'))
-        .setDesc(t('settings_wpComOAuth2AuthorizeTokenDesc'))
+        .setName(t('settings_googleOAuth2AuthorizeToken'))
+        .setDesc(t('settings_googleOAuth2AuthorizeTokenDesc'))
         .addButton((button) => {
-          const buttonText = this.profileData.wpComOAuth2Token
-            ? t('settings_wpComOAuth2ReauthorizeTokenButtonText')
-            : t('settings_wpComOAuth2AuthorizeTokenButtonText');
+          const buttonText = this.profileData.googleOAuth2Token
+            ? t('settings_googleOAuth2ReauthorizeTokenButtonText')
+            : t('settings_googleOAuth2AuthorizeTokenButtonText');
           button.setButtonText(buttonText).onClick(async () => {
-            await this.reauthorizeWpComToken();
+            await this.reauthorizeGoogleToken();
           });
         })
         .addButton((button) => {
-          button.setButtonText(t('settings_wpComOAuth2ValidateTokenButtonText')).onClick(() => {
-            if (this.profileData.wpComOAuth2Token) {
+          button.setButtonText(t('settings_googleOAuth2ValidateTokenButtonText')).onClick(() => {
+            if (this.profileData.googleOAuth2Token) {
               OAuth2Client.getWpOAuth2Client(this.plugin)
                 .validateToken({
-                  token: this.profileData.wpComOAuth2Token.accessToken,
+                  token: this.profileData.googleOAuth2Token.accessToken,
                 })
                 .then((result) => {
                   if (result.code === BloggerClientReturnCode.Error) {
                     showError(result.error?.message + '');
                   } else {
-                    new Notice(t('message_wpComTokenValidated'));
+                    new Notice(t('message_googleTokenValidated'));
                   }
                 });
             }
@@ -145,15 +145,15 @@ class WpProfileModal extends Modal {
         .addButton((button) =>
           button.setButtonText(t('settings_fetchBlogIdButtonText')).onClick(async () => {
             if (!/^https:\/\/[a-z0-9-]+\.blogspot\.com\/?$/.test(this.profileData.endpoint)) {
-              showError(t('error_notWpCom'));
+              showError(t('error_notGoogle'));
               this.profileData.blogId = undefined;
-            } else if (!this.profileData.wpComOAuth2Token) {
-              showError(t('error_invalidWpComToken'));
+            } else if (!this.profileData.googleOAuth2Token) {
+              showError(t('error_invalidGoogleToken'));
               this.profileData.blogId = undefined;
             } else {
               const fresh_token = await OAuth2Client.getWpOAuth2Client(
                 this.plugin,
-              ).ensureFreshToken(this.profileData.wpComOAuth2Token);
+              ).ensureFreshToken(this.profileData.googleOAuth2Token);
               this.profileData.blogId = await this.fetchBlogId(
                 this.profileData.endpoint,
                 fresh_token,
@@ -229,10 +229,10 @@ class WpProfileModal extends Modal {
   }
 
   private async registerToken(token?: InternalOAuth2Token): Promise<void> {
-    this.profileData.wpComOAuth2Token = token;
+    this.profileData.googleOAuth2Token = token;
     if (this.atIndex >= 0) {
       // if token is undefined, just remove it
-      this.plugin.settings.profiles[this.atIndex].wpComOAuth2Token = token;
+      this.plugin.settings.profiles[this.atIndex].googleOAuth2Token = token;
       await this.plugin.saveSettings();
     }
   }
@@ -245,7 +245,7 @@ class WpProfileModal extends Modal {
     if (params.error) {
       this.registerToken(undefined);
       throw new Error(
-        this.plugin.i18n.t('error_wpComAuthFailed', {
+        this.plugin.i18n.t('error_googleAuthFailed', {
           error: params.error,
           desc: params.error_description?.replace(/\+/g, ' ') ?? '<no error description>',
         }),
@@ -261,14 +261,14 @@ class WpProfileModal extends Modal {
     } else {
       this.registerToken(undefined);
       throw new Error(
-        this.plugin.i18n.t('server_wpComOAuth2InvalidResponse', {
+        this.plugin.i18n.t('server_googleOAuth2InvalidResponse', {
           response: JSON.stringify(params),
         }),
       );
     }
   }
 
-  private async reauthorizeWpComToken(): Promise<void> {
+  private async reauthorizeGoogleToken(): Promise<void> {
     const codeVerifier = generateCodeVerifier();
     const state = randomUUID();
 
@@ -299,7 +299,7 @@ class WpProfileModal extends Modal {
           const response_state = url.searchParams.get('state');
           if (state !== response_state) {
             closeWithMessage(
-              this.plugin.i18n.t('server_wpComOAuth2StateMismatch', {
+              this.plugin.i18n.t('server_googleOAuth2StateMismatch', {
                 req: state,
                 res: String(response_state),
               }),
@@ -310,11 +310,11 @@ class WpProfileModal extends Modal {
             codeVerifier,
             getListeningPort(server),
           );
-          closeWithMessage(this.plugin.i18n.t('server_wpComOAuth2TokenObtained'));
+          closeWithMessage(this.plugin.i18n.t('server_googleOAuth2TokenObtained'));
         }
       } catch (e) {
         closeWithMessage(
-          this.plugin.i18n.t('server_wpComOAuth2ServerError', {
+          this.plugin.i18n.t('server_googleOAuth2ServerError', {
             error: JSON.stringify(e),
           }),
         );

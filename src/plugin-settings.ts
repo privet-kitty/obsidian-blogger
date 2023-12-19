@@ -11,7 +11,7 @@ export const enum SettingsVersion {
 }
 
 export const enum ApiType {
-  RestApi_WpComOAuth2 = 'WpComOAuth2',
+  RestApi_GoogleOAuth2 = 'GoogleOAuth2',
 }
 
 export const enum MathJaxOutputType {

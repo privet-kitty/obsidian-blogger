@@ -43,13 +43,13 @@ export class WpRestClient extends AbstractBloggerClient {
   }
 
   async getHeaders(): Promise<Record<string, string>> {
-    const token = this.profile.wpComOAuth2Token;
+    const token = this.profile.googleOAuth2Token;
     if (!token) {
-      throw new Error(this.plugin.i18n.t('error_invalidWpComToken'));
+      throw new Error(this.plugin.i18n.t('error_invalidGoogleToken'));
     }
     const fresh_token = await OAuth2Client.getWpOAuth2Client(this.plugin).ensureFreshToken(token);
     if (token !== fresh_token) {
-      this.profile.wpComOAuth2Token = fresh_token;
+      this.profile.googleOAuth2Token = fresh_token;
       await this.plugin.saveSettings();
     }
     const headers: Record<string, string> = {
@@ -233,8 +233,8 @@ interface WpRestClientContext {
   formItemNameMapper?: FormItemNameMapper;
 }
 
-export class WpRestClientWpComOAuth2Context implements WpRestClientContext {
-  name = 'WpRestClientWpComOAuth2Context';
+export class WpRestClientGoogleOAuth2Context implements WpRestClientContext {
+  name = 'WpRestClientGoogleOAuth2Context';
 
   needLoginModal = false;
 
