@@ -17,21 +17,11 @@ import { cloneDeep, isString } from 'lodash-es';
 import { BloggerProfile } from './blogger-profile';
 import { getBloggerClient } from './blogger-client';
 
-export function doClientPublish(
-  plugin: BloggerPlugin,
-  profile: BloggerProfile,
-  defaultPostParams?: BloggerPostParams,
-): void;
-export function doClientPublish(
-  plugin: BloggerPlugin,
-  profileName: string,
-  defaultPostParams?: BloggerPostParams,
-): void;
-export function doClientPublish(
+const doClientPublish = (
   plugin: BloggerPlugin,
   profileOrName: BloggerProfile | string,
   defaultPostParams?: BloggerPostParams,
-): void {
+): void => {
   let profile: BloggerProfile | undefined;
   if (isString(profileOrName)) {
     profile = plugin.settings.profiles.find((it) => it.name === profileOrName);
@@ -50,7 +40,7 @@ export function doClientPublish(
     showError(noSuchProfileMessage);
     throw new Error(noSuchProfileMessage);
   }
-}
+};
 
 export default class BloggerPlugin extends Plugin {
   #settings: BloggerPluginSettings | undefined;
