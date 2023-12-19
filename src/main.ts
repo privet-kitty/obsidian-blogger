@@ -7,8 +7,8 @@ import { AppState } from './app-state';
 import {
   DEFAULT_SETTINGS,
   SettingsVersion,
-  upgradeSettings,
   BloggerPluginSettings,
+  upgradeSettings,
 } from './plugin-settings';
 import { PassCrypto } from './pass-crypto';
 import { showError } from './utils';
@@ -99,7 +99,7 @@ export default class BloggerPlugin extends Plugin {
 
   async loadSettings() {
     this.#settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData());
-    const { needUpgrade, settings } = await upgradeSettings(this.#settings, SettingsVersion.V2);
+    const { needUpgrade, settings } = await upgradeSettings(this.#settings, SettingsVersion.V1);
     this.#settings = settings;
     if (needUpgrade) {
       await this.saveSettings();
