@@ -3,7 +3,7 @@ import BloggerPlugin from './main';
 import { TranslateKey } from './i18n';
 import { BloggerProfile } from './blogger-profile';
 import { BLOGGER_API_ENDPOINT, WP_OAUTH2_REDIRECT_URI } from './consts';
-import { BloggerClientReturnCode } from './blogger-client';
+import { BloggerClientReturnCode } from './blogger-client-interface';
 import {
   FreshInternalOAuth2Token,
   generateCodeVerifier,

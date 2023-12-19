@@ -3,7 +3,7 @@ import { BloggerProfile } from './blogger-profile';
 import { AppState } from './app-state';
 import { BloggerPluginSettings } from './plugin-settings';
 import MarkdownItMathJax3Plugin from './markdown-it-mathjax3-plugin';
-import { BloggerClientResult, BloggerClientReturnCode } from './blogger-client';
+import { BloggerClientResult, BloggerClientReturnCode } from './blogger-client-interface';
 import { isString } from 'lodash-es';
 import { ERROR_NOTICE_TIMEOUT } from './consts';
 import { format } from 'date-fns';

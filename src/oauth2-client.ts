@@ -1,6 +1,6 @@
 import { generateQueryString, openWithBrowser } from './utils';
 import { requestUrl } from 'obsidian';
-import { BloggerClientResult, BloggerClientReturnCode } from './blogger-client';
+import { BloggerClientResult, BloggerClientReturnCode } from './blogger-client-interface';
 import BloggerPlugin from './main';
 import {
   WP_OAUTH2_AUTHORIZE_ENDPOINT,

@@ -5,7 +5,7 @@ import {
   BloggerPostParams,
   BloggerPublishResult,
   BloggerClient,
-} from './blogger-client';
+} from './blogger-client-interface';
 import BloggerPlugin from './main';
 import { PostType, PostTypeConst, Term } from './blogger-interface';
 import { RestClient } from './rest-client';
