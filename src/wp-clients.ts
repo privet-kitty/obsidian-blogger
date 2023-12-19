@@ -1,13 +1,10 @@
-import WordpressPlugin from './main';
+import BloggerPlugin from './main';
 import { WpRestClient, WpRestClientWpComOAuth2Context } from './wp-rest-client';
-import { WordPressClient } from './wp-client';
+import { BloggerClient } from './wp-client';
 import { WpProfile } from './wp-profile';
 import { showError } from './utils';
 
-export function getWordPressClient(
-  plugin: WordpressPlugin,
-  profile: WpProfile,
-): WordPressClient | null {
+export function getBloggerClient(plugin: BloggerPlugin, profile: WpProfile): BloggerClient | null {
   if (!profile.endpoint || profile.endpoint.length === 0) {
     showError(plugin.i18n.t('error_noEndpoint'));
     return null;

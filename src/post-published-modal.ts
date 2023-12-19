@@ -1,8 +1,8 @@
 import { Modal, Setting } from 'obsidian';
-import WordpressPlugin from './main';
+import BloggerPlugin from './main';
 import { TranslateKey } from './i18n';
 
-export function openPostPublishedModal(plugin: WordpressPlugin): Promise<void> {
+export function openPostPublishedModal(plugin: BloggerPlugin): Promise<void> {
   return new Promise((resolve, reject) => {
     new PostPublishedModal(plugin, (modal) => {
       resolve();
@@ -12,11 +12,11 @@ export function openPostPublishedModal(plugin: WordpressPlugin): Promise<void> {
 }
 
 /**
- * WordPress post published modal.
+ * Blogger post published modal.
  */
 class PostPublishedModal extends Modal {
   constructor(
-    private readonly plugin: WordpressPlugin,
+    private readonly plugin: BloggerPlugin,
     private readonly onOpenClicked: (modal: Modal) => void,
   ) {
     super(plugin.app);

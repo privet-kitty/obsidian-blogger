@@ -1,12 +1,12 @@
 import {
-  WordPressClientResult,
-  WordPressClientReturnCode,
-  WordPressMediaUploadResult,
-  WordPressPostParams,
-  WordPressPublishResult,
+  BloggerClientResult,
+  BloggerClientReturnCode,
+  BloggerMediaUploadResult,
+  BloggerPostParams,
+  BloggerPublishResult,
 } from './wp-client';
-import { AbstractWordPressClient } from './abstract-wp-client';
-import WordpressPlugin from './main';
+import { AbstractBloggerClient } from './abstract-wp-client';
+import BloggerPlugin from './main';
 import { PostType, Term } from './wp-api';
 import { RestClient } from './rest-client';
 import { isFunction, isNumber, isString, template } from 'lodash-es';
@@ -27,11 +27,11 @@ interface WpRestEndpoint {
   getPostTypes: string | UrlGetter;
 }
 
-export class WpRestClient extends AbstractWordPressClient {
+export class WpRestClient extends AbstractBloggerClient {
   private readonly client: RestClient;
 
   constructor(
-    readonly plugin: WordpressPlugin,
+    readonly plugin: BloggerPlugin,
     readonly profile: WpProfile,
     private readonly context: WpRestClientContext,
   ) {
@@ -61,8 +61,8 @@ export class WpRestClient extends AbstractWordPressClient {
   async publish(
     title: string,
     content: string,
-    postParams: WordPressPostParams,
-  ): Promise<WordPressClientResult<WordPressPublishResult>> {
+    postParams: BloggerPostParams,
+  ): Promise<BloggerClientResult<BloggerPublishResult>> {
     let url: string;
     if (postParams.postId) {
       url = getUrl(this.context.endpoints?.editPost, 'wp-json/wp/v2/posts/<%= postId %>', {
@@ -86,17 +86,17 @@ export class WpRestClient extends AbstractWordPressClient {
     );
     console.log('WpRestClient response', resp);
     try {
-      const result = this.context.responseParser.toWordPressPublishResult(postParams, resp);
+      const result = this.context.responseParser.toBloggerPublishResult(postParams, resp);
       return {
-        code: WordPressClientReturnCode.OK,
+        code: BloggerClientReturnCode.OK,
         data: result,
         response: resp,
       };
     } catch (e) {
       return {
-        code: WordPressClientReturnCode.Error,
+        code: BloggerClientReturnCode.Error,
         error: {
-          code: WordPressClientReturnCode.ServerInternalError,
+          code: BloggerClientReturnCode.ServerInternalError,
           message: this.plugin.i18n.t('error_cannotParseResponse'),
         },
         response: resp,
@@ -148,7 +148,7 @@ export class WpRestClient extends AbstractWordPressClient {
     }
   }
 
-  async uploadMedia(media: Media): Promise<WordPressClientResult<WordPressMediaUploadResult>> {
+  async uploadMedia(media: Media): Promise<BloggerClientResult<BloggerMediaUploadResult>> {
     try {
       const formItems = new FormItems();
       formItems.append('file', media);
@@ -163,18 +163,18 @@ export class WpRestClient extends AbstractWordPressClient {
           formItemNameMapper: this.context.formItemNameMapper,
         },
       );
-      const result = this.context.responseParser.toWordPressMediaUploadResult(response);
+      const result = this.context.responseParser.toBloggerMediaUploadResult(response);
       return {
-        code: WordPressClientReturnCode.OK,
+        code: BloggerClientReturnCode.OK,
         data: result,
         response,
       };
     } catch (e: SafeAny) {
       console.error('uploadMedia', e);
       return {
-        code: WordPressClientReturnCode.Error,
+        code: BloggerClientReturnCode.Error,
         error: {
-          code: WordPressClientReturnCode.ServerInternalError,
+          code: BloggerClientReturnCode.ServerInternalError,
           message: e.toString(),
         },
         response: undefined,
@@ -210,17 +210,17 @@ interface WpRestClientContext {
   name: string;
 
   responseParser: {
-    toWordPressPublishResult: (
-      postParams: WordPressPostParams,
+    toBloggerPublishResult: (
+      postParams: BloggerPostParams,
       response: SafeAny,
-    ) => WordPressPublishResult;
+    ) => BloggerPublishResult;
     /**
-     * Convert response to `WordPressMediaUploadResult`.
+     * Convert response to `BloggerMediaUploadResult`.
      *
      * If there is any error, throw new error directly.
      * @param response response from remote server
      */
-    toWordPressMediaUploadResult: (response: SafeAny) => WordPressMediaUploadResult;
+    toBloggerMediaUploadResult: (response: SafeAny) => BloggerMediaUploadResult;
     toTerms: (response: SafeAny) => Term[];
     toTerm: (response: SafeAny) => Term;
     toPostTypes: (response: SafeAny) => PostType[];
@@ -262,10 +262,10 @@ export class WpRestClientWpComOAuth2Context implements WpRestClientContext {
   }
 
   responseParser = {
-    toWordPressPublishResult: (
-      postParams: WordPressPostParams,
+    toBloggerPublishResult: (
+      postParams: BloggerPostParams,
       response: SafeAny,
-    ): WordPressPublishResult => {
+    ): BloggerPublishResult => {
       if (response.ID) {
         return {
           postId: postParams.postId ?? response.ID,
@@ -276,7 +276,7 @@ export class WpRestClientWpComOAuth2Context implements WpRestClientContext {
       }
       throw new Error('xx');
     },
-    toWordPressMediaUploadResult: (response: SafeAny): WordPressMediaUploadResult => {
+    toBloggerMediaUploadResult: (response: SafeAny): BloggerMediaUploadResult => {
       if (response.media.length > 0) {
         const media = response.media[0];
         return {

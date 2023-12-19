@@ -1,12 +1,12 @@
 import { Notice, TFile } from 'obsidian';
-import WordpressPlugin from './main';
+import BloggerPlugin from './main';
 import {
-  WordPressClient,
-  WordPressClientResult,
-  WordPressClientReturnCode,
-  WordPressMediaUploadResult,
-  WordPressPostParams,
-  WordPressPublishResult,
+  BloggerClient,
+  BloggerClientResult,
+  BloggerClientReturnCode,
+  BloggerMediaUploadResult,
+  BloggerPostParams,
+  BloggerPublishResult,
 } from './wp-client';
 import { WpPublishModal } from './wp-publish-modal';
 import { PostType, PostTypeConst, Term } from './wp-api';
@@ -26,22 +26,22 @@ import { MatterData, Media, SafeAny } from './types';
 import { openPostPublishedModal } from './post-published-modal';
 import { isFunction } from 'lodash-es';
 
-export abstract class AbstractWordPressClient implements WordPressClient {
+export abstract class AbstractBloggerClient implements BloggerClient {
   /**
    * Client name.
    */
-  name = 'AbstractWordPressClient';
+  name = 'AbstractBloggerClient';
 
   protected constructor(
-    protected readonly plugin: WordpressPlugin,
+    protected readonly plugin: BloggerPlugin,
     protected readonly profile: WpProfile,
   ) {}
 
   abstract publish(
     title: string,
     content: string,
-    postParams: WordPressPostParams,
-  ): Promise<WordPressClientResult<WordPressPublishResult>>;
+    postParams: BloggerPostParams,
+  ): Promise<BloggerClientResult<BloggerPublishResult>>;
 
   abstract getCategories(): Promise<Term[]>;
 
@@ -49,7 +49,7 @@ export abstract class AbstractWordPressClient implements WordPressClient {
 
   abstract getTag(name: string): Promise<Term>;
 
-  abstract uploadMedia(media: Media): Promise<WordPressClientResult<WordPressMediaUploadResult>>;
+  abstract uploadMedia(media: Media): Promise<BloggerClientResult<BloggerMediaUploadResult>>;
 
   private async checkExistingProfile(matterData: MatterData) {
     const { profileName } = matterData;
@@ -75,9 +75,9 @@ export abstract class AbstractWordPressClient implements WordPressClient {
   }
 
   private async tryToPublish(params: {
-    postParams: WordPressPostParams;
+    postParams: BloggerPostParams;
     updateMatterData?: (matter: MatterData) => void;
-  }): Promise<WordPressClientResult<WordPressPublishResult>> {
+  }): Promise<BloggerClientResult<BloggerPublishResult>> {
     const { postParams, updateMatterData } = params;
     const tagTerms = await this.getTags(postParams.tags);
     postParams.tags = tagTerms.map((term) => term.id);
@@ -87,7 +87,7 @@ export abstract class AbstractWordPressClient implements WordPressClient {
       AppState.getInstance().markdownParser.render(postParams.content) ?? '',
       postParams,
     );
-    if (result.code === WordPressClientReturnCode.Error) {
+    if (result.code === BloggerClientReturnCode.Error) {
       throw new Error(
         this.plugin.i18n.t('error_publishFailed', {
           code: result.error.code as string,
@@ -121,7 +121,7 @@ export abstract class AbstractWordPressClient implements WordPressClient {
           await this.plugin.saveSettings();
         }
 
-        if (this.plugin.settings.showWordPressEditConfirm) {
+        if (this.plugin.settings.showBloggerEditConfirm) {
           openPostPublishedModal(this.plugin).then(() => {
             openWithBrowser(`${this.profile.endpoint}/wp-admin/post.php`, {
               action: 'edit',
@@ -134,7 +134,7 @@ export abstract class AbstractWordPressClient implements WordPressClient {
     return result;
   }
 
-  private async updatePostImages(postParams: WordPressPostParams): Promise<void> {
+  private async updatePostImages(postParams: BloggerPostParams): Promise<void> {
     const activeFile = this.plugin.app.workspace.getActiveFile();
     if (activeFile === null) {
       throw new Error(this.plugin.i18n.t('error_noActiveFile'));
@@ -165,7 +165,7 @@ export abstract class AbstractWordPressClient implements WordPressClient {
               fileName: imgFile.name,
               content: content,
             });
-            if (result.code === WordPressClientReturnCode.OK) {
+            if (result.code === BloggerClientReturnCode.OK) {
               if (this.plugin.settings.replaceMediaLinks) {
                 postParams.content = postParams.content.replace(
                   img.original,
@@ -173,7 +173,7 @@ export abstract class AbstractWordPressClient implements WordPressClient {
                 );
               }
             } else {
-              if (result.error.code === WordPressClientReturnCode.ServerInternalError) {
+              if (result.error.code === BloggerClientReturnCode.ServerInternalError) {
                 new Notice(result.error.message, ERROR_NOTICE_TIMEOUT);
               } else {
                 new Notice(
@@ -194,8 +194,8 @@ export abstract class AbstractWordPressClient implements WordPressClient {
   }
 
   async publishPost(
-    defaultPostParams?: WordPressPostParams,
-  ): Promise<WordPressClientResult<WordPressPublishResult>> {
+    defaultPostParams?: BloggerPostParams,
+  ): Promise<BloggerClientResult<BloggerPublishResult>> {
     try {
       if (!this.profile.endpoint || this.profile.endpoint.length === 0) {
         throw new Error(this.plugin.i18n.t('error_noEndpoint'));
@@ -215,8 +215,8 @@ export abstract class AbstractWordPressClient implements WordPressClient {
       await this.checkExistingProfile(matterData);
 
       // now we're preparing the publishing data
-      let postParams: WordPressPostParams;
-      let result: WordPressClientResult<WordPressPublishResult> | undefined;
+      let postParams: BloggerPostParams;
+      let result: BloggerClientResult<BloggerPublishResult> | undefined;
       if (defaultPostParams) {
         postParams = this.readFromFrontMatter(title, matterData, defaultPostParams);
         postParams.content = content;
@@ -238,7 +238,7 @@ export abstract class AbstractWordPressClient implements WordPressClient {
             { items: categories, selected: selectedCategories },
             { items: postTypes, selected: selectedPostType },
             async (
-              postParams: WordPressPostParams,
+              postParams: BloggerPostParams,
               updateMatterData: (matter: MatterData) => void,
             ) => {
               postParams = this.readFromFrontMatter(title, matterData, postParams);
@@ -248,7 +248,7 @@ export abstract class AbstractWordPressClient implements WordPressClient {
                   postParams,
                   updateMatterData,
                 });
-                if (r.code === WordPressClientReturnCode.OK) {
+                if (r.code === BloggerClientReturnCode.OK) {
                   publishModal.close();
                   resolve(r);
                 }
@@ -293,8 +293,8 @@ export abstract class AbstractWordPressClient implements WordPressClient {
   private readFromFrontMatter(
     noteTitle: string,
     matterData: MatterData,
-    params: WordPressPostParams,
-  ): WordPressPostParams {
+    params: BloggerPostParams,
+  ): BloggerPostParams {
     const postParams = { ...params };
     postParams.title = noteTitle;
     if (matterData.title) {

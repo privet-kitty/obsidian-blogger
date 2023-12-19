@@ -1,7 +1,7 @@
 import { SafeAny } from './types';
 import { PostStatus, PostType } from './wp-api';
 
-export enum WordPressClientReturnCode {
+export enum BloggerClientReturnCode {
   OK,
   Error,
   ServerInternalError,
@@ -9,32 +9,32 @@ export enum WordPressClientReturnCode {
 
 interface _wpClientResult {
   /**
-   * Response from WordPress server.
+   * Response from Blogger server.
    */
   response?: SafeAny;
 
-  code: WordPressClientReturnCode;
+  code: BloggerClientReturnCode;
 }
 
 interface WpClientOkResult<T> extends _wpClientResult {
-  code: WordPressClientReturnCode.OK;
+  code: BloggerClientReturnCode.OK;
   data: T;
 }
 
 interface WpClientErrorResult extends _wpClientResult {
-  code: WordPressClientReturnCode.Error;
+  code: BloggerClientReturnCode.Error;
   error: {
     /**
      * This code could be returned from remote server
      */
-    code: WordPressClientReturnCode | string;
+    code: BloggerClientReturnCode | string;
     message: string;
   };
 }
 
-export type WordPressClientResult<T> = WpClientOkResult<T> | WpClientErrorResult;
+export type BloggerClientResult<T> = WpClientOkResult<T> | WpClientErrorResult;
 
-export interface WordPressPostParams {
+export interface BloggerPostParams {
   status: PostStatus;
   categories: number[];
   postType: PostType;
@@ -51,35 +51,35 @@ export interface WordPressPostParams {
   content: string;
 
   /**
-   * WordPress post ID.
+   * Blogger post ID.
    *
    * If this is assigned, the post will be updated, otherwise created.
    */
   postId?: string;
 
   /**
-   * WordPress profile name.
+   * Blogger profile name.
    */
   profileName?: string;
 }
 
-export interface WordPressPublishParams {
-  postParams: WordPressPostParams;
+export interface BloggerPublishParams {
+  postParams: BloggerPostParams;
   matterData: { [p: string]: SafeAny };
 }
 
-export interface WordPressPublishResult {
+export interface BloggerPublishResult {
   postId: string;
   categories: number[];
 }
 
-export interface WordPressMediaUploadResult {
+export interface BloggerMediaUploadResult {
   url: string;
 }
 
-export interface WordPressClient {
+export interface BloggerClient {
   /**
-   * Publish a post to WordPress.
+   * Publish a post to Blogger.
    *
    * If there is a `postId` in front-matter, the post will be updated,
    * otherwise, create a new one.
@@ -87,6 +87,6 @@ export interface WordPressClient {
    * @param defaultPostParams Use this parameter instead of popup publish modal if this is not undefined.
    */
   publishPost(
-    defaultPostParams?: WordPressPostParams,
-  ): Promise<WordPressClientResult<WordPressPublishResult>>;
+    defaultPostParams?: BloggerPostParams,
+  ): Promise<BloggerClientResult<BloggerPublishResult>>;
 }

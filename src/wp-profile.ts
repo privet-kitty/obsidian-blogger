@@ -23,17 +23,17 @@ export interface WpProfile {
   xmlRpcPath?: string;
 
   /**
-   * WordPress username.
+   * Blogger username.
    */
   username?: string;
 
   /**
-   * WordPress password.
+   * Blogger password.
    */
   password?: string;
 
   /**
-   * WordPress blog ID.
+   * Blogger blog ID.
    */
   blogId?: string;
 
@@ -47,7 +47,7 @@ export interface WpProfile {
   };
 
   /**
-   * OAuth2 token for wordpress.com
+   * OAuth2 token for Google
    */
   wpComOAuth2Token?: InternalOAuth2Token;
 

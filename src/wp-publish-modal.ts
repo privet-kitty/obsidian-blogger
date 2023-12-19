@@ -1,6 +1,6 @@
 import { Modal, Setting } from 'obsidian';
-import WordpressPlugin from './main';
-import { WordPressPostParams } from './wp-client';
+import BloggerPlugin from './main';
+import { BloggerPostParams } from './wp-client';
 import { PostStatus, PostType, PostTypeConst, Term } from './wp-api';
 import { toNumber } from 'lodash-es';
 import { TranslateKey } from './i18n';
@@ -8,11 +8,11 @@ import { MatterData } from './types';
 import { ConfirmCode, openConfirmModal } from './confirm-modal';
 
 /**
- * WordPress publish modal.
+ * Blogger publish modal.
  */
 export class WpPublishModal extends Modal {
   constructor(
-    private readonly plugin: WordpressPlugin,
+    private readonly plugin: BloggerPlugin,
     private readonly categories: {
       items: Term[];
       selected: number[];
@@ -22,7 +22,7 @@ export class WpPublishModal extends Modal {
       selected: PostType;
     },
     private readonly onSubmit: (
-      params: WordPressPostParams,
+      params: BloggerPostParams,
       updateMatterData: (matter: MatterData) => void,
     ) => void,
     private readonly matterData: MatterData,
@@ -31,7 +31,7 @@ export class WpPublishModal extends Modal {
   }
 
   onOpen() {
-    const params: WordPressPostParams = {
+    const params: BloggerPostParams = {
       status: this.plugin.settings.defaultPostStatus,
       postType: this.postTypes.selected,
       categories: this.categories.selected,
@@ -48,7 +48,7 @@ export class WpPublishModal extends Modal {
     contentEl.empty();
   }
 
-  private display(params: WordPressPostParams): void {
+  private display(params: BloggerPostParams): void {
     const t = (key: TranslateKey, vars?: Record<string, string>): string => {
       return this.plugin.i18n.t(key, vars);
     };

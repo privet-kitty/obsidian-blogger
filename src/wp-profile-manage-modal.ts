@@ -1,22 +1,18 @@
 import { Modal, Setting } from 'obsidian';
-import WordpressPlugin from './main';
+import BloggerPlugin from './main';
 import { WpProfile } from './wp-profile';
 import { TranslateKey } from './i18n';
 import { openProfileModal } from './wp-profile-modal';
 import { isNil } from 'lodash-es';
 import { rendererProfile } from './utils';
 
-
 /**
- * WordPress profiles manage modal.
+ * Blogger profiles manage modal.
  */
 export class WpProfileManageModal extends Modal {
-
   private readonly profiles: WpProfile[];
 
-  constructor(
-    private readonly plugin: WordpressPlugin
-  ) {
+  constructor(private readonly plugin: BloggerPlugin) {
     super(plugin.app);
 
     this.profiles = plugin.settings.profiles;
@@ -32,49 +28,50 @@ export class WpProfileManageModal extends Modal {
       this.profiles.forEach((profile, index) => {
         const setting = rendererProfile(profile, content);
         if (!profile.isDefault) {
-          setting
-            .addButton(button => button
-              .setButtonText(t('profilesManageModal_setDefault'))
-              .onClick(() => {
-                this.profiles.forEach(it => it.isDefault = false);
-                profile.isDefault = true;
-                renderProfiles();
-                this.plugin.saveSettings().then();
-              }));
+          setting.addButton((button) =>
+            button.setButtonText(t('profilesManageModal_setDefault')).onClick(() => {
+              this.profiles.forEach((it) => (it.isDefault = false));
+              profile.isDefault = true;
+              renderProfiles();
+              this.plugin.saveSettings().then();
+            }),
+          );
         }
-        setting.addButton(button => button
-          .setButtonText(t('profilesManageModal_showDetails'))
-          .onClick(async () => {
+        setting.addButton((button) =>
+          button.setButtonText(t('profilesManageModal_showDetails')).onClick(async () => {
             const { profile: newProfile, atIndex } = await openProfileModal(
               this.plugin,
               profile,
-              index
+              index,
             );
             console.log('updateProfile', newProfile, atIndex);
             if (!isNil(atIndex) && atIndex > -1) {
               if (newProfile.isDefault) {
-                this.profiles.forEach(it => it.isDefault = false);
+                this.profiles.forEach((it) => (it.isDefault = false));
               }
               this.profiles[atIndex] = newProfile;
               renderProfiles();
               this.plugin.saveSettings().then();
             }
-          }));
-        setting.addExtraButton(button => button
-          .setIcon('lucide-trash')
-          .setTooltip(t('profilesManageModal_deleteTooltip'))
-          .onClick(() => {
-            this.profiles.splice(index, 1);
-            if (profile.isDefault) {
-              if (this.profiles.length > 0) {
-                this.profiles[0].isDefault = true;
+          }),
+        );
+        setting.addExtraButton((button) =>
+          button
+            .setIcon('lucide-trash')
+            .setTooltip(t('profilesManageModal_deleteTooltip'))
+            .onClick(() => {
+              this.profiles.splice(index, 1);
+              if (profile.isDefault) {
+                if (this.profiles.length > 0) {
+                  this.profiles[0].isDefault = true;
+                }
               }
-            }
-            renderProfiles();
-            this.plugin.saveSettings().then();
-          }));
+              renderProfiles();
+              this.plugin.saveSettings().then();
+            }),
+        );
       });
-    }
+    };
 
     const { contentEl } = this;
 
@@ -83,25 +80,25 @@ export class WpProfileManageModal extends Modal {
     new Setting(contentEl)
       .setName(t('profilesManageModal_create'))
       .setDesc(t('profilesManageModal_createDesc'))
-      .addButton(button => button
-        .setButtonText(t('profilesManageModal_create'))
-        .setCta()
-        .onClick(async () => {
-          const { profile } = await openProfileModal(
-            this.plugin
-          );
-          console.log('appendProfile', profile);
-          // if no profile, make the first one default
-          if (this.profiles.length === 0) {
-            profile.isDefault = true;
-          }
-          if (profile.isDefault) {
-            this.profiles.forEach(it => it.isDefault = false);
-          }
-          this.profiles.push(profile);
-          renderProfiles();
-          await this.plugin.saveSettings();
-        }));
+      .addButton((button) =>
+        button
+          .setButtonText(t('profilesManageModal_create'))
+          .setCta()
+          .onClick(async () => {
+            const { profile } = await openProfileModal(this.plugin);
+            console.log('appendProfile', profile);
+            // if no profile, make the first one default
+            if (this.profiles.length === 0) {
+              profile.isDefault = true;
+            }
+            if (profile.isDefault) {
+              this.profiles.forEach((it) => (it.isDefault = false));
+            }
+            this.profiles.push(profile);
+            renderProfiles();
+            await this.plugin.saveSettings();
+          }),
+      );
 
     const content = contentEl.createEl('div');
     renderProfiles();
@@ -111,5 +108,4 @@ export class WpProfileManageModal extends Modal {
     const { contentEl } = this;
     contentEl.empty();
   }
-
 }

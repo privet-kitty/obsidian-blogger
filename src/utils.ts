@@ -1,9 +1,9 @@
 import { App, Notice, Setting, TFile } from 'obsidian';
 import { WpProfile } from './wp-profile';
 import { AppState } from './app-state';
-import { WordpressPluginSettings } from './plugin-settings';
+import { BloggerPluginSettings } from './plugin-settings';
 import MarkdownItMathJax3Plugin from './markdown-it-mathjax3-plugin';
-import { WordPressClientResult, WordPressClientReturnCode } from './wp-client';
+import { BloggerClientResult, BloggerClientReturnCode } from './wp-client';
 import { isString } from 'lodash-es';
 import { ERROR_NOTICE_TIMEOUT } from './consts';
 import { format } from 'date-fns';
@@ -29,7 +29,7 @@ export function isPromiseFulfilledResult<T>(obj: SafeAny): obj is PromiseFulfill
   return !!obj && obj.status === 'fulfilled' && obj.value;
 }
 
-export function setupMarkdownParser(settings: WordpressPluginSettings): void {
+export function setupMarkdownParser(settings: BloggerPluginSettings): void {
   AppState.getInstance().markdownParser.use(MarkdownItMathJax3Plugin, {
     outputType: settings.mathJaxOutputType,
   });
@@ -66,7 +66,7 @@ export function getBoundary(): string {
   return `----obsidianBoundary${format(new Date(), 'yyyyMMddHHmmss')}`;
 }
 
-export function showError<T>(error: unknown): WordPressClientResult<T> {
+export function showError<T>(error: unknown): BloggerClientResult<T> {
   let errorMessage: string;
   if (isString(error)) {
     errorMessage = error;
@@ -77,9 +77,9 @@ export function showError<T>(error: unknown): WordPressClientResult<T> {
   }
   new Notice(errorMessage, ERROR_NOTICE_TIMEOUT);
   return {
-    code: WordPressClientReturnCode.Error as const,
+    code: BloggerClientReturnCode.Error as const,
     error: {
-      code: WordPressClientReturnCode.Error,
+      code: BloggerClientReturnCode.Error,
       message: errorMessage,
     },
   };

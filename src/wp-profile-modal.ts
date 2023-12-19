@@ -1,9 +1,9 @@
 import { Modal, Notice, Setting, requestUrl } from 'obsidian';
-import WordpressPlugin from './main';
+import BloggerPlugin from './main';
 import { TranslateKey } from './i18n';
 import { WpProfile } from './wp-profile';
 import { BLOGGER_API_ENDPOINT, WP_OAUTH2_REDIRECT_URI } from './consts';
-import { WordPressClientReturnCode } from './wp-client';
+import { BloggerClientReturnCode } from './wp-client';
 import {
   FreshInternalOAuth2Token,
   generateCodeVerifier,
@@ -16,7 +16,7 @@ import { createServer } from 'http';
 import { randomUUID } from 'crypto';
 
 export function openProfileModal(
-  plugin: WordpressPlugin,
+  plugin: BloggerPlugin,
   profile: WpProfile = {
     name: '',
     apiType: ApiType.RestApi_WpComOAuth2,
@@ -54,13 +54,13 @@ const getListeningPort = (server: ReturnType<typeof createServer>): number => {
 };
 
 /**
- * WordPress profile modal.
+ * Blogger profile modal.
  */
 class WpProfileModal extends Modal {
   private readonly profileData: WpProfile;
 
   constructor(
-    private readonly plugin: WordpressPlugin,
+    private readonly plugin: BloggerPlugin,
     private readonly onSubmit: (profile: WpProfile, atIndex?: number) => void,
     profile: WpProfile = {
       name: '',
@@ -130,7 +130,7 @@ class WpProfileModal extends Modal {
                   token: this.profileData.wpComOAuth2Token.accessToken,
                 })
                 .then((result) => {
-                  if (result.code === WordPressClientReturnCode.Error) {
+                  if (result.code === BloggerClientReturnCode.Error) {
                     showError(result.error?.message + '');
                   } else {
                     new Notice(t('message_wpComTokenValidated'));
@@ -280,10 +280,10 @@ class WpProfileModal extends Modal {
         });
         res.end(`<html>
 <head>
-  <title>WordPress OAuth2</title>
+  <title>Blogger OAuth2</title>
 </head>
 <body>
-  <h1>WordPress OAuth2</h1>
+  <h1>Blogger OAuth2</h1>
   <p>${message}</p>
 </body>
 </html>`);

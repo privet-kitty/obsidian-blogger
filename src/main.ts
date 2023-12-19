@@ -1,7 +1,7 @@
 import { Plugin } from 'obsidian';
-import { WordpressSettingTab } from './settings';
+import { BloggerSettingTab } from './settings';
 import { addIcons } from './icons';
-import { WordPressPostParams } from './wp-client';
+import { BloggerPostParams } from './wp-client';
 import { I18n } from './i18n';
 import { PostStatus, PostTypeConst } from './wp-api';
 import { openProfileChooserModal } from './wp-profile-chooser-modal';
@@ -10,28 +10,28 @@ import {
   DEFAULT_SETTINGS,
   SettingsVersion,
   upgradeSettings,
-  WordpressPluginSettings,
+  BloggerPluginSettings,
 } from './plugin-settings';
 import { PassCrypto } from './pass-crypto';
 import { setupMarkdownParser, showError } from './utils';
 import { cloneDeep, isString } from 'lodash-es';
 import { WpProfile } from './wp-profile';
-import { getWordPressClient } from './wp-clients';
+import { getBloggerClient } from './wp-clients';
 
 export function doClientPublish(
-  plugin: WordpressPlugin,
+  plugin: BloggerPlugin,
   profile: WpProfile,
-  defaultPostParams?: WordPressPostParams,
+  defaultPostParams?: BloggerPostParams,
 ): void;
 export function doClientPublish(
-  plugin: WordpressPlugin,
+  plugin: BloggerPlugin,
   profileName: string,
-  defaultPostParams?: WordPressPostParams,
+  defaultPostParams?: BloggerPostParams,
 ): void;
 export function doClientPublish(
-  plugin: WordpressPlugin,
+  plugin: BloggerPlugin,
   profileOrName: WpProfile | string,
-  defaultPostParams?: WordPressPostParams,
+  defaultPostParams?: BloggerPostParams,
 ): void {
   let profile: WpProfile | undefined;
   if (isString(profileOrName)) {
@@ -40,7 +40,7 @@ export function doClientPublish(
     profile = profileOrName;
   }
   if (profile) {
-    const client = getWordPressClient(plugin, profile);
+    const client = getBloggerClient(plugin, profile);
     if (client) {
       client.publishPost(defaultPostParams).then();
     }
@@ -53,8 +53,8 @@ export function doClientPublish(
   }
 }
 
-export default class WordpressPlugin extends Plugin {
-  #settings: WordpressPluginSettings | undefined;
+export default class BloggerPlugin extends Plugin {
+  #settings: BloggerPluginSettings | undefined;
   get settings() {
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     return this.#settings!;
@@ -88,7 +88,7 @@ export default class WordpressPlugin extends Plugin {
       editorCallback: () => {
         const defaultProfile = this.#settings?.profiles.find((it) => it.isDefault);
         if (defaultProfile) {
-          const params: WordPressPostParams = {
+          const params: BloggerPostParams = {
             status: this.#settings?.defaultPostStatus ?? PostStatus.Draft,
             categories: defaultProfile.lastSelectedCategories ?? [1],
             postType: PostTypeConst.Post,
@@ -111,7 +111,7 @@ export default class WordpressPlugin extends Plugin {
       },
     });
 
-    this.addSettingTab(new WordpressSettingTab(this));
+    this.addSettingTab(new BloggerSettingTab(this));
   }
 
   onunload() {}
@@ -154,7 +154,7 @@ export default class WordpressPlugin extends Plugin {
   }
 
   updateRibbonIcon(): void {
-    const ribbonIconTitle = this.#i18n?.t('ribbon_iconTitle') ?? 'WordPress';
+    const ribbonIconTitle = this.#i18n?.t('ribbon_iconTitle') ?? 'Blogger';
     if (this.#settings?.showRibbonIcon) {
       if (!this.ribbonWpIcon) {
         this.ribbonWpIcon = this.addRibbonIcon('wp-logo', ribbonIconTitle, () => {

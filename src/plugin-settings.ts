@@ -19,7 +19,7 @@ export const enum MathJaxOutputType {
   SVG = 'svg',
 }
 
-export interface WordpressPluginSettings {
+export interface BloggerPluginSettings {
   version?: SettingsVersion;
 
   /**
@@ -45,27 +45,27 @@ export interface WordpressPluginSettings {
   rememberLastSelectedCategories: boolean;
 
   /**
-   * If WordPress edit confirm modal will be shown when published successfully.
+   * If Blogger edit confirm modal will be shown when published successfully.
    */
-  showWordPressEditConfirm: boolean;
+  showBloggerEditConfirm: boolean;
 
   mathJaxOutputType: MathJaxOutputType;
 
   enableHtml: boolean;
 
   /**
-   * Whether media links should be replaced after uploading to WordPress.
+   * Whether media links should be replaced after uploading to Blogger.
    */
   replaceMediaLinks: boolean;
 }
 
-export const DEFAULT_SETTINGS: WordpressPluginSettings = {
+export const DEFAULT_SETTINGS: BloggerPluginSettings = {
   lang: 'auto',
   profiles: [],
   showRibbonIcon: false,
   defaultPostStatus: PostStatus.Draft,
   rememberLastSelectedCategories: true,
-  showWordPressEditConfirm: false,
+  showBloggerEditConfirm: false,
   mathJaxOutputType: MathJaxOutputType.SVG,
   enableHtml: false,
   replaceMediaLinks: true,
@@ -74,19 +74,19 @@ export const DEFAULT_SETTINGS: WordpressPluginSettings = {
 export async function upgradeSettings(
   existingSettings: SafeAny,
   to: SettingsVersion,
-): Promise<{ needUpgrade: boolean; settings: WordpressPluginSettings }> {
+): Promise<{ needUpgrade: boolean; settings: BloggerPluginSettings }> {
   console.log(existingSettings, to);
   if (isUndefined(existingSettings.version)) {
     // V1
     if (to === SettingsVersion.V2) {
-      const newSettings: WordpressPluginSettings = Object.assign({}, DEFAULT_SETTINGS, {
+      const newSettings: BloggerPluginSettings = Object.assign({}, DEFAULT_SETTINGS, {
         version: SettingsVersion.V2,
         lang: existingSettings.lang,
         showRibbonIcon: existingSettings.showRibbonIcon,
         defaultPostStatus: existingSettings.defaultPostStatus,
         defaultPostType: 'post',
         rememberLastSelectedCategories: existingSettings.rememberLastSelectedCategories,
-        showWordPressEditConfirm: existingSettings.showWordPressEditConfirm,
+        showBloggerEditConfirm: existingSettings.showBloggerEditConfirm,
         mathJaxOutputType: existingSettings.mathJaxOutputType,
       });
       if (existingSettings.endpoint) {

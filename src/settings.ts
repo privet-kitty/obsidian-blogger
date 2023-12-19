@@ -1,5 +1,5 @@
 import { PluginSettingTab, Setting } from 'obsidian';
-import WordpressPlugin from './main';
+import BloggerPlugin from './main';
 import { PostStatus } from './wp-api';
 import { TranslateKey } from './i18n';
 import { WpProfileManageModal } from './wp-profile-manage-modal';
@@ -8,8 +8,8 @@ import { WpProfile } from './wp-profile';
 import { setupMarkdownParser } from './utils';
 import { AppState } from './app-state';
 
-export class WordpressSettingTab extends PluginSettingTab {
-  constructor(private readonly plugin: WordpressPlugin) {
+export class BloggerSettingTab extends PluginSettingTab {
+  constructor(private readonly plugin: BloggerPlugin) {
     super(plugin.app, plugin);
   }
 
@@ -96,11 +96,11 @@ export class WordpressSettingTab extends PluginSettingTab {
       );
 
     new Setting(containerEl)
-      .setName(t('settings_showWordPressEditPageModal'))
-      .setDesc(t('settings_showWordPressEditPageModalDesc'))
+      .setName(t('settings_showBloggerEditPageModal'))
+      .setDesc(t('settings_showBloggerEditPageModalDesc'))
       .addToggle((toggle) =>
-        toggle.setValue(this.plugin.settings.showWordPressEditConfirm).onChange(async (value) => {
-          this.plugin.settings.showWordPressEditConfirm = value;
+        toggle.setValue(this.plugin.settings.showBloggerEditConfirm).onChange(async (value) => {
+          this.plugin.settings.showBloggerEditConfirm = value;
           await this.plugin.saveSettings();
         }),
       );

@@ -1,7 +1,7 @@
 import { generateQueryString, openWithBrowser } from './utils';
 import { requestUrl } from 'obsidian';
-import { WordPressClientResult, WordPressClientReturnCode } from './wp-client';
-import WordpressPlugin from './main';
+import { BloggerClientResult, BloggerClientReturnCode } from './wp-client';
+import BloggerPlugin from './main';
 import {
   WP_OAUTH2_AUTHORIZE_ENDPOINT,
   WP_OAUTH2_CLIENT_ID,
@@ -16,13 +16,13 @@ export interface OAuth2Token {
   tokenType: string;
 }
 
-export interface WordPressOAuth2Token extends OAuth2Token {
+export interface BloggerOAuth2Token extends OAuth2Token {
   expiresIn: number;
   refreshToken: string;
   scope: string;
 }
 
-export interface InternalOAuth2Token extends WordPressOAuth2Token {
+export interface InternalOAuth2Token extends BloggerOAuth2Token {
   expiresAt: number;
 }
 
@@ -67,7 +67,7 @@ export interface OAuth2Options {
 }
 
 export class OAuth2Client {
-  static getWpOAuth2Client(plugin: WordpressPlugin): OAuth2Client {
+  static getWpOAuth2Client(plugin: BloggerPlugin): OAuth2Client {
     return new OAuth2Client(
       {
         clientId: WP_OAUTH2_CLIENT_ID,
@@ -80,7 +80,7 @@ export class OAuth2Client {
     );
   }
 
-  constructor(private readonly options: OAuth2Options, private readonly plugin: WordpressPlugin) {
+  constructor(private readonly options: OAuth2Options, private readonly plugin: BloggerPlugin) {
     console.log(options);
   }
 
@@ -207,7 +207,7 @@ export class OAuth2Client {
     }
   }
 
-  async validateToken(params: ValidateTokenParams): Promise<WordPressClientResult<string>> {
+  async validateToken(params: ValidateTokenParams): Promise<BloggerClientResult<string>> {
     if (!this.options.validateTokenEndpoint) {
       throw new Error('No validate token endpoint set.');
     }
@@ -222,15 +222,15 @@ export class OAuth2Client {
       });
       console.log('validateToken response', response);
       return {
-        code: WordPressClientReturnCode.OK,
+        code: BloggerClientReturnCode.OK,
         data: 'done',
         response,
       };
     } catch (error) {
       return {
-        code: WordPressClientReturnCode.Error,
+        code: BloggerClientReturnCode.Error,
         error: {
-          code: WordPressClientReturnCode.Error,
+          code: BloggerClientReturnCode.Error,
           message: this.plugin.i18n.t('error_invalidWpComToken'),
         },
         response: error,
