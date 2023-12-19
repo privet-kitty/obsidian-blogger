@@ -16,7 +16,7 @@ import { PassCrypto } from './pass-crypto';
 import { setupMarkdownParser, showError } from './utils';
 import { cloneDeep, isString } from 'lodash-es';
 import { BloggerProfile } from './blogger-profile';
-import { getBloggerClient } from './blogger-clients';
+import { getBloggerClient } from './blogger-client';
 
 export function doClientPublish(
   plugin: BloggerPlugin,
