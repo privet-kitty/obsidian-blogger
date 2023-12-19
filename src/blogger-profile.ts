@@ -1,16 +1,10 @@
 import { InternalOAuth2Token } from './oauth2-client';
-import { ApiType } from './plugin-settings';
 
 export interface BloggerProfile {
   /**
    * Profile name.
    */
   name: string;
-
-  /**
-   * API type.
-   */
-  apiType: ApiType;
 
   /**
    * Endpoint.

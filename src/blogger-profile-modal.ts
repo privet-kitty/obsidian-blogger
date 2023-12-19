@@ -11,7 +11,6 @@ import {
   OAuth2Client,
 } from './oauth2-client';
 import { generateQueryString, isValidUrl, showError } from './utils';
-import { ApiType } from './plugin-settings';
 import { createServer } from 'http';
 import { randomUUID } from 'crypto';
 import { AppState } from './app-state';
@@ -20,7 +19,6 @@ export function openProfileModal(
   plugin: BloggerPlugin,
   profile: BloggerProfile = {
     name: '',
-    apiType: ApiType.RestApi_GoogleOAuth2,
     endpoint: '',
     xmlRpcPath: '/xmlrpc.php',
     saveUsername: false,
@@ -64,7 +62,6 @@ class BloggerProfileModal extends Modal {
     private readonly onSubmit: (profile: BloggerProfile, atIndex?: number) => void,
     profile: BloggerProfile = {
       name: '',
-      apiType: ApiType.RestApi_GoogleOAuth2,
       endpoint: '',
       xmlRpcPath: '/xmlrpc.php',
       saveUsername: false,

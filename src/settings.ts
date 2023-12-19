@@ -4,8 +4,8 @@ import { PostStatus } from './blogger-interface';
 import { TranslateKey } from './i18n';
 import { BloggerProfileManageModal } from './blogger-profile-manage-modal';
 import { MathJaxOutputType } from './plugin-settings';
-import { setupMarkdownParser } from './utils';
 import { AppState } from './app-state';
+import { setupMarkdownParser } from './markdown-it-default';
 
 export class BloggerSettingTab extends PluginSettingTab {
   constructor(private readonly plugin: BloggerPlugin) {
@@ -98,7 +98,7 @@ export class BloggerSettingTab extends PluginSettingTab {
             await this.plugin.saveSettings();
             this.display();
 
-            setupMarkdownParser(this.plugin.settings);
+            setupMarkdownParser(AppState.get().markdownParser, this.plugin.settings);
           });
       });
     containerEl.createEl('p', {

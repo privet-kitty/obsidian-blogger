@@ -10,10 +10,6 @@ export const enum SettingsVersion {
   V2 = '2',
 }
 
-export const enum ApiType {
-  RestApi_GoogleOAuth2 = 'GoogleOAuth2',
-}
-
 export const enum MathJaxOutputType {
   TeX = 'tex',
   SVG = 'svg',
@@ -83,7 +79,6 @@ export async function upgradeSettings(
       });
       if (existingSettings.endpoint) {
         const endpoint = existingSettings.endpoint;
-        const apiType = existingSettings.apiType;
         const xmlRpcPath = existingSettings.xmlRpcPath;
         const username = existingSettings.username;
         const password = existingSettings.password;
@@ -91,7 +86,6 @@ export async function upgradeSettings(
         const encryptedPassword = await crypto.encrypt(password);
         const profile = {
           name: WP_DEFAULT_PROFILE_NAME,
-          apiType: apiType,
           endpoint: endpoint,
           xmlRpcPath: xmlRpcPath,
           saveUsername: !isNil(username),

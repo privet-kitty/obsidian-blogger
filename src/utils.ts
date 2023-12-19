@@ -29,12 +29,6 @@ export function isPromiseFulfilledResult<T>(obj: SafeAny): obj is PromiseFulfill
   return !!obj && obj.status === 'fulfilled' && obj.value;
 }
 
-export function setupMarkdownParser(settings: BloggerPluginSettings): void {
-  AppState.get().markdownParser.use(MarkdownItMathJax3Plugin, {
-    outputType: settings.mathJaxOutputType,
-  });
-}
-
 export function rendererProfile(profile: BloggerProfile, container: HTMLElement): Setting {
   let name = profile.name;
   if (profile.isDefault) {

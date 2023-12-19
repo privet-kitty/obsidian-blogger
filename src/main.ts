@@ -12,10 +12,11 @@ import {
   BloggerPluginSettings,
 } from './plugin-settings';
 import { PassCrypto } from './pass-crypto';
-import { setupMarkdownParser, showError } from './utils';
+import { showError } from './utils';
 import { cloneDeep, isString } from 'lodash-es';
 import { BloggerProfile } from './blogger-profile';
 import { getBloggerClient } from './blogger-client';
+import { setupMarkdownParser } from './markdown-it-default';
 
 const doClientPublish = (
   plugin: BloggerPlugin,
@@ -58,7 +59,7 @@ export default class BloggerPlugin extends Plugin {
     // lang should be load early, but after settings
     AppState.get().setLang(this.#settings?.lang);
 
-    setupMarkdownParser(this.settings);
+    setupMarkdownParser(AppState.get().markdownParser, this.settings);
 
     addIcons();
 
