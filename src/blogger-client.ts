@@ -221,7 +221,6 @@ export class BloggerRestClient extends AbstractBloggerClient {
     this.client = new RestClient({
       url: new URL(getUrl(this.context.endpoints?.base, profile.endpoint)),
     });
-    console.log(this.client);
   }
 
   async getHeaders(): Promise<Record<string, string>> {

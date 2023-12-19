@@ -20,7 +20,6 @@ export class RestClient {
     if (this.href.endsWith('/')) {
       this.href = this.href.substring(0, this.href.length - 1);
     }
-    console.log('href', this.href);
   }
 
   httpGet = async (
@@ -65,9 +64,7 @@ export class RestClient {
     if (realPath.startsWith('/')) {
       realPath = realPath.substring(1);
     }
-    console.log('httpPost called after realPath');
     const endpoint = `${this.href}/${realPath}`;
-    console.log('httpPost called after endpoint');
     const predefinedHeaders: Record<string, string> = {};
     let requestBody: SafeAny;
     if (body instanceof FormItems) {
