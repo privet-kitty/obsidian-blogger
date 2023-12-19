@@ -170,28 +170,4 @@ export default class BloggerPlugin extends Plugin {
       showError(AppState.get().i18n.t('error_noProfile'));
     }
   }
-
-  // private registerProtocolHandler(): void {
-  //   this.registerObsidianProtocolHandler(WP_OAUTH2_URL_ACTION, async (e) => {
-  //     if (e.action === WP_OAUTH2_URL_ACTION) {
-  //       if (e.state) {
-  //         if (e.error) {
-  //           showError(this.i18n.t('error_googleAuthFailed', {
-  //             error: e.error,
-  //             desc: e.error_description.replace(/\+/g,' ')
-  //           }));
-  //           AppState.get().events.trigger(EventType.OAUTH2_TOKEN_GOT, undefined);
-  //         } else if (e.code) {
-  //           const token = await OAuth2Client.getGoogleOAuth2Client(this).getToken({
-  //             code: e.code,
-  //             redirectUri: WP_OAUTH2_REDIRECT_URI,
-  //             codeVerifier: AppState.get().codeVerifier
-  //           });
-  //           console.log(token);
-  //           AppState.get().events.trigger(EventType.OAUTH2_TOKEN_GOT, token);
-  //         }
-  //       }
-  //     }
-  //   });
-  // }
 }

@@ -55,7 +55,7 @@ export abstract class AbstractBloggerClient implements BloggerClient {
             profileName: this.profile.name,
           }),
         },
-        this.plugin,
+        this.plugin.app,
       );
       if (confirm.code !== ConfirmCode.Cancel) {
         delete matterData.postId;
@@ -341,9 +341,7 @@ export class BloggerRestClient extends AbstractBloggerClient {
     if (!token) {
       throw new Error(AppState.get().i18n.t('error_invalidGoogleToken'));
     }
-    const fresh_token = await OAuth2Client.getGoogleOAuth2Client(this.plugin).ensureFreshToken(
-      token,
-    );
+    const fresh_token = await OAuth2Client.getGoogleOAuth2Client().ensureFreshToken(token);
     if (token !== fresh_token) {
       this.profile.googleOAuth2Token = fresh_token;
       await this.plugin.saveSettings();

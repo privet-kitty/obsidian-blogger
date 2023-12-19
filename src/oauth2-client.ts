@@ -1,7 +1,6 @@
 import { generateQueryString, openWithBrowser } from './utils';
 import { requestUrl } from 'obsidian';
 import { BloggerClientResult, BloggerClientReturnCode } from './blogger-client-interface';
-import BloggerPlugin from './main';
 import {
   WP_OAUTH2_AUTHORIZE_ENDPOINT,
   WP_OAUTH2_CLIENT_ID,
@@ -68,20 +67,17 @@ export interface OAuth2Options {
 }
 
 export class OAuth2Client {
-  static getGoogleOAuth2Client(plugin: BloggerPlugin): OAuth2Client {
-    return new OAuth2Client(
-      {
-        clientId: WP_OAUTH2_CLIENT_ID,
-        clientSecret: WP_OAUTH2_CLIENT_SECRET,
-        tokenEndpoint: WP_OAUTH2_TOKEN_ENDPOINT,
-        authorizeEndpoint: WP_OAUTH2_AUTHORIZE_ENDPOINT,
-        validateTokenEndpoint: WP_OAUTH2_VALIDATE_TOKEN_ENDPOINT,
-      },
-      plugin,
-    );
+  static getGoogleOAuth2Client(): OAuth2Client {
+    return new OAuth2Client({
+      clientId: WP_OAUTH2_CLIENT_ID,
+      clientSecret: WP_OAUTH2_CLIENT_SECRET,
+      tokenEndpoint: WP_OAUTH2_TOKEN_ENDPOINT,
+      authorizeEndpoint: WP_OAUTH2_AUTHORIZE_ENDPOINT,
+      validateTokenEndpoint: WP_OAUTH2_VALIDATE_TOKEN_ENDPOINT,
+    });
   }
 
-  constructor(private readonly options: OAuth2Options, private readonly plugin: BloggerPlugin) {
+  constructor(private readonly options: OAuth2Options) {
     console.log(options);
   }
 

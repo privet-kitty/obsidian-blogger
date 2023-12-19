@@ -1,5 +1,4 @@
-import { Modal, Setting } from 'obsidian';
-import BloggerPlugin from './main';
+import { App, Modal, Setting } from 'obsidian';
 import { TranslateKey } from './i18n';
 import { AppState } from './app-state';
 
@@ -16,10 +15,10 @@ export interface ConfirmModalMessages {
 
 export function openConfirmModal(
   messages: ConfirmModalMessages,
-  plugin: BloggerPlugin,
+  app: App,
 ): Promise<{ code: ConfirmCode }> {
   return new Promise((resolve, reject) => {
-    const modal = new ConfirmModal(messages, plugin, (code, modal) => {
+    const modal = new ConfirmModal(messages, app, (code, modal) => {
       resolve({
         code,
       });
@@ -35,10 +34,10 @@ export function openConfirmModal(
 class ConfirmModal extends Modal {
   constructor(
     private readonly messages: ConfirmModalMessages,
-    private readonly plugin: BloggerPlugin,
+    app: App,
     private readonly onAction: (code: ConfirmCode, modal: Modal) => void,
   ) {
-    super(plugin.app);
+    super(app);
   }
 
   onOpen() {

@@ -124,7 +124,7 @@ class BloggerProfileModal extends Modal {
         .addButton((button) => {
           button.setButtonText(t('settings_googleOAuth2ValidateTokenButtonText')).onClick(() => {
             if (this.profileData.googleOAuth2Token) {
-              OAuth2Client.getGoogleOAuth2Client(this.plugin)
+              OAuth2Client.getGoogleOAuth2Client()
                 .validateToken({
                   token: this.profileData.googleOAuth2Token.accessToken,
                 })
@@ -150,9 +150,9 @@ class BloggerProfileModal extends Modal {
               showError(t('error_invalidGoogleToken'));
               this.profileData.blogId = undefined;
             } else {
-              const fresh_token = await OAuth2Client.getGoogleOAuth2Client(
-                this.plugin,
-              ).ensureFreshToken(this.profileData.googleOAuth2Token);
+              const fresh_token = await OAuth2Client.getGoogleOAuth2Client().ensureFreshToken(
+                this.profileData.googleOAuth2Token,
+              );
               this.profileData.blogId = await this.fetchBlogId(
                 this.profileData.endpoint,
                 fresh_token,
@@ -250,7 +250,7 @@ class BloggerProfileModal extends Modal {
         }),
       );
     } else if (params.code) {
-      const token = await OAuth2Client.getGoogleOAuth2Client(this.plugin).getToken({
+      const token = await OAuth2Client.getGoogleOAuth2Client().getToken({
         code: params.code,
         redirectUri: `${WP_OAUTH2_REDIRECT_URI}:${port}`,
         codeVerifier,
@@ -321,7 +321,7 @@ class BloggerProfileModal extends Modal {
     });
     server.listen(0);
 
-    await OAuth2Client.getGoogleOAuth2Client(this.plugin).getAuthorizeCode({
+    await OAuth2Client.getGoogleOAuth2Client().getAuthorizeCode({
       redirectUri: `${WP_OAUTH2_REDIRECT_URI}:${getListeningPort(server)}`,
       scope: ['https://www.googleapis.com/auth/blogger'],
       blog: this.profileData.endpoint,
