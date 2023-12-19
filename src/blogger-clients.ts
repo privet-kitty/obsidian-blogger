@@ -1,5 +1,5 @@
 import BloggerPlugin from './main';
-import { BloggerRestClient, BloggerRestClientGoogleOAuth2Context } from './blogger-rest-client';
+import { BloggerRestClient, BloggerRestClientGoogleOAuth2Context } from './blogger-client';
 import { BloggerClient } from './blogger-client-interface';
 import { BloggerProfile } from './blogger-profile';
 import { showError } from './utils';
