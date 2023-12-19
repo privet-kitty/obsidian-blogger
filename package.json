@@ -39,6 +39,7 @@
 		"juice": "^9.1.0",
 		"lodash-es": "^4.17.21",
 		"markdown-it": "^13.0.1",
+		"markdown-it-footnote": "^4.0.0",
 		"mathjax-full": "^3.2.2",
 		"obsidian": "latest",
 		"standard-version": "^9.3.2",

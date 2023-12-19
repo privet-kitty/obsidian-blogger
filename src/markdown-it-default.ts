@@ -3,9 +3,10 @@ import { MarkdownItImagePluginInstance } from './markdown-it-image-plugin';
 import { isEmpty, trim } from 'lodash-es';
 import { BloggerPluginSettings } from './plugin-settings';
 import MarkdownItMathJax3Plugin from './markdown-it-mathjax3-plugin';
+import footnote from 'markdown-it-footnote';
 
 export const getDefaultMarkdownParser = () => {
-  const markdownParser = new MarkdownIt().use(MarkdownItImagePluginInstance.plugin);
+  const markdownParser = new MarkdownIt().use(MarkdownItImagePluginInstance.plugin).use(footnote);
   markdownParser.renderer.rules.image = (tokens, idx) => {
     const token = tokens[idx];
     const srcIndex = token.attrIndex('src');
