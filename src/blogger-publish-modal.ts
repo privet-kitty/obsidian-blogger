@@ -15,7 +15,6 @@ export class BloggerPublishModal extends Modal {
       params: BloggerPostParams,
       updateMatterData: (matter: MatterData) => void,
     ) => void,
-    private readonly matterData: MatterData,
   ) {
     super(plugin.app);
   }

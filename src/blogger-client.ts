@@ -5,21 +5,21 @@ import {
   BloggerPostParams,
   BloggerPublishResult,
   BloggerClient,
+  PostStatus,
 } from './blogger-client-interface';
 import BloggerPlugin from './main';
 import { RestClient } from './rest-client';
 import { isFunction, isString, template } from 'lodash-es';
 import { BloggerProfile } from './blogger-profile';
-import { FormItemNameMapper, FormItems, Media, SafeAny, MatterData } from './types';
+import { FormItemNameMapper, SafeAny, MatterData } from './types';
 import { BLOGGER_API_ENDPOINT } from './consts';
 import { OAuth2Client } from './oauth2-client';
-import { Notice, TFile } from 'obsidian';
+import { Notice } from 'obsidian';
 import { BloggerPublishModal } from './blogger-publish-modal';
-import { ERROR_NOTICE_TIMEOUT, WP_DEFAULT_PROFILE_NAME } from './consts';
-import { isValidUrl, openWithBrowser, processFile, showError } from './utils';
+import { WP_DEFAULT_PROFILE_NAME } from './consts';
+import { openWithBrowser, processFile, showError } from './utils';
 import { AppState } from './app-state';
 import { ConfirmCode, openConfirmModal } from './confirm-modal';
-import fileTypeChecker from 'file-type-checker';
 import { openPostPublishedModal } from './post-published-modal';
 
 export abstract class AbstractBloggerClient implements BloggerClient {
@@ -38,8 +38,6 @@ export abstract class AbstractBloggerClient implements BloggerClient {
     content: string,
     postParams: BloggerPostParams,
   ): Promise<BloggerClientResult<BloggerPublishResult>>;
-
-  abstract uploadMedia(media: Media): Promise<BloggerClientResult<BloggerMediaUploadResult>>;
 
   private async checkExistingProfile(matterData: MatterData) {
     const { profileName } = matterData;
@@ -68,7 +66,6 @@ export abstract class AbstractBloggerClient implements BloggerClient {
     updateMatterData?: (matter: MatterData) => void;
   }): Promise<BloggerClientResult<BloggerPublishResult>> {
     const { postParams, updateMatterData } = params;
-    await this.updatePostImages(postParams);
     const result = await this.publish(
       postParams.title ?? 'A post from Obsidian!',
       AppState.get().markdownParser.render(postParams.content) ?? '',
@@ -110,65 +107,6 @@ export abstract class AbstractBloggerClient implements BloggerClient {
       }
     }
     return result;
-  }
-
-  private async updatePostImages(postParams: BloggerPostParams): Promise<void> {
-    const activeFile = this.plugin.app.workspace.getActiveFile();
-    if (activeFile === null) {
-      throw new Error(AppState.get().i18n.t('error_noActiveFile'));
-    }
-    const { activeEditor } = this.plugin.app.workspace;
-    if (activeEditor && activeEditor.editor) {
-      // process images
-      const images = getImages(postParams.content);
-      for (const img of images) {
-        if (!img.srcIsUrl) {
-          const splitFile = img.src.split('.');
-          const ext = splitFile.pop();
-          const fileName = splitFile.join('.');
-          // @ts-expect-error
-          let filePath = (await this.plugin.app.vault.getAvailablePathForAttachments(
-            fileName,
-            ext,
-            activeFile,
-          )) as string;
-          const pathRegex = /(.*) \d+\.(.*)/;
-          filePath = filePath.replace(pathRegex, '$1.$2');
-          const imgFile = this.plugin.app.vault.getAbstractFileByPath(filePath);
-          if (imgFile instanceof TFile) {
-            const content = await this.plugin.app.vault.readBinary(imgFile);
-            const fileType = fileTypeChecker.detectFile(content);
-            const result = await this.uploadMedia({
-              mimeType: fileType?.mimeType ?? 'application/octet-stream',
-              fileName: imgFile.name,
-              content: content,
-            });
-            if (result.code === BloggerClientReturnCode.OK) {
-              if (this.plugin.settings.replaceMediaLinks) {
-                postParams.content = postParams.content.replace(
-                  img.original,
-                  `![${imgFile.name}](${result.data.url})`,
-                );
-              }
-            } else {
-              if (result.error.code === BloggerClientReturnCode.ServerInternalError) {
-                new Notice(result.error.message, ERROR_NOTICE_TIMEOUT);
-              } else {
-                new Notice(
-                  AppState.get().i18n.t('error_mediaUploadFailed', {
-                    name: imgFile.name,
-                  }),
-                  ERROR_NOTICE_TIMEOUT,
-                );
-              }
-            }
-          }
-          activeEditor.editor.setValue(postParams.content);
-        } else {
-          // src is a url, skip uploading
-        }
-      }
-    }
   }
 
   async publishPost(
@@ -228,7 +166,6 @@ export abstract class AbstractBloggerClient implements BloggerClient {
                 }
               }
             },
-            matterData,
           );
           publishModal.open();
         });
@@ -265,60 +202,10 @@ export abstract class AbstractBloggerClient implements BloggerClient {
   }
 }
 
-interface Image {
-  original: string;
-  src: string;
-  altText?: string;
-  width?: string;
-  height?: string;
-  srcIsUrl: boolean;
-  startIndex: number;
-  endIndex: number;
-  file?: TFile;
-  content?: ArrayBuffer;
-}
-
-function getImages(content: string): Image[] {
-  const paths: Image[] = [];
-
-  // for ![Alt Text](image-url)
-  let regex = /(!\[(.*?)(?:\|(\d+)(?:x(\d+))?)?]\((.*?)\))/g;
-  let match;
-  while ((match = regex.exec(content)) !== null) {
-    paths.push({
-      src: match[5],
-      altText: match[2],
-      width: match[3],
-      height: match[4],
-      original: match[1],
-      startIndex: match.index,
-      endIndex: match.index + match.length,
-      srcIsUrl: isValidUrl(match[5]),
-    });
-  }
-
-  // for ![[image-name]]
-  regex = /(!\[\[(.*?)(?:\|(\d+)(?:x(\d+))?)?]])/g;
-  while ((match = regex.exec(content)) !== null) {
-    paths.push({
-      src: match[2],
-      original: match[1],
-      width: match[3],
-      height: match[4],
-      startIndex: match.index,
-      endIndex: match.index + match.length,
-      srcIsUrl: isValidUrl(match[2]),
-    });
-  }
-
-  return paths;
-}
-
 interface BloggerRestEndpoint {
   base: string | UrlGetter;
   newPost: string | UrlGetter;
   editPost: string | UrlGetter;
-  uploadFile: string | UrlGetter;
 }
 
 export class BloggerRestClient extends AbstractBloggerClient {
@@ -334,6 +221,7 @@ export class BloggerRestClient extends AbstractBloggerClient {
     this.client = new RestClient({
       url: new URL(getUrl(this.context.endpoints?.base, profile.endpoint)),
     });
+    console.log(this.client);
   }
 
   async getHeaders(): Promise<Record<string, string>> {
@@ -358,19 +246,27 @@ export class BloggerRestClient extends AbstractBloggerClient {
     postParams: BloggerPostParams,
   ): Promise<BloggerClientResult<BloggerPublishResult>> {
     let url: string;
+    let method: typeof this.client.httpPut;
     if (postParams.postId) {
-      url = getUrl(this.context.endpoints?.editPost, 'blogger-json/wp/v2/posts/<%= postId %>', {
+      url = getUrl(this.context.endpoints?.editPost, 'dummy/update/<%= postId %>', {
         postId: postParams.postId,
       });
+      method = this.client.httpPut;
     } else {
-      url = getUrl(this.context.endpoints?.newPost, 'blogger-json/wp/v2/posts');
+      url = getUrl(this.context.endpoints?.newPost, 'dummy/post?isDraft=<%= isDraft %>', {
+        isDraft: postParams.status === PostStatus.Draft,
+      });
+      method = this.client.httpPost;
     }
-    const resp: SafeAny = await this.client.httpPost(
+    const resp: SafeAny = await method(
       url,
       {
+        kind: 'blogger#post',
+        blog: {
+          id: this.profile.blogId,
+        },
         title,
         content,
-        status: postParams.status,
         labels: postParams.labels ?? [],
       },
       {
@@ -396,40 +292,6 @@ export class BloggerRestClient extends AbstractBloggerClient {
       };
     }
   }
-
-  async uploadMedia(media: Media): Promise<BloggerClientResult<BloggerMediaUploadResult>> {
-    try {
-      const formItems = new FormItems();
-      formItems.append('file', media);
-
-      const response: SafeAny = await this.client.httpPost(
-        getUrl(this.context.endpoints?.uploadFile, 'blogger-json/wp/v2/media'),
-        formItems,
-        {
-          headers: {
-            ...(await this.getHeaders()),
-          },
-          formItemNameMapper: this.context.formItemNameMapper,
-        },
-      );
-      const result = this.context.responseParser.toBloggerMediaUploadResult(response);
-      return {
-        code: BloggerClientReturnCode.OK,
-        data: result,
-        response,
-      };
-    } catch (e: SafeAny) {
-      console.error('uploadMedia', e);
-      return {
-        code: BloggerClientReturnCode.Error,
-        error: {
-          code: BloggerClientReturnCode.ServerInternalError,
-          message: e.toString(),
-        },
-        response: undefined,
-      };
-    }
-  }
 }
 
 type UrlGetter = () => string;
@@ -437,7 +299,7 @@ type UrlGetter = () => string;
 function getUrl(
   url: string | UrlGetter | undefined,
   defaultValue: string,
-  params?: { [p: string]: string | number },
+  params?: { [p: string]: string | number | boolean },
 ): string {
   let resultUrl: string;
   if (isString(url)) {
@@ -486,12 +348,11 @@ export class BloggerRestClientGoogleOAuth2Context implements BloggerRestClientCo
 
   endpoints: BloggerRestEndpoint = {
     base: BLOGGER_API_ENDPOINT,
-    newPost: () => `/rest/v1.1/sites/${this.blogId}/posts/new`,
-    editPost: () => `/rest/v1.1/sites/${this.blogId}/posts/<%= postId %>`,
-    uploadFile: () => `/rest/v1.1/sites/${this.blogId}/media/new`,
+    newPost: () => `/${this.blogId}/posts?isDraft=<%= isDraft %>`,
+    editPost: () => `/${this.blogId}/posts/<%= postId %>`,
   };
 
-  constructor(private readonly blogId: string, private readonly accessToken: string) {
+  constructor(private readonly blogId: string) {
     console.log(`${this.name} loaded`);
   }
 
@@ -507,9 +368,14 @@ export class BloggerRestClientGoogleOAuth2Context implements BloggerRestClientCo
       postParams: BloggerPostParams,
       response: SafeAny,
     ): BloggerPublishResult => {
-      if (response.ID) {
+      if (response.id) {
+        if (postParams.postId !== undefined && postParams.postId !== response.id) {
+          throw new Error(
+            `Inconsistent post IDs. This should be a bug: ${postParams.postId} vs ${response.id}`,
+          );
+        }
         return {
-          postId: postParams.postId ?? response.ID,
+          postId: response.id,
         };
       }
       throw new Error('xx');
@@ -547,6 +413,6 @@ export function getBloggerClient(
   return new BloggerRestClient(
     plugin,
     profile,
-    new BloggerRestClientGoogleOAuth2Context(profile.blogId, profile.googleOAuth2Token.accessToken),
+    new BloggerRestClientGoogleOAuth2Context(profile.blogId),
   );
 }

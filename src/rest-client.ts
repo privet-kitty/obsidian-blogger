@@ -20,14 +20,15 @@ export class RestClient {
     if (this.href.endsWith('/')) {
       this.href = this.href.substring(0, this.href.length - 1);
     }
+    console.log('href', this.href);
   }
 
-  async httpGet(
+  httpGet = async (
     path: string,
     options?: {
       headers: Record<string, string>;
     },
-  ): Promise<unknown> {
+  ): Promise<unknown> => {
     let realPath = path;
     if (realPath.startsWith('/')) {
       realPath = realPath.substring(1);
@@ -50,22 +51,23 @@ export class RestClient {
     });
     console.log('GET response', response);
     return response.json;
-  }
+  };
 
-  async httpPost(
+  httpPost = async (
     path: string,
     body: SafeAny,
     options: {
       headers?: Record<string, string>;
       formItemNameMapper?: FormItemNameMapper;
     },
-  ): Promise<unknown> {
+  ): Promise<unknown> => {
     let realPath = path;
     if (realPath.startsWith('/')) {
       realPath = realPath.substring(1);
     }
-
+    console.log('httpPost called after realPath');
     const endpoint = `${this.href}/${realPath}`;
+    console.log('httpPost called after endpoint');
     const predefinedHeaders: Record<string, string> = {};
     let requestBody: SafeAny;
     if (body instanceof FormItems) {
@@ -93,5 +95,48 @@ export class RestClient {
     });
     console.log('POST response', response);
     return response.json;
-  }
+  };
+
+  httpPut = async (
+    path: string,
+    body: SafeAny,
+    options: {
+      headers?: Record<string, string>;
+      formItemNameMapper?: FormItemNameMapper;
+    },
+  ): Promise<unknown> => {
+    let realPath = path;
+    if (realPath.startsWith('/')) {
+      realPath = realPath.substring(1);
+    }
+
+    const endpoint = `${this.href}/${realPath}`;
+    const predefinedHeaders: Record<string, string> = {};
+    let requestBody: SafeAny;
+    if (body instanceof FormItems) {
+      const boundary = getBoundary();
+      requestBody = await body.toArrayBuffer({
+        boundary,
+        nameMapper: options.formItemNameMapper,
+      });
+      predefinedHeaders['content-type'] = `multipart/form-data; boundary=${boundary}`;
+    } else if (body instanceof ArrayBuffer) {
+      requestBody = body;
+    } else {
+      requestBody = JSON.stringify(body);
+      predefinedHeaders['content-type'] = 'application/json';
+    }
+    const response = await requestUrl({
+      url: endpoint,
+      method: 'PUT',
+      headers: {
+        'user-agent': 'obsidian.md',
+        ...predefinedHeaders,
+        ...options.headers,
+      },
+      body: requestBody,
+    });
+    console.log('PUT response', response);
+    return response.json;
+  };
 }
