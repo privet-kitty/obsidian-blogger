@@ -14,7 +14,7 @@ export class BloggerSettingTab extends PluginSettingTab {
 
   display(): void {
     const t = (key: TranslateKey, vars?: Record<string, string>): string => {
-      return this.plugin.i18n.t(key, vars);
+      return AppState.get().i18n.t(key, vars);
     };
 
     const getMathJaxOutputTypeDesc = (type: MathJaxOutputType): string => {
@@ -114,7 +114,7 @@ export class BloggerSettingTab extends PluginSettingTab {
           this.plugin.settings.enableHtml = value;
           await this.plugin.saveSettings();
 
-          AppState.getInstance().markdownParser.set({
+          AppState.get().markdownParser.set({
             html: this.plugin.settings.enableHtml,
           });
         }),

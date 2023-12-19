@@ -47,11 +47,11 @@ export abstract class AbstractBloggerClient implements BloggerClient {
     if (isProfileNameMismatch) {
       const confirm = await openConfirmModal(
         {
-          message: this.plugin.i18n.t('error_profileNotMatch'),
-          cancelText: this.plugin.i18n.t('profileNotMatch_useOld', {
+          message: AppState.get().i18n.t('error_profileNotMatch'),
+          cancelText: AppState.get().i18n.t('profileNotMatch_useOld', {
             profileName: matterData.profileName,
           }),
-          confirmText: this.plugin.i18n.t('profileNotMatch_useNew', {
+          confirmText: AppState.get().i18n.t('profileNotMatch_useNew', {
             profileName: this.profile.name,
           }),
         },
@@ -71,18 +71,18 @@ export abstract class AbstractBloggerClient implements BloggerClient {
     await this.updatePostImages(postParams);
     const result = await this.publish(
       postParams.title ?? 'A post from Obsidian!',
-      AppState.getInstance().markdownParser.render(postParams.content) ?? '',
+      AppState.get().markdownParser.render(postParams.content) ?? '',
       postParams,
     );
     if (result.code === BloggerClientReturnCode.Error) {
       throw new Error(
-        this.plugin.i18n.t('error_publishFailed', {
+        AppState.get().i18n.t('error_publishFailed', {
           code: result.error.code as string,
           message: result.error.message,
         }),
       );
     } else {
-      new Notice(this.plugin.i18n.t('message_publishSuccessfully'));
+      new Notice(AppState.get().i18n.t('message_publishSuccessfully'));
       // post id will be returned if creating, true if editing
       const postId = result.data.postId;
       if (postId) {
@@ -115,7 +115,7 @@ export abstract class AbstractBloggerClient implements BloggerClient {
   private async updatePostImages(postParams: BloggerPostParams): Promise<void> {
     const activeFile = this.plugin.app.workspace.getActiveFile();
     if (activeFile === null) {
-      throw new Error(this.plugin.i18n.t('error_noActiveFile'));
+      throw new Error(AppState.get().i18n.t('error_noActiveFile'));
     }
     const { activeEditor } = this.plugin.app.workspace;
     if (activeEditor && activeEditor.editor) {
@@ -155,7 +155,7 @@ export abstract class AbstractBloggerClient implements BloggerClient {
                 new Notice(result.error.message, ERROR_NOTICE_TIMEOUT);
               } else {
                 new Notice(
-                  this.plugin.i18n.t('error_mediaUploadFailed', {
+                  AppState.get().i18n.t('error_mediaUploadFailed', {
                     name: imgFile.name,
                   }),
                   ERROR_NOTICE_TIMEOUT,
@@ -176,12 +176,12 @@ export abstract class AbstractBloggerClient implements BloggerClient {
   ): Promise<BloggerClientResult<BloggerPublishResult>> {
     try {
       if (!this.profile.endpoint || this.profile.endpoint.length === 0) {
-        throw new Error(this.plugin.i18n.t('error_noEndpoint'));
+        throw new Error(AppState.get().i18n.t('error_noEndpoint'));
       }
       // const { activeEditor } = this.plugin.app.workspace;
       const file = this.plugin.app.workspace.getActiveFile();
       if (file === null) {
-        throw new Error(this.plugin.i18n.t('error_noActiveFile'));
+        throw new Error(AppState.get().i18n.t('error_noActiveFile'));
       }
 
       // read note title, content and matter data
@@ -236,7 +236,7 @@ export abstract class AbstractBloggerClient implements BloggerClient {
       if (result) {
         return result;
       } else {
-        throw new Error(this.plugin.i18n.t('message_publishFailed'));
+        throw new Error(AppState.get().i18n.t('message_publishFailed'));
       }
     } catch (error) {
       if (error instanceof Error) {
@@ -339,7 +339,7 @@ export class BloggerRestClient extends AbstractBloggerClient {
   async getHeaders(): Promise<Record<string, string>> {
     const token = this.profile.googleOAuth2Token;
     if (!token) {
-      throw new Error(this.plugin.i18n.t('error_invalidGoogleToken'));
+      throw new Error(AppState.get().i18n.t('error_invalidGoogleToken'));
     }
     const fresh_token = await OAuth2Client.getGoogleOAuth2Client(this.plugin).ensureFreshToken(
       token,
@@ -392,7 +392,7 @@ export class BloggerRestClient extends AbstractBloggerClient {
         code: BloggerClientReturnCode.Error,
         error: {
           code: BloggerClientReturnCode.ServerInternalError,
-          message: this.plugin.i18n.t('error_cannotParseResponse'),
+          message: AppState.get().i18n.t('error_cannotParseResponse'),
         },
         response: resp,
       };
@@ -535,15 +535,15 @@ export function getBloggerClient(
   profile: BloggerProfile,
 ): BloggerClient | null {
   if (!profile.endpoint || profile.endpoint.length === 0) {
-    showError(plugin.i18n.t('error_noEndpoint'));
+    showError(AppState.get().i18n.t('error_noEndpoint'));
     return null;
   }
   if (!profile.googleOAuth2Token) {
-    showError(plugin.i18n.t('error_invalidGoogleToken'));
+    showError(AppState.get().i18n.t('error_invalidGoogleToken'));
     return null;
   }
   if (!profile.blogId) {
-    showError(plugin.i18n.t('error_noBlogId'));
+    showError(AppState.get().i18n.t('error_noBlogId'));
     return null;
   }
   return new BloggerRestClient(

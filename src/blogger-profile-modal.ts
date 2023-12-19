@@ -14,6 +14,7 @@ import { generateQueryString, isValidUrl, showError } from './utils';
 import { ApiType } from './plugin-settings';
 import { createServer } from 'http';
 import { randomUUID } from 'crypto';
+import { AppState } from './app-state';
 
 export function openProfileModal(
   plugin: BloggerPlugin,
@@ -79,7 +80,7 @@ class BloggerProfileModal extends Modal {
 
   onOpen() {
     const t = (key: TranslateKey, vars?: Record<string, string>): string => {
-      return this.plugin.i18n.t(key, vars);
+      return AppState.get().i18n.t(key, vars);
     };
 
     const renderProfile = () => {
@@ -243,7 +244,7 @@ class BloggerProfileModal extends Modal {
     if (params.error) {
       this.registerToken(undefined);
       throw new Error(
-        this.plugin.i18n.t('error_googleAuthFailed', {
+        AppState.get().i18n.t('error_googleAuthFailed', {
           error: params.error,
           desc: params.error_description?.replace(/\+/g, ' ') ?? '<no error description>',
         }),
@@ -259,7 +260,7 @@ class BloggerProfileModal extends Modal {
     } else {
       this.registerToken(undefined);
       throw new Error(
-        this.plugin.i18n.t('server_googleOAuth2InvalidResponse', {
+        AppState.get().i18n.t('server_googleOAuth2InvalidResponse', {
           response: JSON.stringify(params),
         }),
       );
@@ -297,7 +298,7 @@ class BloggerProfileModal extends Modal {
           const response_state = url.searchParams.get('state');
           if (state !== response_state) {
             closeWithMessage(
-              this.plugin.i18n.t('server_googleOAuth2StateMismatch', {
+              AppState.get().i18n.t('server_googleOAuth2StateMismatch', {
                 req: state,
                 res: String(response_state),
               }),
@@ -308,11 +309,11 @@ class BloggerProfileModal extends Modal {
             codeVerifier,
             getListeningPort(server),
           );
-          closeWithMessage(this.plugin.i18n.t('server_googleOAuth2TokenObtained'));
+          closeWithMessage(AppState.get().i18n.t('server_googleOAuth2TokenObtained'));
         }
       } catch (e) {
         closeWithMessage(
-          this.plugin.i18n.t('server_googleOAuth2ServerError', {
+          AppState.get().i18n.t('server_googleOAuth2ServerError', {
             error: JSON.stringify(e),
           }),
         );

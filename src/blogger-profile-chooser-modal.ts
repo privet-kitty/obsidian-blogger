@@ -3,6 +3,7 @@ import BloggerPlugin from './main';
 import { BloggerProfile } from './blogger-profile';
 import { TranslateKey } from './i18n';
 import { rendererProfile } from './utils';
+import { AppState } from './app-state';
 
 export function openProfileChooserModal(plugin: BloggerPlugin): Promise<BloggerProfile> {
   return new Promise<BloggerProfile>((resolve, reject) => {
@@ -30,7 +31,7 @@ class BloggerProfileChooserModal extends Modal {
 
   onOpen() {
     const t = (key: TranslateKey, vars?: Record<string, string>): string => {
-      return this.plugin.i18n.t(key, vars);
+      return AppState.get().i18n.t(key, vars);
     };
 
     const chooseProfile = (profile: BloggerProfile): void => {

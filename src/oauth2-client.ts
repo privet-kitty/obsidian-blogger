@@ -10,6 +10,7 @@ import {
   WP_OAUTH2_VALIDATE_TOKEN_ENDPOINT,
 } from './consts';
 import { Brand } from './types';
+import { AppState } from './app-state';
 
 export interface OAuth2Token {
   accessToken: string;
@@ -151,7 +152,7 @@ export class OAuth2Client {
       scope: resp.scope,
     };
     if (!isFreshInternalOAuth2Token(res)) {
-      throw new Error(this.plugin.i18n.t('error_invalidGoogleToken'));
+      throw new Error(AppState.get().i18n.t('error_invalidGoogleToken'));
     }
     return res;
   }
@@ -190,7 +191,7 @@ export class OAuth2Client {
       scope: resp.scope,
     };
     if (!isFreshInternalOAuth2Token(res)) {
-      throw new Error(this.plugin.i18n.t('error_invalidGoogleToken'));
+      throw new Error(AppState.get().i18n.t('error_invalidGoogleToken'));
     }
     return res;
   }
@@ -231,7 +232,7 @@ export class OAuth2Client {
         code: BloggerClientReturnCode.Error,
         error: {
           code: BloggerClientReturnCode.Error,
-          message: this.plugin.i18n.t('error_invalidGoogleToken'),
+          message: AppState.get().i18n.t('error_invalidGoogleToken'),
         },
         response: error,
       };

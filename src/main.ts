@@ -2,7 +2,6 @@ import { Plugin } from 'obsidian';
 import { BloggerSettingTab } from './settings';
 import { addIcons } from './icons';
 import { BloggerPostParams } from './blogger-client-interface';
-import { I18n } from './i18n';
 import { PostStatus } from './blogger-interface';
 import { openProfileChooserModal } from './blogger-profile-chooser-modal';
 import { AppState } from './app-state';
@@ -45,7 +44,7 @@ export function doClientPublish(
       client.publishPost(defaultPostParams).then();
     }
   } else {
-    const noSuchProfileMessage = plugin.i18n.t('error_noSuchProfile', {
+    const noSuchProfileMessage = AppState.get().i18n.t('error_noSuchProfile', {
       profileName: String(profileOrName),
     });
     showError(noSuchProfileMessage);
@@ -60,12 +59,6 @@ export default class BloggerPlugin extends Plugin {
     return this.#settings!;
   }
 
-  #i18n: I18n | undefined;
-  get i18n() {
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    return this.#i18n!;
-  }
-
   private ribbonBloggerIcon: HTMLElement | null = null;
 
   async onload() {
@@ -73,7 +66,7 @@ export default class BloggerPlugin extends Plugin {
 
     await this.loadSettings();
     // lang should be load early, but after settings
-    this.#i18n = new I18n(this.#settings?.lang);
+    AppState.get().setLang(this.#settings?.lang);
 
     setupMarkdownParser(this.settings);
 
@@ -84,7 +77,7 @@ export default class BloggerPlugin extends Plugin {
 
     this.addCommand({
       id: 'defaultPublish',
-      name: this.#i18n.t('command_publishWithDefault'),
+      name: AppState.get().i18n.t('command_publishWithDefault'),
       editorCallback: () => {
         const defaultProfile = this.#settings?.profiles.find((it) => it.isDefault);
         if (defaultProfile) {
@@ -96,14 +89,14 @@ export default class BloggerPlugin extends Plugin {
           };
           doClientPublish(this, defaultProfile, params);
         } else {
-          showError(this.#i18n?.t('error_noDefaultProfile') ?? 'No default profile found.');
+          showError(AppState.get().i18n.t('error_noDefaultProfile') ?? 'No default profile found.');
         }
       },
     });
 
     this.addCommand({
       id: 'publish',
-      name: this.#i18n.t('command_publish'),
+      name: AppState.get().i18n.t('command_publish'),
       editorCallback: () => {
         this.openProfileChooser();
       },
@@ -132,7 +125,7 @@ export default class BloggerPlugin extends Plugin {
       }
     }
 
-    AppState.getInstance().markdownParser.set({
+    AppState.get().markdownParser.set({
       html: this.#settings?.enableHtml ?? false,
     });
   }
@@ -152,7 +145,7 @@ export default class BloggerPlugin extends Plugin {
   }
 
   updateRibbonIcon(): void {
-    const ribbonIconTitle = this.#i18n?.t('ribbon_iconTitle') ?? 'Blogger';
+    const ribbonIconTitle = AppState.get().i18n.t('ribbon_iconTitle') ?? 'Blogger';
     if (this.#settings?.showRibbonIcon) {
       if (!this.ribbonBloggerIcon) {
         this.ribbonBloggerIcon = this.addRibbonIcon('blogger-logo', ribbonIconTitle, () => {
@@ -174,7 +167,7 @@ export default class BloggerPlugin extends Plugin {
       const profile = await openProfileChooserModal(this);
       doClientPublish(this, profile);
     } else {
-      showError(this.i18n.t('error_noProfile'));
+      showError(AppState.get().i18n.t('error_noProfile'));
     }
   }
 
@@ -187,15 +180,15 @@ export default class BloggerPlugin extends Plugin {
   //             error: e.error,
   //             desc: e.error_description.replace(/\+/g,' ')
   //           }));
-  //           AppState.getInstance().events.trigger(EventType.OAUTH2_TOKEN_GOT, undefined);
+  //           AppState.get().events.trigger(EventType.OAUTH2_TOKEN_GOT, undefined);
   //         } else if (e.code) {
   //           const token = await OAuth2Client.getGoogleOAuth2Client(this).getToken({
   //             code: e.code,
   //             redirectUri: WP_OAUTH2_REDIRECT_URI,
-  //             codeVerifier: AppState.getInstance().codeVerifier
+  //             codeVerifier: AppState.get().codeVerifier
   //           });
   //           console.log(token);
-  //           AppState.getInstance().events.trigger(EventType.OAUTH2_TOKEN_GOT, token);
+  //           AppState.get().events.trigger(EventType.OAUTH2_TOKEN_GOT, token);
   //         }
   //       }
   //     }

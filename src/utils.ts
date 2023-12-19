@@ -30,7 +30,7 @@ export function isPromiseFulfilledResult<T>(obj: SafeAny): obj is PromiseFulfill
 }
 
 export function setupMarkdownParser(settings: BloggerPluginSettings): void {
-  AppState.getInstance().markdownParser.use(MarkdownItMathJax3Plugin, {
+  AppState.get().markdownParser.use(MarkdownItMathJax3Plugin, {
     outputType: settings.mathJaxOutputType,
   });
 }

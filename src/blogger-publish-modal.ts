@@ -4,6 +4,7 @@ import { BloggerPostParams } from './blogger-client-interface';
 import { PostStatus } from './blogger-interface';
 import { TranslateKey } from './i18n';
 import { MatterData } from './types';
+import { AppState } from './app-state';
 
 /**
  * Blogger publish modal.
@@ -38,7 +39,7 @@ export class BloggerPublishModal extends Modal {
 
   private display(params: BloggerPostParams): void {
     const t = (key: TranslateKey, vars?: Record<string, string>): string => {
-      return this.plugin.i18n.t(key, vars);
+      return AppState.get().i18n.t(key, vars);
     };
 
     const { contentEl } = this;

@@ -1,6 +1,7 @@
 import { Modal, Setting } from 'obsidian';
 import BloggerPlugin from './main';
 import { TranslateKey } from './i18n';
+import { AppState } from './app-state';
 
 export function openPostPublishedModal(plugin: BloggerPlugin): Promise<void> {
   return new Promise((resolve, reject) => {
@@ -24,7 +25,7 @@ class PostPublishedModal extends Modal {
 
   onOpen() {
     const t = (key: TranslateKey, vars?: Record<string, string>): string => {
-      return this.plugin.i18n.t(key, vars);
+      return AppState.get().i18n.t(key, vars);
     };
 
     const { contentEl } = this;

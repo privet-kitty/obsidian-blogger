@@ -1,6 +1,7 @@
 import { Modal, Setting } from 'obsidian';
 import BloggerPlugin from './main';
 import { TranslateKey } from './i18n';
+import { AppState } from './app-state';
 
 export enum ConfirmCode {
   Cancel,
@@ -42,7 +43,7 @@ class ConfirmModal extends Modal {
 
   onOpen() {
     const t = (key: TranslateKey, vars?: Record<string, string>): string => {
-      return this.plugin.i18n.t(key, vars);
+      return AppState.get().i18n.t(key, vars);
     };
 
     const { contentEl } = this;

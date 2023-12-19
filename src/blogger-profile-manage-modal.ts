@@ -5,6 +5,7 @@ import { TranslateKey } from './i18n';
 import { openProfileModal } from './blogger-profile-modal';
 import { isNil } from 'lodash-es';
 import { rendererProfile } from './utils';
+import { AppState } from './app-state';
 
 /**
  * Blogger profiles manage modal.
@@ -20,7 +21,7 @@ export class BloggerProfileManageModal extends Modal {
 
   onOpen() {
     const t = (key: TranslateKey, vars?: Record<string, string>): string => {
-      return this.plugin.i18n.t(key, vars);
+      return AppState.get().i18n.t(key, vars);
     };
 
     const renderProfiles = (): void => {
