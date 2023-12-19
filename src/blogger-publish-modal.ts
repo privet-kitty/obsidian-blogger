@@ -1,7 +1,7 @@
 import { Modal, Setting } from 'obsidian';
 import BloggerPlugin from './main';
-import { BloggerPostParams } from './wp-client';
-import { PostStatus, PostType, PostTypeConst, Term } from './wp-api';
+import { BloggerPostParams } from './blogger-client';
+import { PostStatus, PostType, PostTypeConst, Term } from './blogger-api';
 import { toNumber } from 'lodash-es';
 import { TranslateKey } from './i18n';
 import { MatterData } from './types';
@@ -10,7 +10,7 @@ import { ConfirmCode, openConfirmModal } from './confirm-modal';
 /**
  * Blogger publish modal.
  */
-export class WpPublishModal extends Modal {
+export class BloggerPublishModal extends Modal {
   constructor(
     private readonly plugin: BloggerPlugin,
     private readonly categories: {

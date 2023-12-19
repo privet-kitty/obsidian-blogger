@@ -1,9 +1,9 @@
 import { App, Notice, Setting, TFile } from 'obsidian';
-import { WpProfile } from './wp-profile';
+import { BloggerProfile } from './blogger-profile';
 import { AppState } from './app-state';
 import { BloggerPluginSettings } from './plugin-settings';
 import MarkdownItMathJax3Plugin from './markdown-it-mathjax3-plugin';
-import { BloggerClientResult, BloggerClientReturnCode } from './wp-client';
+import { BloggerClientResult, BloggerClientReturnCode } from './blogger-client';
 import { isString } from 'lodash-es';
 import { ERROR_NOTICE_TIMEOUT } from './consts';
 import { format } from 'date-fns';
@@ -35,7 +35,7 @@ export function setupMarkdownParser(settings: BloggerPluginSettings): void {
   });
 }
 
-export function rendererProfile(profile: WpProfile, container: HTMLElement): Setting {
+export function rendererProfile(profile: BloggerProfile, container: HTMLElement): Setting {
   let name = profile.name;
   if (profile.isDefault) {
     name += ' ✔️';

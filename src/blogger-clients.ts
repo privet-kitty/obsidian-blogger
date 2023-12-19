@@ -1,10 +1,13 @@
 import BloggerPlugin from './main';
-import { WpRestClient, WpRestClientGoogleOAuth2Context } from './wp-rest-client';
-import { BloggerClient } from './wp-client';
-import { WpProfile } from './wp-profile';
+import { BloggerRestClient, BloggerRestClientGoogleOAuth2Context } from './blogger-rest-client';
+import { BloggerClient } from './blogger-client';
+import { BloggerProfile } from './blogger-profile';
 import { showError } from './utils';
 
-export function getBloggerClient(plugin: BloggerPlugin, profile: WpProfile): BloggerClient | null {
+export function getBloggerClient(
+  plugin: BloggerPlugin,
+  profile: BloggerProfile,
+): BloggerClient | null {
   if (!profile.endpoint || profile.endpoint.length === 0) {
     showError(plugin.i18n.t('error_noEndpoint'));
     return null;
@@ -17,9 +20,9 @@ export function getBloggerClient(plugin: BloggerPlugin, profile: WpProfile): Blo
     showError(plugin.i18n.t('error_noBlogId'));
     return null;
   }
-  return new WpRestClient(
+  return new BloggerRestClient(
     plugin,
     profile,
-    new WpRestClientGoogleOAuth2Context(profile.blogId, profile.googleOAuth2Token.accessToken),
+    new BloggerRestClientGoogleOAuth2Context(profile.blogId, profile.googleOAuth2Token.accessToken),
   );
 }

@@ -1,12 +1,12 @@
 import { Modal, Setting } from 'obsidian';
 import BloggerPlugin from './main';
-import { WpProfile } from './wp-profile';
+import { BloggerProfile } from './blogger-profile';
 import { TranslateKey } from './i18n';
 import { rendererProfile } from './utils';
 
-export function openProfileChooserModal(plugin: BloggerPlugin): Promise<WpProfile> {
-  return new Promise<WpProfile>((resolve, reject) => {
-    const modal = new WpProfileChooserModal(plugin, (profile) => {
+export function openProfileChooserModal(plugin: BloggerPlugin): Promise<BloggerProfile> {
+  return new Promise<BloggerProfile>((resolve, reject) => {
+    const modal = new BloggerProfileChooserModal(plugin, (profile) => {
       resolve(profile);
     });
     modal.open();
@@ -16,12 +16,12 @@ export function openProfileChooserModal(plugin: BloggerPlugin): Promise<WpProfil
 /**
  * Blogger profiles chooser modal.
  */
-class WpProfileChooserModal extends Modal {
-  private readonly profiles: WpProfile[];
+class BloggerProfileChooserModal extends Modal {
+  private readonly profiles: BloggerProfile[];
 
   constructor(
     private readonly plugin: BloggerPlugin,
-    private readonly onChoose: (profile: WpProfile) => void,
+    private readonly onChoose: (profile: BloggerProfile) => void,
   ) {
     super(plugin.app);
 
@@ -33,7 +33,7 @@ class WpProfileChooserModal extends Modal {
       return this.plugin.i18n.t(key, vars);
     };
 
-    const chooseProfile = (profile: WpProfile): void => {
+    const chooseProfile = (profile: BloggerProfile): void => {
       this.onChoose(profile);
       this.close();
     };

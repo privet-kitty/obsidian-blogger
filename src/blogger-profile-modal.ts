@@ -1,9 +1,9 @@
 import { Modal, Notice, Setting, requestUrl } from 'obsidian';
 import BloggerPlugin from './main';
 import { TranslateKey } from './i18n';
-import { WpProfile } from './wp-profile';
+import { BloggerProfile } from './blogger-profile';
 import { BLOGGER_API_ENDPOINT, WP_OAUTH2_REDIRECT_URI } from './consts';
-import { BloggerClientReturnCode } from './wp-client';
+import { BloggerClientReturnCode } from './blogger-client';
 import {
   FreshInternalOAuth2Token,
   generateCodeVerifier,
@@ -17,7 +17,7 @@ import { randomUUID } from 'crypto';
 
 export function openProfileModal(
   plugin: BloggerPlugin,
-  profile: WpProfile = {
+  profile: BloggerProfile = {
     name: '',
     apiType: ApiType.RestApi_GoogleOAuth2,
     endpoint: '',
@@ -28,9 +28,9 @@ export function openProfileModal(
     lastSelectedCategories: [1],
   },
   atIndex = -1,
-): Promise<{ profile: WpProfile; atIndex?: number }> {
+): Promise<{ profile: BloggerProfile; atIndex?: number }> {
   return new Promise((resolve, reject) => {
-    const modal = new WpProfileModal(
+    const modal = new BloggerProfileModal(
       plugin,
       (profile, atIndex) => {
         resolve({
@@ -56,13 +56,13 @@ const getListeningPort = (server: ReturnType<typeof createServer>): number => {
 /**
  * Blogger profile modal.
  */
-class WpProfileModal extends Modal {
-  private readonly profileData: WpProfile;
+class BloggerProfileModal extends Modal {
+  private readonly profileData: BloggerProfile;
 
   constructor(
     private readonly plugin: BloggerPlugin,
-    private readonly onSubmit: (profile: WpProfile, atIndex?: number) => void,
-    profile: WpProfile = {
+    private readonly onSubmit: (profile: BloggerProfile, atIndex?: number) => void,
+    profile: BloggerProfile = {
       name: '',
       apiType: ApiType.RestApi_GoogleOAuth2,
       endpoint: '',
@@ -125,7 +125,7 @@ class WpProfileModal extends Modal {
         .addButton((button) => {
           button.setButtonText(t('settings_googleOAuth2ValidateTokenButtonText')).onClick(() => {
             if (this.profileData.googleOAuth2Token) {
-              OAuth2Client.getWpOAuth2Client(this.plugin)
+              OAuth2Client.getGoogleOAuth2Client(this.plugin)
                 .validateToken({
                   token: this.profileData.googleOAuth2Token.accessToken,
                 })
@@ -151,7 +151,7 @@ class WpProfileModal extends Modal {
               showError(t('error_invalidGoogleToken'));
               this.profileData.blogId = undefined;
             } else {
-              const fresh_token = await OAuth2Client.getWpOAuth2Client(
+              const fresh_token = await OAuth2Client.getGoogleOAuth2Client(
                 this.plugin,
               ).ensureFreshToken(this.profileData.googleOAuth2Token);
               this.profileData.blogId = await this.fetchBlogId(
@@ -206,7 +206,7 @@ class WpProfileModal extends Modal {
     contentEl.empty();
   }
 
-  // TODO: integrate this into wp-rest-client.ts
+  // TODO: integrate this into blogger-rest-client.ts
   private async fetchBlogId(
     blogEndpoint: string,
     token: FreshInternalOAuth2Token,
@@ -251,7 +251,7 @@ class WpProfileModal extends Modal {
         }),
       );
     } else if (params.code) {
-      const token = await OAuth2Client.getWpOAuth2Client(this.plugin).getToken({
+      const token = await OAuth2Client.getGoogleOAuth2Client(this.plugin).getToken({
         code: params.code,
         redirectUri: `${WP_OAUTH2_REDIRECT_URI}:${port}`,
         codeVerifier,
@@ -322,7 +322,7 @@ class WpProfileModal extends Modal {
     });
     server.listen(0);
 
-    await OAuth2Client.getWpOAuth2Client(this.plugin).getAuthorizeCode({
+    await OAuth2Client.getGoogleOAuth2Client(this.plugin).getAuthorizeCode({
       redirectUri: `${WP_OAUTH2_REDIRECT_URI}:${getListeningPort(server)}`,
       scope: ['https://www.googleapis.com/auth/blogger'],
       blog: this.profileData.endpoint,

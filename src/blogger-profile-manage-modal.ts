@@ -1,16 +1,16 @@
 import { Modal, Setting } from 'obsidian';
 import BloggerPlugin from './main';
-import { WpProfile } from './wp-profile';
+import { BloggerProfile } from './blogger-profile';
 import { TranslateKey } from './i18n';
-import { openProfileModal } from './wp-profile-modal';
+import { openProfileModal } from './blogger-profile-modal';
 import { isNil } from 'lodash-es';
 import { rendererProfile } from './utils';
 
 /**
  * Blogger profiles manage modal.
  */
-export class WpProfileManageModal extends Modal {
-  private readonly profiles: WpProfile[];
+export class BloggerProfileManageModal extends Modal {
+  private readonly profiles: BloggerProfile[];
 
   constructor(private readonly plugin: BloggerPlugin) {
     super(plugin.app);

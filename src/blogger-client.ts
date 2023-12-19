@@ -1,5 +1,5 @@
 import { SafeAny } from './types';
-import { PostStatus, PostType } from './wp-api';
+import { PostStatus, PostType } from './blogger-api';
 
 export enum BloggerClientReturnCode {
   OK,
@@ -16,12 +16,12 @@ interface _wpClientResult {
   code: BloggerClientReturnCode;
 }
 
-interface WpClientOkResult<T> extends _wpClientResult {
+interface BloggerClientOkResult<T> extends _wpClientResult {
   code: BloggerClientReturnCode.OK;
   data: T;
 }
 
-interface WpClientErrorResult extends _wpClientResult {
+interface BloggerClientErrorResult extends _wpClientResult {
   code: BloggerClientReturnCode.Error;
   error: {
     /**
@@ -32,7 +32,7 @@ interface WpClientErrorResult extends _wpClientResult {
   };
 }
 
-export type BloggerClientResult<T> = WpClientOkResult<T> | WpClientErrorResult;
+export type BloggerClientResult<T> = BloggerClientOkResult<T> | BloggerClientErrorResult;
 
 export interface BloggerPostParams {
   status: PostStatus;

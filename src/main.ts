@@ -1,10 +1,10 @@
 import { Plugin } from 'obsidian';
 import { BloggerSettingTab } from './settings';
 import { addIcons } from './icons';
-import { BloggerPostParams } from './wp-client';
+import { BloggerPostParams } from './blogger-client';
 import { I18n } from './i18n';
-import { PostStatus, PostTypeConst } from './wp-api';
-import { openProfileChooserModal } from './wp-profile-chooser-modal';
+import { PostStatus, PostTypeConst } from './blogger-api';
+import { openProfileChooserModal } from './blogger-profile-chooser-modal';
 import { AppState } from './app-state';
 import {
   DEFAULT_SETTINGS,
@@ -15,12 +15,12 @@ import {
 import { PassCrypto } from './pass-crypto';
 import { setupMarkdownParser, showError } from './utils';
 import { cloneDeep, isString } from 'lodash-es';
-import { WpProfile } from './wp-profile';
-import { getBloggerClient } from './wp-clients';
+import { BloggerProfile } from './blogger-profile';
+import { getBloggerClient } from './blogger-clients';
 
 export function doClientPublish(
   plugin: BloggerPlugin,
-  profile: WpProfile,
+  profile: BloggerProfile,
   defaultPostParams?: BloggerPostParams,
 ): void;
 export function doClientPublish(
@@ -30,10 +30,10 @@ export function doClientPublish(
 ): void;
 export function doClientPublish(
   plugin: BloggerPlugin,
-  profileOrName: WpProfile | string,
+  profileOrName: BloggerProfile | string,
   defaultPostParams?: BloggerPostParams,
 ): void {
-  let profile: WpProfile | undefined;
+  let profile: BloggerProfile | undefined;
   if (isString(profileOrName)) {
     profile = plugin.settings.profiles.find((it) => it.name === profileOrName);
   } else {
@@ -66,7 +66,7 @@ export default class BloggerPlugin extends Plugin {
     return this.#i18n!;
   }
 
-  private ribbonWpIcon: HTMLElement | null = null;
+  private ribbonBloggerIcon: HTMLElement | null = null;
 
   async onload() {
     console.log('loading obsidian-wordpress plugin');
@@ -156,15 +156,15 @@ export default class BloggerPlugin extends Plugin {
   updateRibbonIcon(): void {
     const ribbonIconTitle = this.#i18n?.t('ribbon_iconTitle') ?? 'Blogger';
     if (this.#settings?.showRibbonIcon) {
-      if (!this.ribbonWpIcon) {
-        this.ribbonWpIcon = this.addRibbonIcon('wp-logo', ribbonIconTitle, () => {
+      if (!this.ribbonBloggerIcon) {
+        this.ribbonBloggerIcon = this.addRibbonIcon('blogger-logo', ribbonIconTitle, () => {
           this.openProfileChooser();
         });
       }
     } else {
-      if (this.ribbonWpIcon) {
-        this.ribbonWpIcon.remove();
-        this.ribbonWpIcon = null;
+      if (this.ribbonBloggerIcon) {
+        this.ribbonBloggerIcon.remove();
+        this.ribbonBloggerIcon = null;
       }
     }
   }
@@ -191,7 +191,7 @@ export default class BloggerPlugin extends Plugin {
   //           }));
   //           AppState.getInstance().events.trigger(EventType.OAUTH2_TOKEN_GOT, undefined);
   //         } else if (e.code) {
-  //           const token = await OAuth2Client.getWpOAuth2Client(this).getToken({
+  //           const token = await OAuth2Client.getGoogleOAuth2Client(this).getToken({
   //             code: e.code,
   //             redirectUri: WP_OAUTH2_REDIRECT_URI,
   //             codeVerifier: AppState.getInstance().codeVerifier

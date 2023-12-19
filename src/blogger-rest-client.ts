@@ -4,18 +4,18 @@ import {
   BloggerMediaUploadResult,
   BloggerPostParams,
   BloggerPublishResult,
-} from './wp-client';
-import { AbstractBloggerClient } from './abstract-wp-client';
+} from './blogger-client';
+import { AbstractBloggerClient } from './abstract-blogger-client';
 import BloggerPlugin from './main';
-import { PostType, Term } from './wp-api';
+import { PostType, Term } from './blogger-api';
 import { RestClient } from './rest-client';
 import { isFunction, isNumber, isString, template } from 'lodash-es';
-import { WpProfile } from './wp-profile';
+import { BloggerProfile } from './blogger-profile';
 import { FormItemNameMapper, FormItems, Media, SafeAny } from './types';
 import { BLOGGER_API_ENDPOINT } from './consts';
 import { OAuth2Client } from './oauth2-client';
 
-interface WpRestEndpoint {
+interface BloggerRestEndpoint {
   base: string | UrlGetter;
   byUrl: string | UrlGetter;
   newPost: string | UrlGetter;
@@ -27,16 +27,16 @@ interface WpRestEndpoint {
   getPostTypes: string | UrlGetter;
 }
 
-export class WpRestClient extends AbstractBloggerClient {
+export class BloggerRestClient extends AbstractBloggerClient {
   private readonly client: RestClient;
 
   constructor(
     readonly plugin: BloggerPlugin,
-    readonly profile: WpProfile,
-    private readonly context: WpRestClientContext,
+    readonly profile: BloggerProfile,
+    private readonly context: BloggerRestClientContext,
   ) {
     super(plugin, profile);
-    this.name = 'WpRestClient';
+    this.name = 'BloggerRestClient';
     this.client = new RestClient({
       url: new URL(getUrl(this.context.endpoints?.base, profile.endpoint)),
     });
@@ -47,7 +47,9 @@ export class WpRestClient extends AbstractBloggerClient {
     if (!token) {
       throw new Error(this.plugin.i18n.t('error_invalidGoogleToken'));
     }
-    const fresh_token = await OAuth2Client.getWpOAuth2Client(this.plugin).ensureFreshToken(token);
+    const fresh_token = await OAuth2Client.getGoogleOAuth2Client(this.plugin).ensureFreshToken(
+      token,
+    );
     if (token !== fresh_token) {
       this.profile.googleOAuth2Token = fresh_token;
       await this.plugin.saveSettings();
@@ -65,11 +67,11 @@ export class WpRestClient extends AbstractBloggerClient {
   ): Promise<BloggerClientResult<BloggerPublishResult>> {
     let url: string;
     if (postParams.postId) {
-      url = getUrl(this.context.endpoints?.editPost, 'wp-json/wp/v2/posts/<%= postId %>', {
+      url = getUrl(this.context.endpoints?.editPost, 'blogger-json/wp/v2/posts/<%= postId %>', {
         postId: postParams.postId,
       });
     } else {
-      url = getUrl(this.context.endpoints?.newPost, 'wp-json/wp/v2/posts');
+      url = getUrl(this.context.endpoints?.newPost, 'blogger-json/wp/v2/posts');
     }
     const resp: SafeAny = await this.client.httpPost(
       url,
@@ -84,7 +86,7 @@ export class WpRestClient extends AbstractBloggerClient {
         headers: await this.getHeaders(),
       },
     );
-    console.log('WpRestClient response', resp);
+    console.log('BloggerRestClient response', resp);
     try {
       const result = this.context.responseParser.toBloggerPublishResult(postParams, resp);
       return {
@@ -106,7 +108,7 @@ export class WpRestClient extends AbstractBloggerClient {
 
   async getCategories(): Promise<Term[]> {
     const data = await this.client.httpGet(
-      getUrl(this.context.endpoints?.getCategories, 'wp-json/wp/v2/categories'),
+      getUrl(this.context.endpoints?.getCategories, 'blogger-json/wp/v2/categories'),
       {
         headers: await this.getHeaders(),
       },
@@ -116,7 +118,7 @@ export class WpRestClient extends AbstractBloggerClient {
 
   async getPostTypes(): Promise<PostType[]> {
     const data: SafeAny = await this.client.httpGet(
-      getUrl(this.context.endpoints?.getPostTypes, 'wp-json/wp/v2/types'),
+      getUrl(this.context.endpoints?.getPostTypes, 'blogger-json/wp/v2/types'),
       {
         headers: await this.getHeaders(),
       },
@@ -126,14 +128,18 @@ export class WpRestClient extends AbstractBloggerClient {
 
   async getTag(name: string): Promise<Term> {
     const termResp: SafeAny = await this.client.httpGet(
-      getUrl(this.context.endpoints?.getTag, 'wp-json/wp/v2/tags?number=1&search=<%= name %>', {
-        name,
-      }),
+      getUrl(
+        this.context.endpoints?.getTag,
+        'blogger-json/wp/v2/tags?number=1&search=<%= name %>',
+        {
+          name,
+        },
+      ),
     );
     const exists = this.context.responseParser.toTerms(termResp);
     if (exists.length === 0) {
       const resp = await this.client.httpPost(
-        getUrl(this.context.endpoints?.newTag, 'wp-json/wp/v2/tags'),
+        getUrl(this.context.endpoints?.newTag, 'blogger-json/wp/v2/tags'),
         {
           name,
         },
@@ -141,7 +147,7 @@ export class WpRestClient extends AbstractBloggerClient {
           headers: await this.getHeaders(),
         },
       );
-      console.log('WpRestClient newTag response', resp);
+      console.log('BloggerRestClient newTag response', resp);
       return this.context.responseParser.toTerm(resp);
     } else {
       return exists[0];
@@ -154,7 +160,7 @@ export class WpRestClient extends AbstractBloggerClient {
       formItems.append('file', media);
 
       const response: SafeAny = await this.client.httpPost(
-        getUrl(this.context.endpoints?.uploadFile, 'wp-json/wp/v2/media'),
+        getUrl(this.context.endpoints?.uploadFile, 'blogger-json/wp/v2/media'),
         formItems,
         {
           headers: {
@@ -206,7 +212,7 @@ function getUrl(
   }
 }
 
-interface WpRestClientContext {
+interface BloggerRestClientContext {
   name: string;
 
   responseParser: {
@@ -226,19 +232,19 @@ interface WpRestClientContext {
     toPostTypes: (response: SafeAny) => PostType[];
   };
 
-  endpoints?: Partial<WpRestEndpoint>;
+  endpoints?: Partial<BloggerRestEndpoint>;
 
   needLoginModal?: boolean;
 
   formItemNameMapper?: FormItemNameMapper;
 }
 
-export class WpRestClientGoogleOAuth2Context implements WpRestClientContext {
-  name = 'WpRestClientGoogleOAuth2Context';
+export class BloggerRestClientGoogleOAuth2Context implements BloggerRestClientContext {
+  name = 'BloggerRestClientGoogleOAuth2Context';
 
   needLoginModal = false;
 
-  endpoints: WpRestEndpoint = {
+  endpoints: BloggerRestEndpoint = {
     base: BLOGGER_API_ENDPOINT,
     byUrl: () => `/sites/<%= site %>/posts/suggest`,
     newPost: () => `/rest/v1.1/sites/${this.blogId}/posts/new`,

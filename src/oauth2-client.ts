@@ -1,6 +1,6 @@
 import { generateQueryString, openWithBrowser } from './utils';
 import { requestUrl } from 'obsidian';
-import { BloggerClientResult, BloggerClientReturnCode } from './wp-client';
+import { BloggerClientResult, BloggerClientReturnCode } from './blogger-client';
 import BloggerPlugin from './main';
 import {
   WP_OAUTH2_AUTHORIZE_ENDPOINT,
@@ -67,7 +67,7 @@ export interface OAuth2Options {
 }
 
 export class OAuth2Client {
-  static getWpOAuth2Client(plugin: BloggerPlugin): OAuth2Client {
+  static getGoogleOAuth2Client(plugin: BloggerPlugin): OAuth2Client {
     return new OAuth2Client(
       {
         clientId: WP_OAUTH2_CLIENT_ID,

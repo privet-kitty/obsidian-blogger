@@ -1,10 +1,10 @@
 import { PluginSettingTab, Setting } from 'obsidian';
 import BloggerPlugin from './main';
-import { PostStatus } from './wp-api';
+import { PostStatus } from './blogger-api';
 import { TranslateKey } from './i18n';
-import { WpProfileManageModal } from './wp-profile-manage-modal';
+import { BloggerProfileManageModal } from './blogger-profile-manage-modal';
 import { MathJaxOutputType } from './plugin-settings';
-import { WpProfile } from './wp-profile';
+import { BloggerProfile } from './blogger-profile';
 import { setupMarkdownParser } from './utils';
 import { AppState } from './app-state';
 
@@ -42,7 +42,7 @@ export class BloggerSettingTab extends PluginSettingTab {
       .setDesc(t('settings_profilesDesc'))
       .addButton((button) =>
         button.setButtonText(t('settings_profilesModal')).onClick(() => {
-          new WpProfileManageModal(this.plugin).open();
+          new BloggerProfileManageModal(this.plugin).open();
         }),
       );
 
@@ -82,7 +82,7 @@ export class BloggerSettingTab extends PluginSettingTab {
           .onChange(async (value) => {
             this.plugin.settings.rememberLastSelectedCategories = value;
             if (!value) {
-              this.plugin.settings.profiles.forEach((profile: WpProfile) => {
+              this.plugin.settings.profiles.forEach((profile: BloggerProfile) => {
                 if (
                   !profile.lastSelectedCategories ||
                   profile.lastSelectedCategories.length === 0

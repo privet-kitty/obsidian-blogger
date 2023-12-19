@@ -1,6 +1,6 @@
 import { LanguageWithAuto } from './i18n';
-import { WpProfile } from './wp-profile';
-import { PostStatus } from './wp-api';
+import { BloggerProfile } from './blogger-profile';
+import { PostStatus } from './blogger-api';
 import { isNil, isUndefined } from 'lodash-es';
 import { SafeAny } from './types';
 import { PassCrypto } from './pass-crypto';
@@ -27,7 +27,7 @@ export interface BloggerPluginSettings {
    */
   lang: LanguageWithAuto;
 
-  profiles: WpProfile[];
+  profiles: BloggerProfile[];
 
   /**
    * Show plugin icon in side.

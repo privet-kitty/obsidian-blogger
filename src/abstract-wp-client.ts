@@ -7,9 +7,9 @@ import {
   BloggerMediaUploadResult,
   BloggerPostParams,
   BloggerPublishResult,
-} from './wp-client';
-import { WpPublishModal } from './wp-publish-modal';
-import { PostType, PostTypeConst, Term } from './wp-api';
+} from './blogger-client';
+import { BloggerPublishModal } from './blogger-publish-modal';
+import { PostType, PostTypeConst, Term } from './blogger-api';
 import { ERROR_NOTICE_TIMEOUT, WP_DEFAULT_PROFILE_NAME } from './consts';
 import {
   isPromiseFulfilledResult,
@@ -18,7 +18,7 @@ import {
   processFile,
   showError,
 } from './utils';
-import { WpProfile } from './wp-profile';
+import { BloggerProfile } from './blogger-profile';
 import { AppState } from './app-state';
 import { ConfirmCode, openConfirmModal } from './confirm-modal';
 import fileTypeChecker from 'file-type-checker';
@@ -34,7 +34,7 @@ export abstract class AbstractBloggerClient implements BloggerClient {
 
   protected constructor(
     protected readonly plugin: BloggerPlugin,
-    protected readonly profile: WpProfile,
+    protected readonly profile: BloggerProfile,
   ) {}
 
   abstract publish(
@@ -123,7 +123,7 @@ export abstract class AbstractBloggerClient implements BloggerClient {
 
         if (this.plugin.settings.showBloggerEditConfirm) {
           openPostPublishedModal(this.plugin).then(() => {
-            openWithBrowser(`${this.profile.endpoint}/wp-admin/post.php`, {
+            openWithBrowser(`${this.profile.endpoint}/blogger-admin/post.php`, {
               action: 'edit',
               post: postId,
             });
@@ -233,7 +233,7 @@ export abstract class AbstractBloggerClient implements BloggerClient {
         }
         const selectedPostType = matterData.postType ?? PostTypeConst.Post;
         result = await new Promise((resolve) => {
-          const publishModal = new WpPublishModal(
+          const publishModal = new BloggerPublishModal(
             this.plugin,
             { items: categories, selected: selectedCategories },
             { items: postTypes, selected: selectedPostType },
