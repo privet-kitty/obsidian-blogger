@@ -3,7 +3,7 @@ import { WordpressSettingTab } from './settings';
 import { addIcons } from './icons';
 import { WordPressPostParams } from './wp-client';
 import { I18n } from './i18n';
-import { CommentStatus, PostStatus, PostTypeConst } from './wp-api';
+import { PostStatus, PostTypeConst } from './wp-api';
 import { openProfileChooserModal } from './wp-profile-chooser-modal';
 import { AppState } from './app-state';
 import {
@@ -90,7 +90,6 @@ export default class WordpressPlugin extends Plugin {
         if (defaultProfile) {
           const params: WordPressPostParams = {
             status: this.#settings?.defaultPostStatus ?? PostStatus.Draft,
-            commentStatus: this.#settings?.defaultCommentStatus ?? CommentStatus.Open,
             categories: defaultProfile.lastSelectedCategories ?? [1],
             postType: PostTypeConst.Post,
             tags: [],

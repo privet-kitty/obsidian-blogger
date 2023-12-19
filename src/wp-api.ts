@@ -4,11 +4,6 @@ export const enum PostStatus {
   // Future = 'future'
 }
 
-export const enum CommentStatus {
-  Open = 'open',
-  Closed = 'closed'
-}
-
 export const enum PostTypeConst {
   Post = 'post',
   Page = 'page',

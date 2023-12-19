@@ -1,6 +1,6 @@
 import { PluginSettingTab, Setting } from 'obsidian';
 import WordpressPlugin from './main';
-import { CommentStatus, PostStatus } from './wp-api';
+import { PostStatus } from './wp-api';
 import { TranslateKey } from './i18n';
 import { WpProfileManageModal } from './wp-profile-manage-modal';
 import { MathJaxOutputType } from './plugin-settings';
@@ -8,16 +8,12 @@ import { WpProfile } from './wp-profile';
 import { setupMarkdownParser } from './utils';
 import { AppState } from './app-state';
 
-
 export class WordpressSettingTab extends PluginSettingTab {
+  constructor(private readonly plugin: WordpressPlugin) {
+    super(plugin.app, plugin);
+  }
 
-	constructor(
-    private readonly plugin: WordpressPlugin
-  ) {
-		super(plugin.app, plugin);
-	}
-
-	display(): void {
+  display(): void {
     const t = (key: TranslateKey, vars?: Record<string, string>): string => {
       return this.plugin.i18n.t(key, vars);
     };
@@ -31,11 +27,11 @@ export class WordpressSettingTab extends PluginSettingTab {
         default:
           return '';
       }
-    }
+    };
 
-		const { containerEl } = this;
+    const { containerEl } = this;
 
-		containerEl.empty();
+    containerEl.empty();
 
     containerEl.createEl('h1', { text: t('settings_title') });
 
@@ -44,24 +40,22 @@ export class WordpressSettingTab extends PluginSettingTab {
     new Setting(containerEl)
       .setName(t('settings_profiles'))
       .setDesc(t('settings_profilesDesc'))
-      .addButton(button => button
-        .setButtonText(t('settings_profilesModal'))
-        .onClick(() => {
+      .addButton((button) =>
+        button.setButtonText(t('settings_profilesModal')).onClick(() => {
           new WpProfileManageModal(this.plugin).open();
-        }));
+        }),
+      );
 
     new Setting(containerEl)
       .setName(t('settings_showRibbonIcon'))
       .setDesc(t('settings_showRibbonIconDesc'))
       .addToggle((toggle) =>
-        toggle
-          .setValue(this.plugin.settings.showRibbonIcon)
-          .onChange(async (value) => {
-            this.plugin.settings.showRibbonIcon = value;
-            await this.plugin.saveSettings();
+        toggle.setValue(this.plugin.settings.showRibbonIcon).onChange(async (value) => {
+          this.plugin.settings.showRibbonIcon = value;
+          await this.plugin.saveSettings();
 
-            this.plugin.updateRibbonIcon();
-          }),
+          this.plugin.updateRibbonIcon();
+        }),
       );
 
     new Setting(containerEl)
@@ -80,21 +74,6 @@ export class WordpressSettingTab extends PluginSettingTab {
       });
 
     new Setting(containerEl)
-      .setName(t('settings_defaultPostComment'))
-      .setDesc(t('settings_defaultPostCommentDesc'))
-      .addDropdown((dropdown) => {
-        dropdown
-          .addOption(CommentStatus.Open, t('settings_defaultPostCommentOpen'))
-          .addOption(CommentStatus.Closed, t('settings_defaultPostCommentClosed'))
-          // .addOption(PostStatus.Future, 'future')
-          .setValue(this.plugin.settings.defaultCommentStatus)
-          .onChange(async (value) => {
-            this.plugin.settings.defaultCommentStatus = value as CommentStatus;
-            await this.plugin.saveSettings();
-          });
-      });
-
-    new Setting(containerEl)
       .setName(t('settings_rememberLastSelectedCategories'))
       .setDesc(t('settings_rememberLastSelectedCategoriesDesc'))
       .addToggle((toggle) =>
@@ -104,8 +83,11 @@ export class WordpressSettingTab extends PluginSettingTab {
             this.plugin.settings.rememberLastSelectedCategories = value;
             if (!value) {
               this.plugin.settings.profiles.forEach((profile: WpProfile) => {
-                if (!profile.lastSelectedCategories || profile.lastSelectedCategories.length === 0) {
-                  profile.lastSelectedCategories = [ 1 ];
+                if (
+                  !profile.lastSelectedCategories ||
+                  profile.lastSelectedCategories.length === 0
+                ) {
+                  profile.lastSelectedCategories = [1];
                 }
               });
             }
@@ -117,12 +99,10 @@ export class WordpressSettingTab extends PluginSettingTab {
       .setName(t('settings_showWordPressEditPageModal'))
       .setDesc(t('settings_showWordPressEditPageModalDesc'))
       .addToggle((toggle) =>
-        toggle
-          .setValue(this.plugin.settings.showWordPressEditConfirm)
-          .onChange(async (value) => {
-            this.plugin.settings.showWordPressEditConfirm = value;
-            await this.plugin.saveSettings();
-          }),
+        toggle.setValue(this.plugin.settings.showWordPressEditConfirm).onChange(async (value) => {
+          this.plugin.settings.showWordPressEditConfirm = value;
+          await this.plugin.saveSettings();
+        }),
       );
 
     new Setting(containerEl)
@@ -135,7 +115,9 @@ export class WordpressSettingTab extends PluginSettingTab {
           .setValue(this.plugin.settings.mathJaxOutputType)
           .onChange(async (value) => {
             this.plugin.settings.mathJaxOutputType = value as MathJaxOutputType;
-            mathJaxOutputTypeDesc = getMathJaxOutputTypeDesc(this.plugin.settings.mathJaxOutputType);
+            mathJaxOutputTypeDesc = getMathJaxOutputTypeDesc(
+              this.plugin.settings.mathJaxOutputType,
+            );
             await this.plugin.saveSettings();
             this.display();
 
@@ -144,36 +126,31 @@ export class WordpressSettingTab extends PluginSettingTab {
       });
     containerEl.createEl('p', {
       text: mathJaxOutputTypeDesc,
-      cls: 'setting-item-description'
+      cls: 'setting-item-description',
     });
 
     new Setting(containerEl)
       .setName(t('settings_enableHtml'))
       .setDesc(t('settings_enableHtmlDesc'))
       .addToggle((toggle) =>
-        toggle
-          .setValue(this.plugin.settings.enableHtml)
-          .onChange(async (value) => {
-            this.plugin.settings.enableHtml = value;
-            await this.plugin.saveSettings();
+        toggle.setValue(this.plugin.settings.enableHtml).onChange(async (value) => {
+          this.plugin.settings.enableHtml = value;
+          await this.plugin.saveSettings();
 
-            AppState.getInstance().markdownParser.set({
-              html: this.plugin.settings.enableHtml
-            });
-          }),
+          AppState.getInstance().markdownParser.set({
+            html: this.plugin.settings.enableHtml,
+          });
+        }),
       );
 
     new Setting(containerEl)
       .setName(t('settings_replaceMediaLinks'))
       .setDesc(t('settings_replaceMediaLinksDesc'))
       .addToggle((toggle) =>
-        toggle
-          .setValue(this.plugin.settings.replaceMediaLinks)
-          .onChange(async (value) => {
-            this.plugin.settings.replaceMediaLinks = value;
-            await this.plugin.saveSettings();
-          }),
+        toggle.setValue(this.plugin.settings.replaceMediaLinks).onChange(async (value) => {
+          this.plugin.settings.replaceMediaLinks = value;
+          await this.plugin.saveSettings();
+        }),
       );
-	}
-
+  }
 }

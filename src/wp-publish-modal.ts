@@ -1,7 +1,7 @@
 import { Modal, Setting } from 'obsidian';
 import WordpressPlugin from './main';
 import { WordPressPostParams } from './wp-client';
-import { CommentStatus, PostStatus, PostType, PostTypeConst, Term } from './wp-api';
+import { PostStatus, PostType, PostTypeConst, Term } from './wp-api';
 import { toNumber } from 'lodash-es';
 import { TranslateKey } from './i18n';
 import { MatterData } from './types';
@@ -33,7 +33,6 @@ export class WpPublishModal extends Modal {
   onOpen() {
     const params: WordPressPostParams = {
       status: this.plugin.settings.defaultPostStatus,
-      commentStatus: this.plugin.settings.defaultCommentStatus,
       postType: this.postTypes.selected,
       categories: this.categories.selected,
       tags: [],
@@ -67,15 +66,6 @@ export class WpPublishModal extends Modal {
         .setValue(this.plugin.settings.defaultPostStatus)
         .onChange((value) => {
           params.status = value as PostStatus;
-        });
-    });
-    new Setting(contentEl).setName(t('publishModal_commentStatus')).addDropdown((dropdown) => {
-      dropdown
-        .addOption(CommentStatus.Open, t('publishModal_commentStatusOpen'))
-        .addOption(CommentStatus.Closed, t('publishModal_commentStatusClosed'))
-        .setValue(this.plugin.settings.defaultCommentStatus)
-        .onChange((value) => {
-          params.commentStatus = value as CommentStatus;
         });
     });
 

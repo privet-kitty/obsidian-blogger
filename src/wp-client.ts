@@ -1,5 +1,5 @@
 import { SafeAny } from './types';
-import { CommentStatus, PostStatus, PostType } from './wp-api';
+import { PostStatus, PostType } from './wp-api';
 
 export enum WordPressClientReturnCode {
   OK,
@@ -36,7 +36,6 @@ export type WordPressClientResult<T> = WpClientOkResult<T> | WpClientErrorResult
 
 export interface WordPressPostParams {
   status: PostStatus;
-  commentStatus: CommentStatus;
   categories: number[];
   postType: PostType;
   tags: string[];

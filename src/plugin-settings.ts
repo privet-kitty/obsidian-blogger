@@ -1,6 +1,6 @@
 import { LanguageWithAuto } from './i18n';
 import { WpProfile } from './wp-profile';
-import { CommentStatus, PostStatus } from './wp-api';
+import { PostStatus } from './wp-api';
 import { isNil, isUndefined } from 'lodash-es';
 import { SafeAny } from './types';
 import { PassCrypto } from './pass-crypto';
@@ -40,11 +40,6 @@ export interface WordpressPluginSettings {
   defaultPostStatus: PostStatus;
 
   /**
-   * Default comment status.
-   */
-  defaultCommentStatus: CommentStatus;
-
-  /**
    * Remember last selected post categories.
    */
   rememberLastSelectedCategories: boolean;
@@ -69,7 +64,6 @@ export const DEFAULT_SETTINGS: WordpressPluginSettings = {
   profiles: [],
   showRibbonIcon: false,
   defaultPostStatus: PostStatus.Draft,
-  defaultCommentStatus: CommentStatus.Open,
   rememberLastSelectedCategories: true,
   showWordPressEditConfirm: false,
   mathJaxOutputType: MathJaxOutputType.SVG,
@@ -90,7 +84,6 @@ export async function upgradeSettings(
         lang: existingSettings.lang,
         showRibbonIcon: existingSettings.showRibbonIcon,
         defaultPostStatus: existingSettings.defaultPostStatus,
-        defaultCommentStatus: existingSettings.defaultCommentStatus,
         defaultPostType: 'post',
         rememberLastSelectedCategories: existingSettings.rememberLastSelectedCategories,
         showWordPressEditConfirm: existingSettings.showWordPressEditConfirm,
