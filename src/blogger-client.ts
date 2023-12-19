@@ -316,11 +316,8 @@ function getImages(content: string): Image[] {
 
 interface BloggerRestEndpoint {
   base: string | UrlGetter;
-  byUrl: string | UrlGetter;
   newPost: string | UrlGetter;
   editPost: string | UrlGetter;
-  newTag: string | UrlGetter;
-  getTag: string | UrlGetter;
   uploadFile: string | UrlGetter;
 }
 
@@ -491,11 +488,8 @@ export class BloggerRestClientGoogleOAuth2Context implements BloggerRestClientCo
 
   endpoints: BloggerRestEndpoint = {
     base: BLOGGER_API_ENDPOINT,
-    byUrl: () => `/sites/<%= site %>/posts/suggest`,
     newPost: () => `/rest/v1.1/sites/${this.blogId}/posts/new`,
     editPost: () => `/rest/v1.1/sites/${this.blogId}/posts/<%= postId %>`,
-    newTag: () => `/rest/v1.1/sites/${this.blogId}/tags/new`,
-    getTag: () => `/rest/v1.1/sites/${this.blogId}/tags?number=1&search=<%= name %>`,
     uploadFile: () => `/rest/v1.1/sites/${this.blogId}/media/new`,
   };
 
