@@ -1,7 +1,7 @@
 import { Modal, Setting } from 'obsidian';
 import BloggerPlugin from './main';
 import { BloggerPostParams } from './blogger-client';
-import { PostStatus, PostType, PostTypeConst, Term } from './blogger-api';
+import { PostStatus, PostType, PostTypeConst, Term } from './blogger-interface';
 import { toNumber } from 'lodash-es';
 import { TranslateKey } from './i18n';
 import { MatterData } from './types';

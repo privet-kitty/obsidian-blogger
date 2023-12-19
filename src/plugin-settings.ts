@@ -1,6 +1,6 @@
 import { LanguageWithAuto } from './i18n';
 import { BloggerProfile } from './blogger-profile';
-import { PostStatus } from './blogger-api';
+import { PostStatus } from './blogger-interface';
 import { isNil, isUndefined } from 'lodash-es';
 import { SafeAny } from './types';
 import { PassCrypto } from './pass-crypto';

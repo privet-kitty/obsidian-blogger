@@ -1,6 +1,6 @@
 import { PluginSettingTab, Setting } from 'obsidian';
 import BloggerPlugin from './main';
-import { PostStatus } from './blogger-api';
+import { PostStatus } from './blogger-interface';
 import { TranslateKey } from './i18n';
 import { BloggerProfileManageModal } from './blogger-profile-manage-modal';
 import { MathJaxOutputType } from './plugin-settings';

@@ -7,7 +7,7 @@ import {
 } from './blogger-client';
 import { AbstractBloggerClient } from './abstract-blogger-client';
 import BloggerPlugin from './main';
-import { PostType, Term } from './blogger-api';
+import { PostType, Term } from './blogger-interface';
 import { RestClient } from './rest-client';
 import { isFunction, isNumber, isString, template } from 'lodash-es';
 import { BloggerProfile } from './blogger-profile';

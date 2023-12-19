@@ -1,5 +1,5 @@
 import { SafeAny } from './types';
-import { PostStatus, PostType } from './blogger-api';
+import { PostStatus, PostType } from './blogger-interface';
 
 export enum BloggerClientReturnCode {
   OK,
