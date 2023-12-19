@@ -1,7 +1,6 @@
 import { Modal, Setting } from 'obsidian';
 import BloggerPlugin from './main';
-import { BloggerPostParams } from './blogger-client-interface';
-import { PostStatus } from './blogger-interface';
+import { BloggerPostParams, PostStatus } from './blogger-client-interface';
 import { TranslateKey } from './i18n';
 import { MatterData } from './types';
 import { AppState } from './app-state';

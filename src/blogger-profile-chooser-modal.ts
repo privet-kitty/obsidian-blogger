@@ -1,8 +1,7 @@
 import { Modal, Setting } from 'obsidian';
 import BloggerPlugin from './main';
-import { BloggerProfile } from './blogger-profile';
+import { BloggerProfile, rendererProfile } from './blogger-profile';
 import { TranslateKey } from './i18n';
-import { rendererProfile } from './utils';
 import { AppState } from './app-state';
 
 export function openProfileChooserModal(plugin: BloggerPlugin): Promise<BloggerProfile> {

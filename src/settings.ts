@@ -1,11 +1,11 @@
 import { PluginSettingTab, Setting } from 'obsidian';
 import BloggerPlugin from './main';
-import { PostStatus } from './blogger-interface';
 import { TranslateKey } from './i18n';
 import { BloggerProfileManageModal } from './blogger-profile-manage-modal';
 import { MathJaxOutputType } from './plugin-settings';
 import { AppState } from './app-state';
 import { setupMarkdownParser } from './markdown-it-default';
+import { PostStatus } from './blogger-client-interface';
 
 export class BloggerSettingTab extends PluginSettingTab {
   constructor(private readonly plugin: BloggerPlugin) {

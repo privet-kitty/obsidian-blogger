@@ -1,5 +1,9 @@
 import { SafeAny } from './types';
-import { PostStatus } from './blogger-interface';
+
+export const enum PostStatus {
+  Draft = 'draft',
+  Publish = 'publish',
+}
 
 export enum BloggerClientReturnCode {
   OK,

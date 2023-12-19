@@ -1,8 +1,7 @@
 import { Plugin } from 'obsidian';
 import { BloggerSettingTab } from './settings';
 import { addIcons } from './icons';
-import { BloggerPostParams } from './blogger-client-interface';
-import { PostStatus } from './blogger-interface';
+import { BloggerPostParams, PostStatus } from './blogger-client-interface';
 import { openProfileChooserModal } from './blogger-profile-chooser-modal';
 import { AppState } from './app-state';
 import {

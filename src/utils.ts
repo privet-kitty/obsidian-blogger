@@ -1,8 +1,4 @@
-import { App, Notice, Setting, TFile } from 'obsidian';
-import { BloggerProfile } from './blogger-profile';
-import { AppState } from './app-state';
-import { BloggerPluginSettings } from './plugin-settings';
-import MarkdownItMathJax3Plugin from './markdown-it-mathjax3-plugin';
+import { App, Notice, TFile } from 'obsidian';
 import { BloggerClientResult, BloggerClientReturnCode } from './blogger-client-interface';
 import { isString } from 'lodash-es';
 import { ERROR_NOTICE_TIMEOUT } from './consts';
@@ -27,25 +23,6 @@ export function generateQueryString(params: Record<string, undefined | number | 
 
 export function isPromiseFulfilledResult<T>(obj: SafeAny): obj is PromiseFulfilledResult<T> {
   return !!obj && obj.status === 'fulfilled' && obj.value;
-}
-
-export function rendererProfile(profile: BloggerProfile, container: HTMLElement): Setting {
-  let name = profile.name;
-  if (profile.isDefault) {
-    name += ' ✔️';
-  }
-  let desc = profile.endpoint;
-  if (profile.googleOAuth2Token) {
-    desc += ` / 🆔 / 🔒`;
-  } else {
-    if (profile.saveUsername) {
-      desc += ` / 🆔 ${profile.username}`;
-    }
-    if (profile.savePassword) {
-      desc += ' / 🔒 ******';
-    }
-  }
-  return new Setting(container).setName(name).setDesc(desc);
 }
 
 export function isValidUrl(url: string): boolean {

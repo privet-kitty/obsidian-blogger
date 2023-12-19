@@ -1,3 +1,4 @@
+import { Setting } from 'obsidian';
 import { InternalOAuth2Token } from './oauth2-client';
 
 export interface BloggerProfile {
@@ -59,4 +60,23 @@ export interface BloggerProfile {
    * Is default profile.
    */
   isDefault: boolean;
+}
+
+export function rendererProfile(profile: BloggerProfile, container: HTMLElement): Setting {
+  let name = profile.name;
+  if (profile.isDefault) {
+    name += ' ✔️';
+  }
+  let desc = profile.endpoint;
+  if (profile.googleOAuth2Token) {
+    desc += ` / 🆔 / 🔒`;
+  } else {
+    if (profile.saveUsername) {
+      desc += ` / 🆔 ${profile.username}`;
+    }
+    if (profile.savePassword) {
+      desc += ' / 🔒 ******';
+    }
+  }
+  return new Setting(container).setName(name).setDesc(desc);
 }

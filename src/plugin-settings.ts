@@ -1,10 +1,10 @@
 import { LanguageWithAuto } from './i18n';
 import { BloggerProfile } from './blogger-profile';
-import { PostStatus } from './blogger-interface';
 import { isNil, isUndefined } from 'lodash-es';
 import { SafeAny } from './types';
 import { PassCrypto } from './pass-crypto';
 import { WP_DEFAULT_PROFILE_NAME } from './consts';
+import { PostStatus } from './blogger-client-interface';
 
 export const enum SettingsVersion {
   V2 = '2',
