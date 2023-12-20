@@ -1,7 +1,7 @@
 import MarkdownIt from 'markdown-it';
 import { MarkdownItImagePluginInstance } from './markdown-it-image-plugin';
 import { isEmpty, trim } from 'lodash-es';
-import { BloggerPluginSettings } from './plugin-settings';
+import { PluginSettings } from './plugin-settings';
 import MarkdownItMathJax3Plugin from './markdown-it-mathjax3-plugin';
 import footnote from 'markdown-it-footnote';
 
@@ -37,10 +37,7 @@ const createDefaultMarkdownParser = () => {
   return markdownParser;
 };
 
-export const setupMarkdownParser = (
-  markdownParser: MarkdownIt,
-  settings: BloggerPluginSettings,
-): void => {
+export const setupMarkdownParser = (markdownParser: MarkdownIt, settings: PluginSettings): void => {
   markdownParser.use(MarkdownItMathJax3Plugin, {
     outputType: settings.mathJaxOutputType,
   });

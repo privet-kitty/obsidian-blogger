@@ -6,7 +6,7 @@ import { openProfileChooserModal } from './blogger-profile-chooser-modal';
 import {
   DEFAULT_SETTINGS,
   SettingsVersion,
-  BloggerPluginSettings,
+  PluginSettings,
   upgradeSettings,
 } from './plugin-settings';
 import { PassCrypto } from './pass-crypto';
@@ -43,7 +43,7 @@ const doClientPublish = (
 };
 
 export default class BloggerPlugin extends Plugin {
-  #settings: BloggerPluginSettings | undefined;
+  #settings: PluginSettings | undefined;
   get settings() {
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     return this.#settings!;

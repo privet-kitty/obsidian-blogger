@@ -12,7 +12,7 @@ export const enum MathJaxOutputType {
   SVG = 'svg',
 }
 
-export interface BloggerPluginSettings {
+export interface PluginSettings {
   version?: SettingsVersion;
 
   /**
@@ -47,7 +47,7 @@ export interface BloggerPluginSettings {
   replaceMediaLinks: boolean;
 }
 
-export const DEFAULT_SETTINGS: BloggerPluginSettings = {
+export const DEFAULT_SETTINGS: PluginSettings = {
   lang: 'auto',
   profiles: [],
   showRibbonIcon: false,
@@ -61,7 +61,7 @@ export const DEFAULT_SETTINGS: BloggerPluginSettings = {
 export async function upgradeSettings(
   existingSettings: SafeAny,
   to: SettingsVersion,
-): Promise<{ needUpgrade: boolean; settings: BloggerPluginSettings }> {
+): Promise<{ needUpgrade: boolean; settings: PluginSettings }> {
   return {
     needUpgrade: false,
     settings: existingSettings,
