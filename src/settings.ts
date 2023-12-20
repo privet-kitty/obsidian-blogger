@@ -3,8 +3,7 @@ import BloggerPlugin from './main';
 import { TranslateKey, getGlobalI18n } from './i18n';
 import { BloggerProfileManageModal } from './blogger-profile-manage-modal';
 import { MathJaxOutputType } from './plugin-settings';
-import { AppState } from './app-state';
-import { setupMarkdownParser } from './markdown-it-default';
+import { getGlobalMarkdownParser, setupMarkdownParser } from './markdown-it-default';
 import { PostStatus } from './blogger-client-interface';
 
 export class BloggerSettingTab extends PluginSettingTab {
@@ -98,7 +97,7 @@ export class BloggerSettingTab extends PluginSettingTab {
             await this.plugin.saveSettings();
             this.display();
 
-            setupMarkdownParser(AppState.get().markdownParser, this.plugin.settings);
+            setupMarkdownParser(getGlobalMarkdownParser(), this.plugin.settings);
           });
       });
     containerEl.createEl('p', {
@@ -114,7 +113,7 @@ export class BloggerSettingTab extends PluginSettingTab {
           this.plugin.settings.enableHtml = value;
           await this.plugin.saveSettings();
 
-          AppState.get().markdownParser.set({
+          getGlobalMarkdownParser().set({
             html: this.plugin.settings.enableHtml,
           });
         }),

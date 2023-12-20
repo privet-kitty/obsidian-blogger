@@ -3,7 +3,6 @@ import { BloggerSettingTab } from './settings';
 import { addIcons } from './icons';
 import { BloggerPostParams, PostStatus } from './blogger-client-interface';
 import { openProfileChooserModal } from './blogger-profile-chooser-modal';
-import { AppState } from './app-state';
 import {
   DEFAULT_SETTINGS,
   SettingsVersion,
@@ -15,7 +14,7 @@ import { showError } from './utils';
 import { cloneDeep, isString } from 'lodash-es';
 import { BloggerProfile } from './blogger-profile';
 import { getBloggerClient } from './blogger-client';
-import { setupMarkdownParser } from './markdown-it-default';
+import { getGlobalMarkdownParser, setupMarkdownParser } from './markdown-it-default';
 import { getGlobalI18n, setGlobalLang } from './i18n';
 
 const doClientPublish = (
@@ -59,7 +58,7 @@ export default class BloggerPlugin extends Plugin {
     // lang should be load early, but after settings
     setGlobalLang(this.#settings?.lang);
 
-    setupMarkdownParser(AppState.get().markdownParser, this.settings);
+    setupMarkdownParser(getGlobalMarkdownParser(), this.settings);
 
     addIcons();
 
@@ -116,7 +115,7 @@ export default class BloggerPlugin extends Plugin {
       }
     }
 
-    AppState.get().markdownParser.set({
+    getGlobalMarkdownParser().set({
       html: this.#settings?.enableHtml ?? false,
     });
   }

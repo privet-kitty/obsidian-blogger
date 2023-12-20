@@ -18,10 +18,10 @@ import { Notice } from 'obsidian';
 import { BloggerPublishModal } from './blogger-publish-modal';
 import { WP_DEFAULT_PROFILE_NAME } from './consts';
 import { openWithBrowser, processFile, showError } from './utils';
-import { AppState } from './app-state';
 import { ConfirmCode, openConfirmModal } from './confirm-modal';
 import { openPostPublishedModal } from './post-published-modal';
 import { getGlobalI18n } from './i18n';
+import { getGlobalMarkdownParser } from './markdown-it-default';
 
 export abstract class AbstractBloggerClient implements BloggerClient {
   /**
@@ -69,7 +69,7 @@ export abstract class AbstractBloggerClient implements BloggerClient {
     const { postParams, updateMatterData } = params;
     const result = await this.publish(
       postParams.title ?? 'A post from Obsidian!',
-      AppState.get().markdownParser.render(postParams.content) ?? '',
+      getGlobalMarkdownParser().render(postParams.content) ?? '',
       postParams,
     );
     if (result.code === BloggerClientReturnCode.Error) {

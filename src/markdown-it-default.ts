@@ -5,7 +5,7 @@ import { BloggerPluginSettings } from './plugin-settings';
 import MarkdownItMathJax3Plugin from './markdown-it-mathjax3-plugin';
 import footnote from 'markdown-it-footnote';
 
-export const getDefaultMarkdownParser = () => {
+const createDefaultMarkdownParser = () => {
   const markdownParser = new MarkdownIt().use(MarkdownItImagePluginInstance.plugin).use(footnote);
   markdownParser.renderer.rules.image = (tokens, idx) => {
     const token = tokens[idx];
@@ -44,4 +44,10 @@ export const setupMarkdownParser = (
   markdownParser.use(MarkdownItMathJax3Plugin, {
     outputType: settings.mathJaxOutputType,
   });
+};
+
+const markdownParser = createDefaultMarkdownParser();
+
+export const getGlobalMarkdownParser = (): MarkdownIt => {
+  return markdownParser;
 };
