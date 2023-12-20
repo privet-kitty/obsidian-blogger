@@ -7,14 +7,13 @@ import {
   BloggerClient,
   PostStatus,
 } from './blogger-client-interface';
-import BloggerPlugin from './main';
 import { RestClient } from './rest-client';
 import { isFunction, isString, template } from 'lodash-es';
 import { BloggerProfile } from './blogger-profile';
 import { FormItemNameMapper, SafeAny, MatterData } from './types';
 import { BLOGGER_API_ENDPOINT } from './consts';
 import { OAuth2Client } from './oauth2-client';
-import { Notice } from 'obsidian';
+import { App, Notice } from 'obsidian';
 import { BloggerPublishModal } from './blogger-publish-modal';
 import { WP_DEFAULT_PROFILE_NAME } from './consts';
 import { openWithBrowser, processFile, showError } from './utils';
@@ -22,6 +21,7 @@ import { ConfirmCode, openConfirmModal } from './confirm-modal';
 import { openPostPublishedModal } from './post-published-modal';
 import { getGlobalI18n } from './i18n';
 import { getGlobalMarkdownParser } from './markdown-it-default';
+import { PluginSettingsWithSaver } from './plugin-settings';
 
 export abstract class AbstractBloggerClient implements BloggerClient {
   /**
@@ -30,7 +30,8 @@ export abstract class AbstractBloggerClient implements BloggerClient {
   name = 'AbstractBloggerClient';
 
   protected constructor(
-    protected readonly plugin: BloggerPlugin,
+    protected readonly app: App,
+    protected readonly settings: PluginSettingsWithSaver,
     protected readonly profile: BloggerProfile,
   ) {}
 
@@ -54,7 +55,7 @@ export abstract class AbstractBloggerClient implements BloggerClient {
             profileName: this.profile.name,
           }),
         },
-        this.plugin.app,
+        this.app,
       );
       if (confirm.code !== ConfirmCode.Cancel) {
         delete matterData.postId;
@@ -86,9 +87,9 @@ export abstract class AbstractBloggerClient implements BloggerClient {
       if (postId) {
         // const modified = matter.stringify(postParams.content, matterData, matterOptions);
         // this.updateFrontMatter(modified);
-        const file = this.plugin.app.workspace.getActiveFile();
+        const file = this.app.workspace.getActiveFile();
         if (file) {
-          await this.plugin.app.fileManager.processFrontMatter(file, (fm) => {
+          await this.app.fileManager.processFrontMatter(file, (fm) => {
             fm.profileName = this.profile.name;
             fm.postId = postId;
             if (isFunction(updateMatterData)) {
@@ -97,8 +98,8 @@ export abstract class AbstractBloggerClient implements BloggerClient {
           });
         }
 
-        if (this.plugin.settings.showBloggerEditConfirm) {
-          openPostPublishedModal(this.plugin).then(() => {
+        if (this.settings.showBloggerEditConfirm) {
+          openPostPublishedModal(this.app).then(() => {
             openWithBrowser(`${this.profile.endpoint}/blogger-admin/post.php`, {
               action: 'edit',
               post: postId,
@@ -118,14 +119,14 @@ export abstract class AbstractBloggerClient implements BloggerClient {
         throw new Error(getGlobalI18n().t('error_noEndpoint'));
       }
       // const { activeEditor } = this.plugin.app.workspace;
-      const file = this.plugin.app.workspace.getActiveFile();
+      const file = this.app.workspace.getActiveFile();
       if (file === null) {
         throw new Error(getGlobalI18n().t('error_noActiveFile'));
       }
 
       // read note title, content and matter data
       const title = file.basename;
-      const { content, matter: matterData } = await processFile(file, this.plugin.app);
+      const { content, matter: matterData } = await processFile(file, this.app);
 
       // check if profile selected is matched to the one in note property,
       // if not, ask whether to update or not
@@ -143,7 +144,8 @@ export abstract class AbstractBloggerClient implements BloggerClient {
       } else {
         result = await new Promise((resolve) => {
           const publishModal = new BloggerPublishModal(
-            this.plugin,
+            this.app,
+            this.settings,
             async (
               postParams: BloggerPostParams,
               updateMatterData: (matter: MatterData) => void,
@@ -216,11 +218,12 @@ export class BloggerRestClient extends AbstractBloggerClient {
   private readonly client: RestClient;
 
   constructor(
-    readonly plugin: BloggerPlugin,
+    readonly app: App,
+    readonly settings: PluginSettingsWithSaver,
     readonly profile: BloggerProfile,
     private readonly context: BloggerRestClientContext,
   ) {
-    super(plugin, profile);
+    super(app, settings, profile);
     this.name = 'BloggerRestClient';
     this.client = new RestClient({
       url: new URL(getUrl(this.context.endpoints?.base, profile.endpoint)),
@@ -239,7 +242,7 @@ export class BloggerRestClient extends AbstractBloggerClient {
       });
     if (token !== fresh_token) {
       this.profile.googleOAuth2Token = fresh_token;
-      await this.plugin.saveSettings();
+      await this.settings.save();
     }
     const headers: Record<string, string> = {
       authorization: `Bearer ${fresh_token.accessToken}`,
@@ -402,7 +405,8 @@ export class BloggerRestClientGoogleOAuth2Context implements BloggerRestClientCo
 }
 
 export function getBloggerClient(
-  plugin: BloggerPlugin,
+  app: App,
+  settings: PluginSettingsWithSaver,
   profile: BloggerProfile,
 ): BloggerClient | null {
   if (!profile.endpoint || profile.endpoint.length === 0) {
@@ -418,7 +422,8 @@ export function getBloggerClient(
     return null;
   }
   return new BloggerRestClient(
-    plugin,
+    app,
+    settings,
     profile,
     new BloggerRestClientGoogleOAuth2Context(profile.blogId),
   );

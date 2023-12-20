@@ -12,7 +12,7 @@ export const enum MathJaxOutputType {
   SVG = 'svg',
 }
 
-export interface PluginSettings {
+export type PluginSettings = {
   version?: SettingsVersion;
 
   /**
@@ -45,7 +45,14 @@ export interface PluginSettings {
    * Whether media links should be replaced after uploading to Blogger.
    */
   replaceMediaLinks: boolean;
-}
+};
+
+export type PluginSettingsWithSaver = PluginSettings & {
+  /**
+   * Save settings to storage.
+   */
+  save: () => Promise<void>;
+};
 
 export const DEFAULT_SETTINGS: PluginSettings = {
   lang: 'auto',

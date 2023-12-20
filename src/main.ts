@@ -8,6 +8,7 @@ import {
   SettingsVersion,
   PluginSettings,
   upgradeSettings,
+  PluginSettingsWithSaver,
 } from './plugin-settings';
 import { PassCrypto } from './pass-crypto';
 import { showError } from './utils';
@@ -29,7 +30,7 @@ const doClientPublish = (
     profile = profileOrName;
   }
   if (profile) {
-    const client = getBloggerClient(plugin, profile);
+    const client = getBloggerClient(plugin.app, plugin.getSettingsWithSaver(), profile);
     if (client) {
       client.publishPost(defaultPostParams).then();
     }
@@ -133,6 +134,13 @@ export default class BloggerPlugin extends Plugin {
     }
     await this.saveData(settings);
   }
+
+  getSettingsWithSaver = (): PluginSettingsWithSaver => {
+    return {
+      ...this.settings,
+      save: () => this.saveSettings(),
+    };
+  };
 
   updateRibbonIcon(): void {
     const ribbonIconTitle = getGlobalI18n().t('ribbon_iconTitle') ?? 'Blogger';

@@ -1,26 +1,27 @@
-import { Modal, Setting } from 'obsidian';
-import BloggerPlugin from './main';
+import { App, Modal, Setting } from 'obsidian';
 import { BloggerPostParams, PostStatus } from './blogger-client-interface';
 import { TranslateKey, getGlobalI18n } from './i18n';
 import { MatterData } from './types';
+import { PluginSettings } from './plugin-settings';
 
 /**
  * Blogger publish modal.
  */
 export class BloggerPublishModal extends Modal {
   constructor(
-    private readonly plugin: BloggerPlugin,
+    readonly app: App,
+    private readonly settings: PluginSettings,
     private readonly onSubmit: (
       params: BloggerPostParams,
       updateMatterData: (matter: MatterData) => void,
     ) => void,
   ) {
-    super(plugin.app);
+    super(app);
   }
 
   onOpen() {
     const params: BloggerPostParams = {
-      status: this.plugin.settings.defaultPostStatus,
+      status: this.settings.defaultPostStatus,
       labels: [],
       title: '',
       content: '',
@@ -49,7 +50,7 @@ export class BloggerPublishModal extends Modal {
         .addOption(PostStatus.Draft, t('publishModal_postStatusDraft'))
         .addOption(PostStatus.Publish, t('publishModal_postStatusPublish'))
         // .addOption(PostStatus.Future, 'future')
-        .setValue(this.plugin.settings.defaultPostStatus)
+        .setValue(this.settings.defaultPostStatus)
         .onChange((value) => {
           params.status = value as PostStatus;
         });
