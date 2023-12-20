@@ -1,9 +1,8 @@
 import { Modal, Setting } from 'obsidian';
 import BloggerPlugin from './main';
 import { BloggerPostParams, PostStatus } from './blogger-client-interface';
-import { TranslateKey } from './i18n';
+import { TranslateKey, getGlobalI18n } from './i18n';
 import { MatterData } from './types';
-import { AppState } from './app-state';
 
 /**
  * Blogger publish modal.
@@ -37,7 +36,7 @@ export class BloggerPublishModal extends Modal {
 
   private display(params: BloggerPostParams): void {
     const t = (key: TranslateKey, vars?: Record<string, string>): string => {
-      return AppState.get().i18n.t(key, vars);
+      return getGlobalI18n().t(key, vars);
     };
 
     const { contentEl } = this;

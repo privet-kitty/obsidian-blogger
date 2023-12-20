@@ -4,13 +4,10 @@ import { template } from 'lodash-es';
 
 export type Language = keyof typeof LANGUAGES;
 export type LanguageWithAuto = Language | 'auto';
-export type TranslateKey = keyof typeof LANGUAGES['en'];
+export type TranslateKey = keyof (typeof LANGUAGES)['en'];
 
 export class I18n {
-
-  constructor(
-    private readonly lang: LanguageWithAuto = 'auto'
-  ) {
+  constructor(private readonly lang: LanguageWithAuto = 'auto') {
     this.lang = lang;
   }
 
@@ -33,5 +30,14 @@ export class I18n {
     }
     return LANGUAGES[lang][key] || LANGUAGES['en'][key] || key;
   }
-
 }
+
+let i18n = new I18n();
+
+export const setGlobalLang = (lang?: LanguageWithAuto) => {
+  i18n = new I18n(lang);
+};
+
+export const getGlobalI18n = () => {
+  return i18n;
+};

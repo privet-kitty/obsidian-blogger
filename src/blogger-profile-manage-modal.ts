@@ -1,10 +1,9 @@
 import { Modal, Setting } from 'obsidian';
 import BloggerPlugin from './main';
 import { BloggerProfile, rendererProfile } from './blogger-profile';
-import { TranslateKey } from './i18n';
+import { TranslateKey, getGlobalI18n } from './i18n';
 import { openProfileModal } from './blogger-profile-modal';
 import { isNil } from 'lodash-es';
-import { AppState } from './app-state';
 
 /**
  * Blogger profiles manage modal.
@@ -20,7 +19,7 @@ export class BloggerProfileManageModal extends Modal {
 
   onOpen() {
     const t = (key: TranslateKey, vars?: Record<string, string>): string => {
-      return AppState.get().i18n.t(key, vars);
+      return getGlobalI18n().t(key, vars);
     };
 
     const renderProfiles = (): void => {

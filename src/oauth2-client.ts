@@ -8,7 +8,7 @@ import {
   WP_OAUTH2_VALIDATE_TOKEN_ENDPOINT,
 } from './consts';
 import { Brand } from './types';
-import { AppState } from './app-state';
+import { getGlobalI18n } from './i18n';
 
 export interface OAuth2Token {
   accessToken: string;
@@ -147,7 +147,7 @@ export class OAuth2Client {
       scope: resp.scope,
     };
     if (!isFreshInternalOAuth2Token(res)) {
-      throw new Error(AppState.get().i18n.t('error_invalidGoogleToken'));
+      throw new Error(getGlobalI18n().t('error_invalidGoogleToken'));
     }
     return res;
   }
@@ -186,7 +186,7 @@ export class OAuth2Client {
       scope: resp.scope,
     };
     if (!isFreshInternalOAuth2Token(res)) {
-      throw new Error(AppState.get().i18n.t('error_invalidGoogleToken'));
+      throw new Error(getGlobalI18n().t('error_invalidGoogleToken'));
     }
     return res;
   }

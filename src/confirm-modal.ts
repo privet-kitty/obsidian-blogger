@@ -1,6 +1,5 @@
 import { App, Modal, Setting } from 'obsidian';
-import { TranslateKey } from './i18n';
-import { AppState } from './app-state';
+import { TranslateKey, getGlobalI18n } from './i18n';
 
 export enum ConfirmCode {
   Cancel,
@@ -42,7 +41,7 @@ class ConfirmModal extends Modal {
 
   onOpen() {
     const t = (key: TranslateKey, vars?: Record<string, string>): string => {
-      return AppState.get().i18n.t(key, vars);
+      return getGlobalI18n().t(key, vars);
     };
 
     const { contentEl } = this;

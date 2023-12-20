@@ -1,8 +1,7 @@
 import { Modal, Setting } from 'obsidian';
 import BloggerPlugin from './main';
 import { BloggerProfile, rendererProfile } from './blogger-profile';
-import { TranslateKey } from './i18n';
-import { AppState } from './app-state';
+import { TranslateKey, getGlobalI18n } from './i18n';
 
 export function openProfileChooserModal(plugin: BloggerPlugin): Promise<BloggerProfile> {
   return new Promise<BloggerProfile>((resolve, reject) => {
@@ -30,7 +29,7 @@ class BloggerProfileChooserModal extends Modal {
 
   onOpen() {
     const t = (key: TranslateKey, vars?: Record<string, string>): string => {
-      return AppState.get().i18n.t(key, vars);
+      return getGlobalI18n().t(key, vars);
     };
 
     const chooseProfile = (profile: BloggerProfile): void => {

@@ -1,9 +1,8 @@
 import { Modal, Notice, Setting, requestUrl } from 'obsidian';
 import BloggerPlugin from './main';
-import { TranslateKey } from './i18n';
+import { TranslateKey, getGlobalI18n } from './i18n';
 import { BloggerProfile } from './blogger-profile';
 import { BLOGGER_API_ENDPOINT, WP_OAUTH2_REDIRECT_URI } from './consts';
-import { BloggerClientReturnCode } from './blogger-client-interface';
 import {
   FreshInternalOAuth2Token,
   generateCodeVerifier,
@@ -13,7 +12,6 @@ import {
 import { generateQueryString, isValidUrl, showError } from './utils';
 import { createServer } from 'http';
 import { randomUUID } from 'crypto';
-import { AppState } from './app-state';
 
 export function openProfileModal(
   plugin: BloggerPlugin,
@@ -77,7 +75,7 @@ class BloggerProfileModal extends Modal {
 
   onOpen() {
     const t = (key: TranslateKey, vars?: Record<string, string>): string => {
-      return AppState.get().i18n.t(key, vars);
+      return getGlobalI18n().t(key, vars);
     };
 
     const renderProfile = () => {
@@ -240,7 +238,7 @@ class BloggerProfileModal extends Modal {
     if (params.error) {
       this.registerToken(undefined);
       throw new Error(
-        AppState.get().i18n.t('error_googleAuthFailed', {
+        getGlobalI18n().t('error_googleAuthFailed', {
           error: params.error,
           desc: params.error_description?.replace(/\+/g, ' ') ?? '<no error description>',
         }),
@@ -256,7 +254,7 @@ class BloggerProfileModal extends Modal {
     } else {
       this.registerToken(undefined);
       throw new Error(
-        AppState.get().i18n.t('server_googleOAuth2InvalidResponse', {
+        getGlobalI18n().t('server_googleOAuth2InvalidResponse', {
           response: JSON.stringify(params),
         }),
       );
@@ -294,7 +292,7 @@ class BloggerProfileModal extends Modal {
           const response_state = url.searchParams.get('state');
           if (state !== response_state) {
             closeWithMessage(
-              AppState.get().i18n.t('server_googleOAuth2StateMismatch', {
+              getGlobalI18n().t('server_googleOAuth2StateMismatch', {
                 req: state,
                 res: String(response_state),
               }),
@@ -305,11 +303,11 @@ class BloggerProfileModal extends Modal {
             codeVerifier,
             getListeningPort(server),
           );
-          closeWithMessage(AppState.get().i18n.t('server_googleOAuth2TokenObtained'));
+          closeWithMessage(getGlobalI18n().t('server_googleOAuth2TokenObtained'));
         }
       } catch (e) {
         closeWithMessage(
-          AppState.get().i18n.t('server_googleOAuth2ServerError', {
+          getGlobalI18n().t('server_googleOAuth2ServerError', {
             error: JSON.stringify(e),
           }),
         );

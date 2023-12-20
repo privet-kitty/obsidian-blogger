@@ -1,6 +1,6 @@
 import { PluginSettingTab, Setting } from 'obsidian';
 import BloggerPlugin from './main';
-import { TranslateKey } from './i18n';
+import { TranslateKey, getGlobalI18n } from './i18n';
 import { BloggerProfileManageModal } from './blogger-profile-manage-modal';
 import { MathJaxOutputType } from './plugin-settings';
 import { AppState } from './app-state';
@@ -14,7 +14,7 @@ export class BloggerSettingTab extends PluginSettingTab {
 
   display(): void {
     const t = (key: TranslateKey, vars?: Record<string, string>): string => {
-      return AppState.get().i18n.t(key, vars);
+      return getGlobalI18n().t(key, vars);
     };
 
     const getMathJaxOutputTypeDesc = (type: MathJaxOutputType): string => {

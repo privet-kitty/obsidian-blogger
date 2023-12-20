@@ -21,6 +21,7 @@ import { openWithBrowser, processFile, showError } from './utils';
 import { AppState } from './app-state';
 import { ConfirmCode, openConfirmModal } from './confirm-modal';
 import { openPostPublishedModal } from './post-published-modal';
+import { getGlobalI18n } from './i18n';
 
 export abstract class AbstractBloggerClient implements BloggerClient {
   /**
@@ -45,11 +46,11 @@ export abstract class AbstractBloggerClient implements BloggerClient {
     if (isProfileNameMismatch) {
       const confirm = await openConfirmModal(
         {
-          message: AppState.get().i18n.t('error_profileNotMatch'),
-          cancelText: AppState.get().i18n.t('profileNotMatch_useOld', {
+          message: getGlobalI18n().t('error_profileNotMatch'),
+          cancelText: getGlobalI18n().t('profileNotMatch_useOld', {
             profileName: matterData.profileName,
           }),
-          confirmText: AppState.get().i18n.t('profileNotMatch_useNew', {
+          confirmText: getGlobalI18n().t('profileNotMatch_useNew', {
             profileName: this.profile.name,
           }),
         },
@@ -73,13 +74,13 @@ export abstract class AbstractBloggerClient implements BloggerClient {
     );
     if (result.code === BloggerClientReturnCode.Error) {
       throw new Error(
-        AppState.get().i18n.t('error_publishFailed', {
+        getGlobalI18n().t('error_publishFailed', {
           code: result.error.code as string,
           message: result.error.message,
         }),
       );
     } else {
-      new Notice(AppState.get().i18n.t('message_publishSuccessfully'));
+      new Notice(getGlobalI18n().t('message_publishSuccessfully'));
       // post id will be returned if creating, true if editing
       const postId = result.data.postId;
       if (postId) {
@@ -114,12 +115,12 @@ export abstract class AbstractBloggerClient implements BloggerClient {
   ): Promise<BloggerClientResult<BloggerPublishResult>> {
     try {
       if (!this.profile.endpoint || this.profile.endpoint.length === 0) {
-        throw new Error(AppState.get().i18n.t('error_noEndpoint'));
+        throw new Error(getGlobalI18n().t('error_noEndpoint'));
       }
       // const { activeEditor } = this.plugin.app.workspace;
       const file = this.plugin.app.workspace.getActiveFile();
       if (file === null) {
-        throw new Error(AppState.get().i18n.t('error_noActiveFile'));
+        throw new Error(getGlobalI18n().t('error_noActiveFile'));
       }
 
       // read note title, content and matter data
@@ -173,7 +174,7 @@ export abstract class AbstractBloggerClient implements BloggerClient {
       if (result) {
         return result;
       } else {
-        throw new Error(AppState.get().i18n.t('message_publishFailed'));
+        throw new Error(getGlobalI18n().t('message_publishFailed'));
       }
     } catch (error) {
       if (error instanceof Error) {
@@ -229,12 +230,12 @@ export class BloggerRestClient extends AbstractBloggerClient {
   async getHeaders(): Promise<Record<string, string>> {
     const token = this.profile.googleOAuth2Token;
     if (!token) {
-      throw new Error(AppState.get().i18n.t('error_invalidGoogleToken'));
+      throw new Error(getGlobalI18n().t('error_invalidGoogleToken'));
     }
     const fresh_token = await OAuth2Client.getGoogleOAuth2Client()
       .ensureFreshToken(token)
       .catch(() => {
-        throw new Error(AppState.get().i18n.t('error_invalidGoogleToken'));
+        throw new Error(getGlobalI18n().t('error_invalidGoogleToken'));
       });
     if (token !== fresh_token) {
       this.profile.googleOAuth2Token = { ...this.profile.googleOAuth2Token, ...fresh_token };
@@ -292,7 +293,7 @@ export class BloggerRestClient extends AbstractBloggerClient {
         code: BloggerClientReturnCode.Error,
         error: {
           code: BloggerClientReturnCode.ServerInternalError,
-          message: AppState.get().i18n.t('error_cannotParseResponse'),
+          message: getGlobalI18n().t('error_cannotParseResponse'),
         },
         response: resp,
       };
@@ -405,15 +406,15 @@ export function getBloggerClient(
   profile: BloggerProfile,
 ): BloggerClient | null {
   if (!profile.endpoint || profile.endpoint.length === 0) {
-    showError(AppState.get().i18n.t('error_noEndpoint'));
+    showError(getGlobalI18n().t('error_noEndpoint'));
     return null;
   }
   if (!profile.googleOAuth2Token) {
-    showError(AppState.get().i18n.t('error_invalidGoogleToken'));
+    showError(getGlobalI18n().t('error_invalidGoogleToken'));
     return null;
   }
   if (!profile.blogId) {
-    showError(AppState.get().i18n.t('error_noBlogId'));
+    showError(getGlobalI18n().t('error_noBlogId'));
     return null;
   }
   return new BloggerRestClient(

@@ -16,6 +16,7 @@ import { cloneDeep, isString } from 'lodash-es';
 import { BloggerProfile } from './blogger-profile';
 import { getBloggerClient } from './blogger-client';
 import { setupMarkdownParser } from './markdown-it-default';
+import { getGlobalI18n, setGlobalLang } from './i18n';
 
 const doClientPublish = (
   plugin: BloggerPlugin,
@@ -34,7 +35,7 @@ const doClientPublish = (
       client.publishPost(defaultPostParams).then();
     }
   } else {
-    const noSuchProfileMessage = AppState.get().i18n.t('error_noSuchProfile', {
+    const noSuchProfileMessage = getGlobalI18n().t('error_noSuchProfile', {
       profileName: String(profileOrName),
     });
     showError(noSuchProfileMessage);
@@ -56,7 +57,7 @@ export default class BloggerPlugin extends Plugin {
 
     await this.loadSettings();
     // lang should be load early, but after settings
-    AppState.get().setLang(this.#settings?.lang);
+    setGlobalLang(this.#settings?.lang);
 
     setupMarkdownParser(AppState.get().markdownParser, this.settings);
 
@@ -67,7 +68,7 @@ export default class BloggerPlugin extends Plugin {
 
     this.addCommand({
       id: 'defaultPublish',
-      name: AppState.get().i18n.t('command_publishWithDefault'),
+      name: getGlobalI18n().t('command_publishWithDefault'),
       editorCallback: () => {
         const defaultProfile = this.#settings?.profiles.find((it) => it.isDefault);
         if (defaultProfile) {
@@ -79,14 +80,14 @@ export default class BloggerPlugin extends Plugin {
           };
           doClientPublish(this, defaultProfile, params);
         } else {
-          showError(AppState.get().i18n.t('error_noDefaultProfile') ?? 'No default profile found.');
+          showError(getGlobalI18n().t('error_noDefaultProfile') ?? 'No default profile found.');
         }
       },
     });
 
     this.addCommand({
       id: 'publish',
-      name: AppState.get().i18n.t('command_publish'),
+      name: getGlobalI18n().t('command_publish'),
       editorCallback: () => {
         this.openProfileChooser();
       },
@@ -135,7 +136,7 @@ export default class BloggerPlugin extends Plugin {
   }
 
   updateRibbonIcon(): void {
-    const ribbonIconTitle = AppState.get().i18n.t('ribbon_iconTitle') ?? 'Blogger';
+    const ribbonIconTitle = getGlobalI18n().t('ribbon_iconTitle') ?? 'Blogger';
     if (this.#settings?.showRibbonIcon) {
       if (!this.ribbonBloggerIcon) {
         this.ribbonBloggerIcon = this.addRibbonIcon('blogger-logo', ribbonIconTitle, () => {
@@ -157,7 +158,7 @@ export default class BloggerPlugin extends Plugin {
       const profile = await openProfileChooserModal(this);
       doClientPublish(this, profile);
     } else {
-      showError(AppState.get().i18n.t('error_noProfile'));
+      showError(getGlobalI18n().t('error_noProfile'));
     }
   }
 }
