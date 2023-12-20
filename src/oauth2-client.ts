@@ -182,7 +182,7 @@ export class OAuth2Client {
       tokenType: resp.token_type,
       expiresIn,
       expiresAt,
-      refreshToken: resp.refresh_token,
+      refreshToken: resp.refresh_token ?? params.refresh_token,
       scope: resp.scope,
     };
     if (!isFreshInternalOAuth2Token(res)) {
