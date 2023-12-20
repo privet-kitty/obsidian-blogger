@@ -238,7 +238,7 @@ export class BloggerRestClient extends AbstractBloggerClient {
         throw new Error(getGlobalI18n().t('error_invalidGoogleToken'));
       });
     if (token !== fresh_token) {
-      this.profile.googleOAuth2Token = { ...this.profile.googleOAuth2Token, ...fresh_token };
+      this.profile.googleOAuth2Token = fresh_token;
       await this.plugin.saveSettings();
     }
     const headers: Record<string, string> = {
