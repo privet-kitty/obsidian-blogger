@@ -1,5 +1,5 @@
-[!NOTE]
-This document has not been updated for Blogger.
+> [!NOTE]
+> This document has not been updated for Blogger.
 
 ## Obsidian WordPress Plugin
 
