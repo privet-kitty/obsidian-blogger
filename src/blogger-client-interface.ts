@@ -11,7 +11,7 @@ export enum BloggerClientReturnCode {
   ServerInternalError,
 }
 
-interface _wpClientResult {
+interface _bloggerClientResult {
   /**
    * Response from Blogger server.
    */
@@ -20,12 +20,12 @@ interface _wpClientResult {
   code: BloggerClientReturnCode;
 }
 
-interface BloggerClientOkResult<T> extends _wpClientResult {
+interface BloggerClientOkResult<T> extends _bloggerClientResult {
   code: BloggerClientReturnCode.OK;
   data: T;
 }
 
-interface BloggerClientErrorResult extends _wpClientResult {
+interface BloggerClientErrorResult extends _bloggerClientResult {
   code: BloggerClientReturnCode.Error;
   error: {
     /**
