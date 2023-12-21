@@ -15,7 +15,7 @@ import { BLOGGER_API_ENDPOINT } from './consts';
 import { OAuth2Client } from './oauth2-client';
 import { App, Notice } from 'obsidian';
 import { BloggerPublishModal } from './blogger-publish-modal';
-import { WP_DEFAULT_PROFILE_NAME } from './consts';
+import { BLOGGER_DEFAULT_PROFILE_NAME } from './consts';
 import { openWithBrowser, processFile, showError } from './utils';
 import { ConfirmCode, openConfirmModal } from './confirm-modal';
 import { openPostPublishedModal } from './post-published-modal';
@@ -203,7 +203,7 @@ export abstract class AbstractBloggerClient implements BloggerClient {
     if (matterData.labels) {
       postParams.labels = matterData.labels;
     }
-    postParams.profileName = matterData.profileName ?? WP_DEFAULT_PROFILE_NAME;
+    postParams.profileName = matterData.profileName ?? BLOGGER_DEFAULT_PROFILE_NAME;
     return postParams;
   }
 }

@@ -1,11 +1,11 @@
 import { generateQueryString, openWithBrowser } from './utils';
 import { requestUrl } from 'obsidian';
 import {
-  WP_OAUTH2_AUTHORIZE_ENDPOINT,
-  WP_OAUTH2_CLIENT_ID,
-  WP_OAUTH2_CLIENT_SECRET,
-  WP_OAUTH2_TOKEN_ENDPOINT,
-  WP_OAUTH2_VALIDATE_TOKEN_ENDPOINT,
+  GOOGLE_OAUTH2_AUTHORIZE_ENDPOINT,
+  GOOGLE_OAUTH2_CLIENT_ID,
+  GOOGLE_OAUTH2_CLIENT_SECRET,
+  GOOGLE_OAUTH2_TOKEN_ENDPOINT,
+  GOOGLE_OAUTH2_VALIDATE_TOKEN_ENDPOINT,
 } from './consts';
 import { Brand } from './types';
 import { getGlobalI18n } from './i18n';
@@ -68,11 +68,11 @@ export interface OAuth2Options {
 export class OAuth2Client {
   static getGoogleOAuth2Client(): OAuth2Client {
     return new OAuth2Client({
-      clientId: WP_OAUTH2_CLIENT_ID,
-      clientSecret: WP_OAUTH2_CLIENT_SECRET,
-      tokenEndpoint: WP_OAUTH2_TOKEN_ENDPOINT,
-      authorizeEndpoint: WP_OAUTH2_AUTHORIZE_ENDPOINT,
-      validateTokenEndpoint: WP_OAUTH2_VALIDATE_TOKEN_ENDPOINT,
+      clientId: GOOGLE_OAUTH2_CLIENT_ID,
+      clientSecret: GOOGLE_OAUTH2_CLIENT_SECRET,
+      tokenEndpoint: GOOGLE_OAUTH2_TOKEN_ENDPOINT,
+      authorizeEndpoint: GOOGLE_OAUTH2_AUTHORIZE_ENDPOINT,
+      validateTokenEndpoint: GOOGLE_OAUTH2_VALIDATE_TOKEN_ENDPOINT,
     });
   }
 

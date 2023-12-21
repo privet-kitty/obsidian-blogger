@@ -2,7 +2,7 @@ import { Modal, Notice, Setting, requestUrl } from 'obsidian';
 import BloggerPlugin from './main';
 import { TranslateKey, getGlobalI18n } from './i18n';
 import { BloggerProfile } from './blogger-profile';
-import { BLOGGER_API_ENDPOINT, WP_OAUTH2_REDIRECT_URI } from './consts';
+import { BLOGGER_API_ENDPOINT, GOOGLE_OAUTH2_REDIRECT_URI } from './consts';
 import {
   FreshInternalOAuth2Token,
   generateCodeVerifier,
@@ -246,7 +246,7 @@ class BloggerProfileModal extends Modal {
     } else if (params.code) {
       const token = await OAuth2Client.getGoogleOAuth2Client().getToken({
         code: params.code,
-        redirectUri: `${WP_OAUTH2_REDIRECT_URI}:${port}`,
+        redirectUri: `${GOOGLE_OAUTH2_REDIRECT_URI}:${port}`,
         codeVerifier,
       });
       console.log(token);
@@ -287,7 +287,7 @@ class BloggerProfileModal extends Modal {
       try {
         // Request.url cannot be undefined. See https://stackoverflow.com/questions/58377623/request-url-undefined-type-why.
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        const url = new URL(req.url!, WP_OAUTH2_REDIRECT_URI);
+        const url = new URL(req.url!, GOOGLE_OAUTH2_REDIRECT_URI);
         if (url.pathname === '/') {
           const response_state = url.searchParams.get('state');
           if (state !== response_state) {
@@ -316,7 +316,7 @@ class BloggerProfileModal extends Modal {
     server.listen(0);
 
     await OAuth2Client.getGoogleOAuth2Client().getAuthorizeCode({
-      redirectUri: `${WP_OAUTH2_REDIRECT_URI}:${getListeningPort(server)}`,
+      redirectUri: `${GOOGLE_OAUTH2_REDIRECT_URI}:${getListeningPort(server)}`,
       scope: ['https://www.googleapis.com/auth/blogger'],
       blog: this.profileData.endpoint,
       codeVerifier,
