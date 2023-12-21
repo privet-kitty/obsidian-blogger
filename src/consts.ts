@@ -10,7 +10,3 @@ export const GOOGLE_OAUTH2_REDIRECT_URI = 'http://127.0.0.1';
 export const BLOGGER_API_ENDPOINT = 'https://www.googleapis.com/blogger/v3/blogs';
 
 export const BLOGGER_DEFAULT_PROFILE_NAME = 'Default';
-
-export const enum EventType {
-  OAUTH2_TOKEN_GOT = 'OAUTH2_TOKEN_GOT',
-}

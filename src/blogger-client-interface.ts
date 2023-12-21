@@ -1,15 +1,18 @@
 import { SafeAny } from './types';
 
-export const enum PostStatus {
-  Draft = 'draft',
-  Publish = 'publish',
-}
+export const PostStatus = {
+  Draft: 'draft',
+  Publish: 'publish',
+} as const;
+export type PostStatus = (typeof PostStatus)[keyof typeof PostStatus];
 
-export enum BloggerClientReturnCode {
-  OK,
-  Error,
-  ServerInternalError,
-}
+export const BloggerClientReturnCode = {
+  OK: 'OK',
+  Error: 'Error',
+  ServerInternalError: 'ServerInternalError',
+} as const;
+export type BloggerClientReturnCode =
+  (typeof BloggerClientReturnCode)[keyof typeof BloggerClientReturnCode];
 
 interface _bloggerClientResult {
   /**

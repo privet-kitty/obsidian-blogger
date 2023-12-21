@@ -1,10 +1,11 @@
 import { App, Modal, Setting } from 'obsidian';
 import { TranslateKey, getGlobalI18n } from './i18n';
 
-export enum ConfirmCode {
-  Cancel,
-  Confirm,
-}
+export const ConfirmMode = {
+  Confirm: 'confirm',
+  Cancel: 'cancel',
+} as const;
+export type ConfirmMode = (typeof ConfirmMode)[keyof typeof ConfirmMode];
 
 export interface ConfirmModalMessages {
   message: string;

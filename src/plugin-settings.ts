@@ -3,14 +3,16 @@ import { BloggerProfile } from './blogger-profile';
 import { SafeAny } from './types';
 import { PostStatus } from './blogger-client-interface';
 
-export const enum SettingsVersion {
-  V1 = '1',
-}
+export const SettingsVersion = {
+  V1: '1',
+} as const;
+export type SettingsVersion = (typeof SettingsVersion)[keyof typeof SettingsVersion];
 
-export const enum MathJaxOutputType {
-  TeX = 'tex',
-  SVG = 'svg',
-}
+export const MathJaxOutputType = {
+  TeX: 'tex',
+  SVG: 'svg',
+} as const;
+export type MathJaxOutputType = (typeof MathJaxOutputType)[keyof typeof MathJaxOutputType];
 
 export type PluginSettings = {
   version?: SettingsVersion;
