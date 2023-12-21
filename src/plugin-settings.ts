@@ -67,6 +67,7 @@ export const DEFAULT_SETTINGS: PluginSettings = {
   replaceMediaLinks: true,
 };
 
+// Currently we only have one version
 export async function upgradeSettings(
   existingSettings: SafeAny,
   to: SettingsVersion,
