@@ -27,7 +27,7 @@ class PostPublishedModal extends Modal {
 
     contentEl.createEl('h1', { text: t('publishedModal_title') });
 
-    new Setting(contentEl).setName(t('publishedModal_confirmEditInWP'));
+    new Setting(contentEl).setName(t('publishedModal_confirmEditInBlogger'));
     new Setting(contentEl)
       .addButton((button) =>
         button.setButtonText(t('publishedModal_cancel')).onClick(() => {

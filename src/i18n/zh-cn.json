@@ -77,7 +77,7 @@
   "publishModal_publishButtonText": "发布",
   "publishModal_wrongMatterDataForPage": "元数据中包含了标签或分类，page 类型不允许该数据。确定要删除这些数据吗？",
   "publishedModal_title": "文章发布成功",
-  "publishedModal_confirmEditInWP": "需要使用浏览器打开 Blogger 编辑页面吗？",
+  "publishedModal_confirmEditInBlogger": "需要使用浏览器打开 Blogger 编辑页面吗？",
   "publishedModal_cancel": "取消",
   "publishedModal_open": "打开",
   "profilesManageModal_setDefault": "设为默认",

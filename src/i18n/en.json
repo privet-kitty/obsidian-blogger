@@ -85,7 +85,7 @@
   "publishModal_postStatusPublish": "Publish",
   "publishModal_publishButtonText": "Publish",
   "publishedModal_title": "Post published successfully!",
-  "publishedModal_confirmEditInWP": "Do you want to open Blogger edit page in browser?",
+  "publishedModal_confirmEditInBlogger": "Do you want to open Blogger edit page in browser?",
   "publishedModal_cancel": "Cancel",
   "publishedModal_open": "Open",
   "profilesManageModal_setDefault": "Set Default",
