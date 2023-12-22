@@ -1,11 +1,11 @@
 import { App, Modal, Setting } from 'obsidian';
 import { TranslateKey, getGlobalI18n } from './i18n';
 
-export const ConfirmMode = {
+export const ConfirmCode = {
   Confirm: 'confirm',
   Cancel: 'cancel',
 } as const;
-export type ConfirmMode = (typeof ConfirmMode)[keyof typeof ConfirmMode];
+export type ConfirmCode = (typeof ConfirmCode)[keyof typeof ConfirmCode];
 
 export interface ConfirmModalMessages {
   message: string;

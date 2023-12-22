@@ -24,12 +24,12 @@ interface _bloggerClientResult {
 }
 
 interface BloggerClientOkResult<T> extends _bloggerClientResult {
-  code: BloggerClientReturnCode.OK;
+  code: 'OK';
   data: T;
 }
 
 interface BloggerClientErrorResult extends _bloggerClientResult {
-  code: BloggerClientReturnCode.Error;
+  code: 'Error';
   error: {
     /**
      * This code could be returned from remote server
