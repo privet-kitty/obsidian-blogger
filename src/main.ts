@@ -162,7 +162,7 @@ export default class BloggerPlugin extends Plugin {
     if (this.settings.profiles.length === 1) {
       doClientPublish(this, this.settings.profiles[0]);
     } else if (this.settings.profiles.length > 1) {
-      const profile = await openProfileChooserModal(this);
+      const profile = await openProfileChooserModal(this.app, this.settings.profiles);
       doClientPublish(this, profile);
     } else {
       showError(getGlobalI18n().t('error_noProfile'));
