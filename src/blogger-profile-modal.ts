@@ -11,11 +11,12 @@ import {
 import { generateQueryString, isValidUrl, showError } from './utils';
 import { createServer } from 'http';
 import { randomUUID } from 'crypto';
-import { PluginSettingsWithSaver } from './plugin-settings';
+import { PluginSettings } from './plugin-settings';
 
 export function openProfileModal(
   app: App,
-  settings: PluginSettingsWithSaver,
+  settings: PluginSettings,
+  saveSettings: () => Promise<void>,
   profile: BloggerProfile = {
     name: '',
     endpoint: '',
@@ -30,6 +31,7 @@ export function openProfileModal(
     const modal = new BloggerProfileModal(
       app,
       settings,
+      saveSettings,
       (profile, atIndex) => {
         resolve({
           profile,
@@ -59,7 +61,8 @@ class BloggerProfileModal extends Modal {
 
   constructor(
     readonly app: App,
-    private readonly settings: PluginSettingsWithSaver,
+    private readonly settings: PluginSettings,
+    private readonly saveSettings: () => Promise<void>,
     private readonly onSubmit: (profile: BloggerProfile, atIndex?: number) => void,
     profile: BloggerProfile = {
       name: '',
@@ -229,7 +232,7 @@ class BloggerProfileModal extends Modal {
     if (this.atIndex >= 0) {
       // if token is undefined, just remove it
       this.settings.profiles[this.atIndex].googleOAuth2Token = token;
-      await this.settings.save();
+      await this.saveSettings();
     }
   }
 

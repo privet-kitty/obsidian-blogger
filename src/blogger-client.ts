@@ -21,7 +21,7 @@ import { ConfirmCode, openConfirmModal } from './confirm-modal';
 import { openPostPublishedModal } from './post-published-modal';
 import { getGlobalI18n } from './i18n';
 import { getGlobalMarkdownParser } from './markdown-it-default';
-import { PluginSettingsWithSaver } from './plugin-settings';
+import { PluginSettings } from './plugin-settings';
 
 export abstract class AbstractBloggerClient implements BloggerClient {
   /**
@@ -31,7 +31,7 @@ export abstract class AbstractBloggerClient implements BloggerClient {
 
   protected constructor(
     protected readonly app: App,
-    protected readonly settings: PluginSettingsWithSaver,
+    protected readonly settings: PluginSettings,
     protected readonly profile: BloggerProfile,
   ) {}
 
@@ -219,7 +219,8 @@ export class BloggerRestClient extends AbstractBloggerClient {
 
   constructor(
     readonly app: App,
-    readonly settings: PluginSettingsWithSaver,
+    readonly settings: PluginSettings,
+    private readonly saveSettings: () => Promise<void>,
     readonly profile: BloggerProfile,
     private readonly context: BloggerRestClientContext,
   ) {
@@ -242,7 +243,7 @@ export class BloggerRestClient extends AbstractBloggerClient {
       });
     if (token !== fresh_token) {
       this.profile.googleOAuth2Token = fresh_token;
-      await this.settings.save();
+      await this.saveSettings();
     }
     const headers: Record<string, string> = {
       authorization: `Bearer ${fresh_token.accessToken}`,
@@ -406,7 +407,8 @@ export class BloggerRestClientGoogleOAuth2Context implements BloggerRestClientCo
 
 export function getBloggerClient(
   app: App,
-  settings: PluginSettingsWithSaver,
+  settings: PluginSettings,
+  saveSettings: () => Promise<void>,
   profile: BloggerProfile,
 ): BloggerClient | null {
   if (!profile.endpoint || profile.endpoint.length === 0) {
@@ -424,6 +426,7 @@ export function getBloggerClient(
   return new BloggerRestClient(
     app,
     settings,
+    saveSettings,
     profile,
     new BloggerRestClientGoogleOAuth2Context(profile.blogId),
   );

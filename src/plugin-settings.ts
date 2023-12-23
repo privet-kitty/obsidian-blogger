@@ -49,13 +49,6 @@ export type PluginSettings = {
   replaceMediaLinks: boolean;
 };
 
-export type PluginSettingsWithSaver = PluginSettings & {
-  /**
-   * Save settings to storage.
-   */
-  save: () => Promise<void>;
-};
-
 export const DEFAULT_SETTINGS: PluginSettings = {
   lang: 'auto',
   profiles: [],

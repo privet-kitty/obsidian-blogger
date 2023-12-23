@@ -6,9 +6,8 @@ import { openProfileChooserModal } from './blogger-profile-chooser-modal';
 import {
   DEFAULT_SETTINGS,
   SettingsVersion,
-  PluginSettings,
   upgradeSettings,
-  PluginSettingsWithSaver,
+  PluginSettings,
 } from './plugin-settings';
 import { PassCrypto } from './pass-crypto';
 import { showError } from './utils';
@@ -30,7 +29,7 @@ const doClientPublish = (
     profile = profileOrName;
   }
   if (profile) {
-    const client = getBloggerClient(plugin.app, plugin.getSettingsWithSaver(), profile);
+    const client = getBloggerClient(plugin.app, plugin.settings, plugin.saveSettings, profile);
     if (client) {
       client.publishPost(defaultPostParams).then();
     }
@@ -52,7 +51,7 @@ export default class BloggerPlugin extends Plugin {
 
   private ribbonBloggerIcon: HTMLElement | null = null;
 
-  async onload() {
+  onload = async () => {
     console.log('loading obsidian-wordpress plugin');
 
     await this.loadSettings();
@@ -96,16 +95,17 @@ export default class BloggerPlugin extends Plugin {
     this.addSettingTab(
       new BloggerSettingTab(
         this.app,
-        { ...this.settings, save: this.saveSettings },
+        this.settings,
+        this.saveSettings,
         this,
         this.updateRibbonIcon,
       ),
     );
-  }
+  };
 
-  onunload() {}
+  onunload = () => {};
 
-  async loadSettings() {
+  loadSettings = async () => {
     this.#settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData());
     const { needUpgrade, settings } = await upgradeSettings(this.#settings, SettingsVersion.V1);
     this.#settings = settings;
@@ -126,9 +126,9 @@ export default class BloggerPlugin extends Plugin {
     getGlobalMarkdownParser().set({
       html: this.#settings?.enableHtml ?? false,
     });
-  }
+  };
 
-  async saveSettings() {
+  saveSettings = async () => {
     const settings = cloneDeep(this.settings);
     for (let i = 0; i < settings.profiles.length; i++) {
       const profile = settings.profiles[i];
@@ -140,16 +140,9 @@ export default class BloggerPlugin extends Plugin {
       }
     }
     await this.saveData(settings);
-  }
-
-  getSettingsWithSaver = (): PluginSettingsWithSaver => {
-    return {
-      ...this.settings,
-      save: () => this.saveSettings(),
-    };
   };
 
-  updateRibbonIcon(): void {
+  updateRibbonIcon = () => {
     const ribbonIconTitle = getGlobalI18n().t('ribbon_iconTitle') ?? 'Blogger';
     if (this.#settings?.showRibbonIcon) {
       if (!this.ribbonBloggerIcon) {
@@ -163,9 +156,9 @@ export default class BloggerPlugin extends Plugin {
         this.ribbonBloggerIcon = null;
       }
     }
-  }
+  };
 
-  private async openProfileChooser() {
+  private openProfileChooser = async () => {
     if (this.settings.profiles.length === 1) {
       doClientPublish(this, this.settings.profiles[0]);
     } else if (this.settings.profiles.length > 1) {
@@ -174,5 +167,5 @@ export default class BloggerPlugin extends Plugin {
     } else {
       showError(getGlobalI18n().t('error_noProfile'));
     }
-  }
+  };
 }

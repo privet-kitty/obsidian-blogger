@@ -3,14 +3,18 @@ import { BloggerProfile, rendererProfile } from './blogger-profile';
 import { TranslateKey, getGlobalI18n } from './i18n';
 import { openProfileModal } from './blogger-profile-modal';
 import { isNil } from 'lodash-es';
-import { PluginSettingsWithSaver } from './plugin-settings';
+import { PluginSettings } from './plugin-settings';
 
 /**
  * Blogger profiles manage modal.
  */
 export class BloggerProfileManageModal extends Modal {
   private readonly profiles: BloggerProfile[];
-  constructor(readonly app: App, private readonly settings: PluginSettingsWithSaver) {
+  constructor(
+    readonly app: App,
+    private readonly settings: PluginSettings,
+    private readonly saveSettings: () => Promise<void>,
+  ) {
     super(app);
     this.profiles = settings.profiles;
   }
@@ -30,7 +34,7 @@ export class BloggerProfileManageModal extends Modal {
               this.profiles.forEach((it) => (it.isDefault = false));
               profile.isDefault = true;
               renderProfiles();
-              this.settings.save().then();
+              this.saveSettings().then();
             }),
           );
         }
@@ -39,6 +43,7 @@ export class BloggerProfileManageModal extends Modal {
             const { profile: newProfile, atIndex } = await openProfileModal(
               this.app,
               this.settings,
+              this.saveSettings,
               profile,
               index,
             );
@@ -49,7 +54,7 @@ export class BloggerProfileManageModal extends Modal {
               }
               this.profiles[atIndex] = newProfile;
               renderProfiles();
-              this.settings.save().then();
+              this.saveSettings().then();
             }
           }),
         );
@@ -65,7 +70,7 @@ export class BloggerProfileManageModal extends Modal {
                 }
               }
               renderProfiles();
-              this.settings.save().then();
+              this.saveSettings().then();
             }),
         );
       });
@@ -83,7 +88,7 @@ export class BloggerProfileManageModal extends Modal {
           .setButtonText(t('profilesManageModal_create'))
           .setCta()
           .onClick(async () => {
-            const { profile } = await openProfileModal(this.app, this.settings);
+            const { profile } = await openProfileModal(this.app, this.settings, this.saveSettings);
             console.log('appendProfile', profile);
             // if no profile, make the first one default
             if (this.profiles.length === 0) {
@@ -94,7 +99,7 @@ export class BloggerProfileManageModal extends Modal {
             }
             this.profiles.push(profile);
             renderProfiles();
-            await this.settings.save();
+            await this.saveSettings();
           }),
       );
 

@@ -1,14 +1,15 @@
 import { App, Plugin, PluginSettingTab, Setting } from 'obsidian';
 import { TranslateKey, getGlobalI18n } from './i18n';
 import { BloggerProfileManageModal } from './blogger-profile-manage-modal';
-import { MathJaxOutputType, PluginSettingsWithSaver } from './plugin-settings';
+import { MathJaxOutputType, PluginSettings } from './plugin-settings';
 import { getGlobalMarkdownParser, setupMarkdownParser } from './markdown-it-default';
 import { PostStatus } from './blogger-client-interface';
 
 export class BloggerSettingTab extends PluginSettingTab {
   constructor(
     readonly app: App,
-    private readonly settings: PluginSettingsWithSaver,
+    private readonly settings: PluginSettings,
+    private readonly saveSettings: () => Promise<void>,
     private readonly plugin: Plugin,
     private readonly updateRibbonIcon: () => void,
   ) {
@@ -44,7 +45,7 @@ export class BloggerSettingTab extends PluginSettingTab {
       .setDesc(t('settings_profilesDesc'))
       .addButton((button) =>
         button.setButtonText(t('settings_profilesModal')).onClick(() => {
-          new BloggerProfileManageModal(this.app, this.settings).open();
+          new BloggerProfileManageModal(this.app, this.settings, this.saveSettings).open();
         }),
       );
 
@@ -54,7 +55,7 @@ export class BloggerSettingTab extends PluginSettingTab {
       .addToggle((toggle) =>
         toggle.setValue(this.settings.showRibbonIcon).onChange(async (value) => {
           this.settings.showRibbonIcon = value;
-          await this.settings.save();
+          await this.saveSettings();
 
           this.updateRibbonIcon();
         }),
@@ -71,7 +72,7 @@ export class BloggerSettingTab extends PluginSettingTab {
           .setValue(this.settings.defaultPostStatus)
           .onChange(async (value) => {
             this.settings.defaultPostStatus = value as PostStatus;
-            await this.settings.save();
+            await this.saveSettings();
           });
       });
 
@@ -81,7 +82,7 @@ export class BloggerSettingTab extends PluginSettingTab {
       .addToggle((toggle) =>
         toggle.setValue(this.settings.showBloggerEditConfirm).onChange(async (value) => {
           this.settings.showBloggerEditConfirm = value;
-          await this.settings.save();
+          await this.saveSettings();
         }),
       );
 
@@ -96,7 +97,7 @@ export class BloggerSettingTab extends PluginSettingTab {
           .onChange(async (value) => {
             this.settings.mathJaxOutputType = value as MathJaxOutputType;
             mathJaxOutputTypeDesc = getMathJaxOutputTypeDesc(this.settings.mathJaxOutputType);
-            await this.settings.save();
+            await this.saveSettings();
             this.display();
 
             setupMarkdownParser(getGlobalMarkdownParser(), this.settings);
@@ -113,7 +114,7 @@ export class BloggerSettingTab extends PluginSettingTab {
       .addToggle((toggle) =>
         toggle.setValue(this.settings.enableHtml).onChange(async (value) => {
           this.settings.enableHtml = value;
-          await this.settings.save();
+          await this.saveSettings();
 
           getGlobalMarkdownParser().set({
             html: this.settings.enableHtml,
@@ -127,7 +128,7 @@ export class BloggerSettingTab extends PluginSettingTab {
       .addToggle((toggle) =>
         toggle.setValue(this.settings.replaceMediaLinks).onChange(async (value) => {
           this.settings.replaceMediaLinks = value;
-          await this.settings.save();
+          await this.saveSettings();
         }),
       );
   }
