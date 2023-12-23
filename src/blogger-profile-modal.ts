@@ -1,5 +1,4 @@
-import { Modal, Notice, Setting, requestUrl } from 'obsidian';
-import BloggerPlugin from './main';
+import { App, Modal, Notice, Setting, requestUrl } from 'obsidian';
 import { TranslateKey, getGlobalI18n } from './i18n';
 import { BloggerProfile } from './blogger-profile';
 import { BLOGGER_API_ENDPOINT, GOOGLE_OAUTH2_REDIRECT_URI } from './consts';
@@ -12,9 +11,11 @@ import {
 import { generateQueryString, isValidUrl, showError } from './utils';
 import { createServer } from 'http';
 import { randomUUID } from 'crypto';
+import { PluginSettingsWithSaver } from './plugin-settings';
 
 export function openProfileModal(
-  plugin: BloggerPlugin,
+  app: App,
+  settings: PluginSettingsWithSaver,
   profile: BloggerProfile = {
     name: '',
     endpoint: '',
@@ -27,7 +28,8 @@ export function openProfileModal(
 ): Promise<{ profile: BloggerProfile; atIndex?: number }> {
   return new Promise((resolve, reject) => {
     const modal = new BloggerProfileModal(
-      plugin,
+      app,
+      settings,
       (profile, atIndex) => {
         resolve({
           profile,
@@ -56,7 +58,8 @@ class BloggerProfileModal extends Modal {
   private readonly profileData: BloggerProfile;
 
   constructor(
-    private readonly plugin: BloggerPlugin,
+    readonly app: App,
+    private readonly settings: PluginSettingsWithSaver,
     private readonly onSubmit: (profile: BloggerProfile, atIndex?: number) => void,
     profile: BloggerProfile = {
       name: '',
@@ -68,7 +71,7 @@ class BloggerProfileModal extends Modal {
     },
     private readonly atIndex: number = -1,
   ) {
-    super(plugin.app);
+    super(app);
 
     this.profileData = Object.assign({}, profile);
   }
@@ -225,8 +228,8 @@ class BloggerProfileModal extends Modal {
     this.profileData.googleOAuth2Token = token;
     if (this.atIndex >= 0) {
       // if token is undefined, just remove it
-      this.plugin.settings.profiles[this.atIndex].googleOAuth2Token = token;
-      await this.plugin.saveSettings();
+      this.settings.profiles[this.atIndex].googleOAuth2Token = token;
+      await this.settings.save();
     }
   }
 

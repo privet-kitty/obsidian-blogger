@@ -1,5 +1,5 @@
 import { Plugin } from 'obsidian';
-import { BloggerSettingTab } from './settings';
+import { BloggerSettingTab } from './setting-tab';
 import { addIcons } from './icons';
 import { BloggerPostParams, PostStatus } from './blogger-client-interface';
 import { openProfileChooserModal } from './blogger-profile-chooser-modal';
@@ -93,7 +93,14 @@ export default class BloggerPlugin extends Plugin {
       },
     });
 
-    this.addSettingTab(new BloggerSettingTab(this));
+    this.addSettingTab(
+      new BloggerSettingTab(
+        this.app,
+        { ...this.settings, save: this.saveSettings },
+        this,
+        this.updateRibbonIcon,
+      ),
+    );
   }
 
   onunload() {}

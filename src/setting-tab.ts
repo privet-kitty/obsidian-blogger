@@ -1,13 +1,17 @@
-import { PluginSettingTab, Setting } from 'obsidian';
-import BloggerPlugin from './main';
+import { App, Plugin, PluginSettingTab, Setting } from 'obsidian';
 import { TranslateKey, getGlobalI18n } from './i18n';
 import { BloggerProfileManageModal } from './blogger-profile-manage-modal';
-import { MathJaxOutputType } from './plugin-settings';
+import { MathJaxOutputType, PluginSettingsWithSaver } from './plugin-settings';
 import { getGlobalMarkdownParser, setupMarkdownParser } from './markdown-it-default';
 import { PostStatus } from './blogger-client-interface';
 
 export class BloggerSettingTab extends PluginSettingTab {
-  constructor(private readonly plugin: BloggerPlugin) {
+  constructor(
+    readonly app: App,
+    private readonly settings: PluginSettingsWithSaver,
+    private readonly plugin: Plugin,
+    private readonly updateRibbonIcon: () => void,
+  ) {
     super(plugin.app, plugin);
   }
 
@@ -33,14 +37,14 @@ export class BloggerSettingTab extends PluginSettingTab {
 
     containerEl.createEl('h1', { text: t('settings_title') });
 
-    let mathJaxOutputTypeDesc = getMathJaxOutputTypeDesc(this.plugin.settings.mathJaxOutputType);
+    let mathJaxOutputTypeDesc = getMathJaxOutputTypeDesc(this.settings.mathJaxOutputType);
 
     new Setting(containerEl)
       .setName(t('settings_profiles'))
       .setDesc(t('settings_profilesDesc'))
       .addButton((button) =>
         button.setButtonText(t('settings_profilesModal')).onClick(() => {
-          new BloggerProfileManageModal(this.plugin).open();
+          new BloggerProfileManageModal(this.app, this.settings).open();
         }),
       );
 
@@ -48,11 +52,11 @@ export class BloggerSettingTab extends PluginSettingTab {
       .setName(t('settings_showRibbonIcon'))
       .setDesc(t('settings_showRibbonIconDesc'))
       .addToggle((toggle) =>
-        toggle.setValue(this.plugin.settings.showRibbonIcon).onChange(async (value) => {
-          this.plugin.settings.showRibbonIcon = value;
-          await this.plugin.saveSettings();
+        toggle.setValue(this.settings.showRibbonIcon).onChange(async (value) => {
+          this.settings.showRibbonIcon = value;
+          await this.settings.save();
 
-          this.plugin.updateRibbonIcon();
+          this.updateRibbonIcon();
         }),
       );
 
@@ -64,10 +68,10 @@ export class BloggerSettingTab extends PluginSettingTab {
           .addOption(PostStatus.Draft, t('settings_defaultPostStatusDraft'))
           .addOption(PostStatus.Publish, t('settings_defaultPostStatusPublish'))
           // .addOption(PostStatus.Future, 'future')
-          .setValue(this.plugin.settings.defaultPostStatus)
+          .setValue(this.settings.defaultPostStatus)
           .onChange(async (value) => {
-            this.plugin.settings.defaultPostStatus = value as PostStatus;
-            await this.plugin.saveSettings();
+            this.settings.defaultPostStatus = value as PostStatus;
+            await this.settings.save();
           });
       });
 
@@ -75,9 +79,9 @@ export class BloggerSettingTab extends PluginSettingTab {
       .setName(t('settings_showBloggerEditPageModal'))
       .setDesc(t('settings_showBloggerEditPageModalDesc'))
       .addToggle((toggle) =>
-        toggle.setValue(this.plugin.settings.showBloggerEditConfirm).onChange(async (value) => {
-          this.plugin.settings.showBloggerEditConfirm = value;
-          await this.plugin.saveSettings();
+        toggle.setValue(this.settings.showBloggerEditConfirm).onChange(async (value) => {
+          this.settings.showBloggerEditConfirm = value;
+          await this.settings.save();
         }),
       );
 
@@ -88,16 +92,14 @@ export class BloggerSettingTab extends PluginSettingTab {
         dropdown
           .addOption(MathJaxOutputType.TeX, t('settings_mathJaxOutputTypeTeX'))
           .addOption(MathJaxOutputType.SVG, t('settings_mathJaxOutputTypeSVG'))
-          .setValue(this.plugin.settings.mathJaxOutputType)
+          .setValue(this.settings.mathJaxOutputType)
           .onChange(async (value) => {
-            this.plugin.settings.mathJaxOutputType = value as MathJaxOutputType;
-            mathJaxOutputTypeDesc = getMathJaxOutputTypeDesc(
-              this.plugin.settings.mathJaxOutputType,
-            );
-            await this.plugin.saveSettings();
+            this.settings.mathJaxOutputType = value as MathJaxOutputType;
+            mathJaxOutputTypeDesc = getMathJaxOutputTypeDesc(this.settings.mathJaxOutputType);
+            await this.settings.save();
             this.display();
 
-            setupMarkdownParser(getGlobalMarkdownParser(), this.plugin.settings);
+            setupMarkdownParser(getGlobalMarkdownParser(), this.settings);
           });
       });
     containerEl.createEl('p', {
@@ -109,12 +111,12 @@ export class BloggerSettingTab extends PluginSettingTab {
       .setName(t('settings_enableHtml'))
       .setDesc(t('settings_enableHtmlDesc'))
       .addToggle((toggle) =>
-        toggle.setValue(this.plugin.settings.enableHtml).onChange(async (value) => {
-          this.plugin.settings.enableHtml = value;
-          await this.plugin.saveSettings();
+        toggle.setValue(this.settings.enableHtml).onChange(async (value) => {
+          this.settings.enableHtml = value;
+          await this.settings.save();
 
           getGlobalMarkdownParser().set({
-            html: this.plugin.settings.enableHtml,
+            html: this.settings.enableHtml,
           });
         }),
       );
@@ -123,9 +125,9 @@ export class BloggerSettingTab extends PluginSettingTab {
       .setName(t('settings_replaceMediaLinks'))
       .setDesc(t('settings_replaceMediaLinksDesc'))
       .addToggle((toggle) =>
-        toggle.setValue(this.plugin.settings.replaceMediaLinks).onChange(async (value) => {
-          this.plugin.settings.replaceMediaLinks = value;
-          await this.plugin.saveSettings();
+        toggle.setValue(this.settings.replaceMediaLinks).onChange(async (value) => {
+          this.settings.replaceMediaLinks = value;
+          await this.settings.save();
         }),
       );
   }
