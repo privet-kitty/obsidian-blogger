@@ -20,9 +20,6 @@ export function openProfileModal(
   profile: BloggerProfile = {
     name: '',
     endpoint: '',
-    xmlRpcPath: '/xmlrpc.php',
-    saveUsername: false,
-    savePassword: false,
     isDefault: false,
   },
   atIndex = -1,
@@ -67,9 +64,6 @@ class BloggerProfileModal extends Modal {
     profile: BloggerProfile = {
       name: '',
       endpoint: '',
-      xmlRpcPath: '/xmlrpc.php',
-      saveUsername: false,
-      savePassword: false,
       isDefault: false,
     },
     private readonly atIndex: number = -1,
@@ -180,10 +174,6 @@ class BloggerProfileModal extends Modal {
               showError(t('error_invalidUrl'));
             } else if (this.profileData.name.length === 0) {
               showError(t('error_noProfileName'));
-            } else if (this.profileData.saveUsername && !this.profileData.username) {
-              showError(t('error_noUsername'));
-            } else if (this.profileData.savePassword && !this.profileData.password) {
-              showError(t('error_noPassword'));
             } else {
               this.onSubmit(this.profileData, this.atIndex);
               this.close();

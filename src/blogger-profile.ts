@@ -13,11 +13,6 @@ export interface BloggerProfile {
   endpoint: string;
 
   /**
-   * XML-RPC path.
-   */
-  xmlRpcPath?: string;
-
-  /**
    * Blogger username.
    */
   username?: string;
@@ -47,16 +42,6 @@ export interface BloggerProfile {
   googleOAuth2Token?: InternalOAuth2Token;
 
   /**
-   * Save username to local data.
-   */
-  saveUsername: boolean;
-
-  /**
-   * Save user password to local data.
-   */
-  savePassword: boolean;
-
-  /**
    * Is default profile.
    */
   isDefault: boolean;
@@ -70,13 +55,6 @@ export function rendererProfile(profile: BloggerProfile, container: HTMLElement)
   let desc = profile.endpoint;
   if (profile.googleOAuth2Token) {
     desc += ` / 🆔 / 🔒`;
-  } else {
-    if (profile.saveUsername) {
-      desc += ` / 🆔 ${profile.username}`;
-    }
-    if (profile.savePassword) {
-      desc += ' / 🔒 ******';
-    }
   }
   return new Setting(container).setName(name).setDesc(desc);
 }

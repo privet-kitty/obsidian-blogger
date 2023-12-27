@@ -40,8 +40,6 @@
   "settings_defaultPostStatusPublish": "正式发布",
   "settings_showBloggerEditPageModal": "显示 Blogger 编辑确认框",
   "settings_showBloggerEditPageModalDesc": "发布成功后弹出是否跳转到 Blogger 编辑页面的确认框",
-  "settings_xmlRpcPath": "XML-RPC 路径",
-  "settings_xmlRpcPathDesc": "XML-RPC 路径，默认值为 /xmlrpc.php",
   "settings_googleOAuth2ReauthorizeToken": "刷新 Google OAuth2 令牌",
   "settings_googleOAuth2ReauthorizeTokenDesc": "点击右侧按钮验证或刷新 Google OAuth2 令牌",
   "settings_googleOAuth2ValidateTokenButtonText": "验证",

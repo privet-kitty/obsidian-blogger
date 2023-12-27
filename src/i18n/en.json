@@ -48,8 +48,6 @@
   "settings_fetchBlogIdButtonText": "Fetch Blog ID",
   "settings_showBloggerEditPageModal": "Show Blogger edit confirmation",
   "settings_showBloggerEditPageModalDesc": "Show open Blogger edit page confirmation when publish successfully",
-  "settings_xmlRpcPath": "XML-RPC Path",
-  "settings_xmlRpcPathDesc": "XML-RPC Path, default is /xmlrpc.php",
   "settings_googleOAuth2AuthorizeToken": "Authorize Google OAuth2 token",
   "settings_googleOAuth2AuthorizeTokenDesc": "Click right button to validate or authorize Google OAuth2 token.",
   "settings_googleOAuth2ValidateTokenButtonText": "Validate",
