@@ -2,33 +2,19 @@ import { App, Modal, Notice, Setting, requestUrl } from 'obsidian';
 import { TranslateKey, getGlobalI18n } from './i18n';
 import { BloggerProfile } from './blogger-profile';
 import { BLOGGER_API_ENDPOINT, GOOGLE_OAUTH2_REDIRECT_URI } from './consts';
-import {
-  FreshInternalOAuth2Token,
-  generateCodeVerifier,
-  InternalOAuth2Token,
-  OAuth2Client,
-} from './oauth2-client';
-import { generateQueryString, isValidUrl, showError } from './utils';
+import { FreshInternalOAuth2Token, generateCodeVerifier, OAuth2Client } from './oauth2-client';
+import { generateQueryString, isValidBloggerUrl, showError } from './utils';
 import { createServer } from 'http';
 import { randomUUID } from 'crypto';
-import { PluginSettings } from './plugin-settings';
 
 export function openProfileModal(
   app: App,
-  settings: PluginSettings,
-  saveSettings: () => Promise<void>,
-  profile: BloggerProfile = {
-    name: '',
-    endpoint: '',
-    isDefault: false,
-  },
+  profile: Partial<BloggerProfile>,
   atIndex = -1,
 ): Promise<{ profile: BloggerProfile; atIndex?: number }> {
   return new Promise((resolve, reject) => {
     const modal = new BloggerProfileModal(
       app,
-      settings,
-      saveSettings,
       (profile, atIndex) => {
         resolve({
           profile,
@@ -78,18 +64,12 @@ const fetchBlogId = async (
  * Blogger profile modal.
  */
 class BloggerProfileModal extends Modal {
-  private readonly profileData: BloggerProfile;
+  private readonly profileData: Partial<BloggerProfile>;
 
   constructor(
     readonly app: App,
-    private readonly settings: PluginSettings,
-    private readonly saveSettings: () => Promise<void>,
     private readonly onSubmit: (profile: BloggerProfile, atIndex?: number) => void,
-    profile: BloggerProfile = {
-      name: '',
-      endpoint: '',
-      isDefault: false,
-    },
+    profile: Partial<BloggerProfile>,
     private readonly atIndex: number = -1,
   ) {
     super(app);
@@ -122,7 +102,7 @@ class BloggerProfileModal extends Modal {
         .addText((text) =>
           text
             .setPlaceholder(t('settings_urlPlaceholder'))
-            .setValue(this.profileData.endpoint)
+            .setValue(this.profileData.endpoint ?? '')
             .onChange((value) => {
               if (this.profileData.endpoint !== value) {
                 this.profileData.endpoint = value;
@@ -156,51 +136,22 @@ class BloggerProfileModal extends Modal {
             }
           });
         });
-      const blogIdSetting = new Setting(content)
-        .setName(t('settings_blogId'))
-        .setDesc(`blogId: ${this.profileData.blogId || '<unknown>'}`)
-        .addButton((button) =>
-          button.setButtonText(t('settings_fetchBlogIdButtonText')).onClick(async () => {
-            if (!/^https:\/\/[a-z0-9-]+\.blogspot\.com\/?$/.test(this.profileData.endpoint)) {
-              showError(t('error_notGoogle'));
-              this.profileData.blogId = undefined;
-            } else if (!this.profileData.googleOAuth2Token) {
-              showError(t('error_invalidGoogleToken'));
-              this.profileData.blogId = undefined;
-            } else {
-              const fresh_token = await OAuth2Client.getGoogleOAuth2Client().ensureFreshToken(
-                this.profileData.googleOAuth2Token,
-              );
-              this.profileData.blogId = await fetchBlogId(
-                this.profileData.endpoint,
-                fresh_token,
-              ).catch((e) => {
-                showError(e);
-                return undefined;
-              });
-            }
-            blogIdSetting.setDesc(`blogId: ${this.profileData.blogId || '<unknown>'}`);
-          }),
-        );
-
       new Setting(content).setName(t('profileModal_setDefault')).addToggle((toggle) =>
-        toggle.setValue(this.profileData.isDefault).onChange((value) => {
+        toggle.setValue(this.profileData.isDefault ?? false).onChange((value) => {
           this.profileData.isDefault = value;
         }),
       );
-
       new Setting(content).addButton((button) =>
         button
           .setButtonText(t('profileModal_Save'))
           .setCta()
-          .onClick(() => {
-            if (!isValidUrl(this.profileData.endpoint)) {
-              showError(t('error_invalidUrl'));
-            } else if (this.profileData.name.length === 0) {
-              showError(t('error_noProfileName'));
-            } else {
-              this.onSubmit(this.profileData, this.atIndex);
+          .onClick(async () => {
+            try {
+              const fullProfile = await this.createFullProfile();
+              this.onSubmit(fullProfile, this.atIndex);
               this.close();
+            } catch (e) {
+              showError(e);
             }
           }),
       );
@@ -219,22 +170,34 @@ class BloggerProfileModal extends Modal {
     contentEl.empty();
   }
 
-  private async registerToken(token?: InternalOAuth2Token): Promise<void> {
-    this.profileData.googleOAuth2Token = token;
-    if (this.atIndex >= 0) {
-      // if token is undefined, just remove it
-      this.settings.profiles[this.atIndex].googleOAuth2Token = token;
-      await this.saveSettings();
+  private createFullProfile = async (): Promise<BloggerProfile> => {
+    const name = this.profileData.name;
+    if (name === undefined || name.length === 0) {
+      throw new Error(getGlobalI18n().t('error_noProfileName'));
     }
-  }
+    const endpoint = this.profileData.endpoint;
+    if (endpoint === undefined || !isValidBloggerUrl(endpoint)) {
+      throw new Error(getGlobalI18n().t('error_notGoogle'));
+    }
+    const googleOAuth2Token = this.profileData.googleOAuth2Token;
+    if (googleOAuth2Token === undefined) {
+      throw new Error(getGlobalI18n().t('error_invalidGoogleToken'));
+    }
+    const fresh_token = await OAuth2Client.getGoogleOAuth2Client().ensureFreshToken(
+      googleOAuth2Token,
+    );
+    const blogId = await fetchBlogId(endpoint, fresh_token);
+    const isDefault = this.profileData.isDefault ?? false;
+    return { name, endpoint, blogId, googleOAuth2Token, isDefault };
+  };
 
-  private async getAndRegisterToken(
+  private fetchAndRegisterToken = async (
     params: { [key: string]: string },
     codeVerifier: string,
     port: number,
-  ): Promise<void> {
+  ): Promise<void> => {
     if (params.error) {
-      this.registerToken(undefined);
+      this.profileData.googleOAuth2Token = undefined;
       throw new Error(
         getGlobalI18n().t('error_googleAuthFailed', {
           error: params.error,
@@ -248,18 +211,18 @@ class BloggerProfileModal extends Modal {
         codeVerifier,
       });
       console.log(token);
-      this.registerToken(token);
+      this.profileData.googleOAuth2Token = token;
     } else {
-      this.registerToken(undefined);
+      this.profileData.googleOAuth2Token = undefined;
       throw new Error(
         getGlobalI18n().t('server_googleOAuth2InvalidResponse', {
           response: JSON.stringify(params),
         }),
       );
     }
-  }
+  };
 
-  private async reauthorizeGoogleToken(): Promise<void> {
+  private reauthorizeGoogleToken = async (): Promise<void> => {
     const codeVerifier = generateCodeVerifier();
     const state = randomUUID();
 
@@ -296,7 +259,7 @@ class BloggerProfileModal extends Modal {
               }),
             );
           }
-          await this.getAndRegisterToken(
+          await this.fetchAndRegisterToken(
             Object.fromEntries(url.searchParams),
             codeVerifier,
             getListeningPort(server),
@@ -320,5 +283,5 @@ class BloggerProfileModal extends Modal {
       codeVerifier,
       state,
     });
-  }
+  };
 }

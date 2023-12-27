@@ -15,12 +15,12 @@ export interface BloggerProfile {
   /**
    * Blogger blog ID.
    */
-  blogId?: string;
+  blogId: string;
 
   /**
    * OAuth2 token for Google
    */
-  googleOAuth2Token?: InternalOAuth2Token;
+  googleOAuth2Token: InternalOAuth2Token;
 
   /**
    * Is default profile.

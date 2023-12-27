@@ -33,6 +33,15 @@ export function isValidUrl(url: string): boolean {
   }
 }
 
+export function isValidBloggerUrl(url: string): boolean {
+  try {
+    const u = new URL(url);
+    return u.hostname.endsWith('.blogspot.com');
+  } catch (e) {
+    return false;
+  }
+}
+
 export function getBoundary(): string {
   return `----obsidianBoundary${format(new Date(), 'yyyyMMddHHmmss')}`;
 }

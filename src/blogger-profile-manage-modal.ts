@@ -12,7 +12,7 @@ export class BloggerProfileManageModal extends Modal {
   private readonly profiles: BloggerProfile[];
   constructor(
     readonly app: App,
-    private readonly settings: PluginSettings,
+    readonly settings: PluginSettings,
     private readonly saveSettings: () => Promise<void>,
   ) {
     super(app);
@@ -30,11 +30,11 @@ export class BloggerProfileManageModal extends Modal {
         const setting = rendererProfile(profile, content);
         if (!profile.isDefault) {
           setting.addButton((button) =>
-            button.setButtonText(t('profilesManageModal_setDefault')).onClick(() => {
+            button.setButtonText(t('profilesManageModal_setDefault')).onClick(async () => {
               this.profiles.forEach((it) => (it.isDefault = false));
               profile.isDefault = true;
               renderProfiles();
-              this.saveSettings().then();
+              await this.saveSettings();
             }),
           );
         }
@@ -42,8 +42,6 @@ export class BloggerProfileManageModal extends Modal {
           button.setButtonText(t('profilesManageModal_showDetails')).onClick(async () => {
             const { profile: newProfile, atIndex } = await openProfileModal(
               this.app,
-              this.settings,
-              this.saveSettings,
               profile,
               index,
             );
@@ -54,7 +52,7 @@ export class BloggerProfileManageModal extends Modal {
               }
               this.profiles[atIndex] = newProfile;
               renderProfiles();
-              this.saveSettings().then();
+              await this.saveSettings();
             }
           }),
         );
@@ -62,7 +60,7 @@ export class BloggerProfileManageModal extends Modal {
           button
             .setIcon('lucide-trash')
             .setTooltip(t('profilesManageModal_deleteTooltip'))
-            .onClick(() => {
+            .onClick(async () => {
               this.profiles.splice(index, 1);
               if (profile.isDefault) {
                 if (this.profiles.length > 0) {
@@ -70,7 +68,7 @@ export class BloggerProfileManageModal extends Modal {
                 }
               }
               renderProfiles();
-              this.saveSettings().then();
+              await this.saveSettings();
             }),
         );
       });
@@ -88,7 +86,7 @@ export class BloggerProfileManageModal extends Modal {
           .setButtonText(t('profilesManageModal_create'))
           .setCta()
           .onClick(async () => {
-            const { profile } = await openProfileModal(this.app, this.settings, this.saveSettings);
+            const { profile } = await openProfileModal(this.app, {});
             console.log('appendProfile', profile);
             // if no profile, make the first one default
             if (this.profiles.length === 0) {
