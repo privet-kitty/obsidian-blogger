@@ -45,9 +45,33 @@ export function openProfileModal(
 const getListeningPort = (server: ReturnType<typeof createServer>): number => {
   const address = server.address();
   if (!address || typeof address === 'string') {
-    throw new Error(`Failed to get local server port: ${address}`);
+    throw new Error(
+      getGlobalI18n().t('error_localServerAddressNotAvailable', { address: String(address) }),
+    );
   }
   return address.port;
+};
+
+// TODO: integrate this into blogger-rest-client.ts
+const fetchBlogId = async (
+  blogEndpoint: string,
+  token: FreshInternalOAuth2Token,
+): Promise<string> => {
+  const blogIdEndpoint = `${BLOGGER_API_ENDPOINT}/byurl?${generateQueryString({
+    url: blogEndpoint,
+  })}`;
+  console.log('REST GET', blogIdEndpoint);
+  const response = await requestUrl({
+    url: blogIdEndpoint,
+    method: 'GET',
+    headers: {
+      'content-type': 'application/json',
+      'user-agent': 'obsidian.md',
+      authorization: `Bearer ${token.accessToken}`,
+    },
+  });
+  console.log('GET response', response);
+  return response.json.id;
 };
 
 /**
@@ -147,7 +171,7 @@ class BloggerProfileModal extends Modal {
               const fresh_token = await OAuth2Client.getGoogleOAuth2Client().ensureFreshToken(
                 this.profileData.googleOAuth2Token,
               );
-              this.profileData.blogId = await this.fetchBlogId(
+              this.profileData.blogId = await fetchBlogId(
                 this.profileData.endpoint,
                 fresh_token,
               ).catch((e) => {
@@ -193,28 +217,6 @@ class BloggerProfileModal extends Modal {
   onClose() {
     const { contentEl } = this;
     contentEl.empty();
-  }
-
-  // TODO: integrate this into blogger-rest-client.ts
-  private async fetchBlogId(
-    blogEndpoint: string,
-    token: FreshInternalOAuth2Token,
-  ): Promise<string> {
-    const blogIdEndpoint = `${BLOGGER_API_ENDPOINT}/byurl?${generateQueryString({
-      url: blogEndpoint,
-    })}`;
-    console.log('REST GET', blogIdEndpoint);
-    const response = await requestUrl({
-      url: blogIdEndpoint,
-      method: 'GET',
-      headers: {
-        'content-type': 'application/json',
-        'user-agent': 'obsidian.md',
-        authorization: `Bearer ${token.accessToken}`,
-      },
-    });
-    console.log('GET response', response);
-    return response.json.id;
   }
 
   private async registerToken(token?: InternalOAuth2Token): Promise<void> {

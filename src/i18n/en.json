@@ -7,6 +7,7 @@
   "error_invalidUrl": "Invalid URL",
   "error_publishFailed": "Post published failed!\n<%= code %>: <%= message %>",
   "error_googleAuthFailed": "Google authorization failed!\n<%= error %>: <%= desc %>",
+  "error_localServerAddressNotAvailable": "Failed to get local server port: <%= address %>",
   "error_noBlogId": "No blog ID fetched.",
   "error_invalidGoogleToken": "No or invalid Google token. Please authorize again.",
   "error_cannotParseResponse": "Cannot parse Blogger server response.",
