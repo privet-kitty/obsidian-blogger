@@ -121,15 +121,5 @@ export class BloggerSettingTab extends PluginSettingTab {
           });
         }),
       );
-
-    new Setting(containerEl)
-      .setName(t('settings_replaceMediaLinks'))
-      .setDesc(t('settings_replaceMediaLinksDesc'))
-      .addToggle((toggle) =>
-        toggle.setValue(this.settings.replaceMediaLinks).onChange(async (value) => {
-          this.settings.replaceMediaLinks = value;
-          await this.saveSettings();
-        }),
-      );
   }
 }

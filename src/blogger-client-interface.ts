@@ -24,7 +24,7 @@ interface _bloggerClientResult {
 }
 
 interface BloggerClientOkResult<T> extends _bloggerClientResult {
-  code: 'OK';
+  code: typeof BloggerClientReturnCode.OK;
   data: T;
 }
 

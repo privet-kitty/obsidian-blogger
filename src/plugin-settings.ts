@@ -42,11 +42,6 @@ export type PluginSettings = {
   mathJaxOutputType: MathJaxOutputType;
 
   enableHtml: boolean;
-
-  /**
-   * Whether media links should be replaced after uploading to Blogger.
-   */
-  replaceMediaLinks: boolean;
 };
 
 export const DEFAULT_SETTINGS: PluginSettings = {
@@ -57,7 +52,6 @@ export const DEFAULT_SETTINGS: PluginSettings = {
   showBloggerEditConfirm: false,
   mathJaxOutputType: MathJaxOutputType.SVG,
   enableHtml: false,
-  replaceMediaLinks: true,
 };
 
 // Currently we only have one version
