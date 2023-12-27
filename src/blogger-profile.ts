@@ -13,28 +13,9 @@ export interface BloggerProfile {
   endpoint: string;
 
   /**
-   * Blogger username.
-   */
-  username?: string;
-
-  /**
-   * Blogger password.
-   */
-  password?: string;
-
-  /**
    * Blogger blog ID.
    */
   blogId?: string;
-
-  /**
-   * Encrypted password which will be saved locally.
-   */
-  encryptedPassword?: {
-    encrypted: string;
-    key?: string;
-    vector?: string;
-  };
 
   /**
    * OAuth2 token for Google

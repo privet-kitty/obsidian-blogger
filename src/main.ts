@@ -9,9 +9,8 @@ import {
   upgradeSettings,
   PluginSettings,
 } from './plugin-settings';
-import { PassCrypto } from './pass-crypto';
 import { showError } from './utils';
-import { cloneDeep, isString } from 'lodash-es';
+import { isString } from 'lodash-es';
 import { BloggerProfile } from './blogger-profile';
 import { getBloggerClient } from './blogger-client';
 import { getGlobalMarkdownParser, setupMarkdownParser } from './markdown-it-default';
@@ -113,33 +112,13 @@ export default class BloggerPlugin extends Plugin {
       await this.saveSettings();
     }
 
-    const crypto = new PassCrypto();
-    const count = this.#settings?.profiles.length ?? 0;
-    for (let i = 0; i < count; i++) {
-      const profile = this.#settings?.profiles[i];
-      const enPass = profile.encryptedPassword;
-      if (enPass) {
-        profile.password = await crypto.decrypt(enPass.encrypted, enPass.key, enPass.vector);
-      }
-    }
-
     getGlobalMarkdownParser().set({
       html: this.#settings?.enableHtml ?? false,
     });
   };
 
   saveSettings = async () => {
-    const settings = cloneDeep(this.settings);
-    for (let i = 0; i < settings.profiles.length; i++) {
-      const profile = settings.profiles[i];
-      const password = profile.password;
-      if (password) {
-        const crypto = new PassCrypto();
-        profile.encryptedPassword = await crypto.encrypt(password);
-        delete profile.password;
-      }
-    }
-    await this.saveData(settings);
+    await this.saveData(this.settings);
   };
 
   updateRibbonIcon = () => {
