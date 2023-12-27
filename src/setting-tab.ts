@@ -10,7 +10,7 @@ export class BloggerSettingTab extends PluginSettingTab {
     readonly app: App,
     private readonly settings: PluginSettings,
     private readonly saveSettings: () => Promise<void>,
-    private readonly plugin: Plugin,
+    readonly plugin: Plugin,
     private readonly updateRibbonIcon: () => void,
   ) {
     super(plugin.app, plugin);

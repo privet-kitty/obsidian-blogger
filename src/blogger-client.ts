@@ -220,6 +220,8 @@ export class BloggerRestClient extends AbstractBloggerClient {
   constructor(
     readonly app: App,
     readonly settings: PluginSettings,
+    // FIXME: Since only what we need is to refresh the token, there should be a
+    // better way than passing `saveSettings` here.
     private readonly saveSettings: () => Promise<void>,
     readonly profile: BloggerProfile,
     private readonly context: BloggerRestClientContext,
