@@ -3,7 +3,9 @@ import { BloggerProfile, rendererProfile } from './blogger-profile';
 import { TranslateKey, getGlobalI18n } from './i18n';
 import { openProfileModal } from './blogger-profile-modal';
 import { isNil } from 'lodash-es';
-import { PluginSettings } from './plugin-settings';
+import { PluginSettings, isPluginSettingsWithOAuth2 } from './plugin-settings';
+import { showError } from './utils';
+import { getGoogleOAuth2Client } from './oauth2-client';
 
 /**
  * Blogger profiles manage modal.
@@ -40,9 +42,14 @@ export class BloggerProfileManageModal extends Modal {
         }
         setting.addButton((button) =>
           button.setButtonText(t('profilesManageModal_showDetails')).onClick(async () => {
+            if (!isPluginSettingsWithOAuth2(this.settings)) {
+              showError(t('error_noOAuth2ClientCredentials'));
+              return;
+            }
             const { profile: newProfile, atIndex } = await openProfileModal(
               this.app,
               profile,
+              getGoogleOAuth2Client(this.settings),
               index,
             );
             console.log('updateProfile', newProfile, atIndex);
@@ -86,7 +93,15 @@ export class BloggerProfileManageModal extends Modal {
           .setButtonText(t('profilesManageModal_create'))
           .setCta()
           .onClick(async () => {
-            const { profile } = await openProfileModal(this.app, {});
+            if (!isPluginSettingsWithOAuth2(this.settings)) {
+              showError(t('error_noOAuth2ClientCredentials'));
+              return;
+            }
+            const { profile } = await openProfileModal(
+              this.app,
+              {},
+              getGoogleOAuth2Client(this.settings),
+            );
             console.log('appendProfile', profile);
             // if no profile, make the first one default
             if (this.profiles.length === 0) {

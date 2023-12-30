@@ -41,6 +41,30 @@ export class BloggerSettingTab extends PluginSettingTab {
     let mathJaxOutputTypeDesc = getMathJaxOutputTypeDesc(this.settings.mathJaxOutputType);
 
     new Setting(containerEl)
+      .setName(t('settings_clientId'))
+      .setDesc(t('settings_clientIdDesc'))
+      .addText((text) =>
+        text.setValue(this.settings.clientId ?? '').onChange(async (value) => {
+          if (this.settings.clientId !== value) {
+            this.settings.clientId = value;
+            await this.saveSettings();
+          }
+        }),
+      );
+
+    new Setting(containerEl)
+      .setName(t('settings_clientSecret'))
+      .setDesc(t('settings_clientSecretDesc'))
+      .addText((text) =>
+        text.setValue(this.settings.clientSecret ?? '').onChange(async (value) => {
+          if (this.settings.clientSecret !== value) {
+            this.settings.clientSecret = value;
+            await this.saveSettings();
+          }
+        }),
+      );
+
+    new Setting(containerEl)
       .setName(t('settings_profiles'))
       .setDesc(t('settings_profilesDesc'))
       .addButton((button) =>

@@ -12,7 +12,7 @@ import { isFunction, isString, template } from 'lodash-es';
 import { BloggerProfile } from './blogger-profile';
 import { FormItemNameMapper, SafeAny, MatterData } from './types';
 import { BLOGGER_API_ENDPOINT } from './consts';
-import { OAuth2Client } from './oauth2-client';
+import { getGoogleOAuth2Client } from './oauth2-client';
 import { App, Notice } from 'obsidian';
 import { BloggerPublishModal } from './blogger-publish-modal';
 import { BLOGGER_DEFAULT_PROFILE_NAME } from './consts';
@@ -21,7 +21,7 @@ import { ConfirmCode, openConfirmModal } from './confirm-modal';
 import { openPostPublishedModal } from './post-published-modal';
 import { getGlobalI18n } from './i18n';
 import { getGlobalMarkdownParser } from './markdown-it-default';
-import { PluginSettings } from './plugin-settings';
+import { PluginSettings, isPluginSettingsWithOAuth2 } from './plugin-settings';
 
 export abstract class AbstractBloggerClient implements BloggerClient {
   /**
@@ -238,7 +238,10 @@ export class BloggerRestClient extends AbstractBloggerClient {
     if (!token) {
       throw new Error(getGlobalI18n().t('error_invalidGoogleToken'));
     }
-    const fresh_token = await OAuth2Client.getGoogleOAuth2Client()
+    if (!isPluginSettingsWithOAuth2(this.settings)) {
+      throw new Error(getGlobalI18n().t('error_noOAuth2ClientCredentials'));
+    }
+    const fresh_token = await getGoogleOAuth2Client(this.settings)
       .ensureFreshToken(token)
       .catch(() => {
         throw new Error(getGlobalI18n().t('error_invalidGoogleToken'));

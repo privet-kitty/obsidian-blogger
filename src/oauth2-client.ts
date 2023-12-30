@@ -2,13 +2,12 @@ import { generateQueryString, openWithBrowser } from './utils';
 import { requestUrl } from 'obsidian';
 import {
   GOOGLE_OAUTH2_AUTHORIZE_ENDPOINT,
-  GOOGLE_OAUTH2_CLIENT_ID,
-  GOOGLE_OAUTH2_CLIENT_SECRET,
   GOOGLE_OAUTH2_TOKEN_ENDPOINT,
   GOOGLE_OAUTH2_VALIDATE_TOKEN_ENDPOINT,
 } from './consts';
 import { Brand } from './types';
 import { getGlobalI18n } from './i18n';
+import { Oauth2ClientCredentials } from './plugin-settings';
 
 export interface OAuth2Token {
   accessToken: string;
@@ -65,17 +64,18 @@ export interface OAuth2Options {
   validateTokenEndpoint: string;
 }
 
-export class OAuth2Client {
-  static getGoogleOAuth2Client(): OAuth2Client {
-    return new OAuth2Client({
-      clientId: GOOGLE_OAUTH2_CLIENT_ID,
-      clientSecret: GOOGLE_OAUTH2_CLIENT_SECRET,
-      tokenEndpoint: GOOGLE_OAUTH2_TOKEN_ENDPOINT,
-      authorizeEndpoint: GOOGLE_OAUTH2_AUTHORIZE_ENDPOINT,
-      validateTokenEndpoint: GOOGLE_OAUTH2_VALIDATE_TOKEN_ENDPOINT,
-    });
-  }
+export const getGoogleOAuth2Client = (
+  oauth2ClientCredentials: Oauth2ClientCredentials,
+): OAuth2Client => {
+  return new OAuth2Client({
+    ...oauth2ClientCredentials,
+    tokenEndpoint: GOOGLE_OAUTH2_TOKEN_ENDPOINT,
+    authorizeEndpoint: GOOGLE_OAUTH2_AUTHORIZE_ENDPOINT,
+    validateTokenEndpoint: GOOGLE_OAUTH2_VALIDATE_TOKEN_ENDPOINT,
+  });
+};
 
+export class OAuth2Client {
   constructor(private readonly options: OAuth2Options) {
     console.log(options);
   }

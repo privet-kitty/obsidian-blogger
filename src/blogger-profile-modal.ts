@@ -10,6 +10,7 @@ import { randomUUID } from 'crypto';
 export function openProfileModal(
   app: App,
   profile: Partial<BloggerProfile>,
+  oAuth2Client: OAuth2Client,
   atIndex = -1,
 ): Promise<{ profile: BloggerProfile; atIndex?: number }> {
   return new Promise((resolve, reject) => {
@@ -22,6 +23,7 @@ export function openProfileModal(
         });
       },
       profile,
+      oAuth2Client,
       atIndex,
     );
     modal.open();
@@ -70,6 +72,7 @@ class BloggerProfileModal extends Modal {
     readonly app: App,
     private readonly onSubmit: (profile: BloggerProfile, atIndex?: number) => void,
     profile: Partial<BloggerProfile>,
+    private readonly oauth2Client: OAuth2Client,
     private readonly atIndex: number = -1,
   ) {
     super(app);
@@ -123,7 +126,7 @@ class BloggerProfileModal extends Modal {
         .addButton((button) => {
           button.setButtonText(t('settings_googleOAuth2ValidateTokenButtonText')).onClick(() => {
             if (this.profileData.googleOAuth2Token) {
-              OAuth2Client.getGoogleOAuth2Client()
+              this.oauth2Client
                 .validateToken({
                   token: this.profileData.googleOAuth2Token.accessToken,
                 })
@@ -183,9 +186,7 @@ class BloggerProfileModal extends Modal {
     if (googleOAuth2Token === undefined) {
       throw new Error(getGlobalI18n().t('error_invalidGoogleToken'));
     }
-    const fresh_token = await OAuth2Client.getGoogleOAuth2Client().ensureFreshToken(
-      googleOAuth2Token,
-    );
+    const fresh_token = await this.oauth2Client.ensureFreshToken(googleOAuth2Token);
     const blogId = await fetchBlogId(endpoint, fresh_token);
     const isDefault = this.profileData.isDefault ?? false;
     return { name, endpoint, blogId, googleOAuth2Token, isDefault };
@@ -205,7 +206,7 @@ class BloggerProfileModal extends Modal {
         }),
       );
     } else if (params.code) {
-      const token = await OAuth2Client.getGoogleOAuth2Client().getToken({
+      const token = await this.oauth2Client.getToken({
         code: params.code,
         redirectUri: `${GOOGLE_OAUTH2_REDIRECT_URI}:${port}`,
         codeVerifier,
@@ -276,7 +277,7 @@ class BloggerProfileModal extends Modal {
     });
     server.listen(0);
 
-    await OAuth2Client.getGoogleOAuth2Client().getAuthorizeCode({
+    this.oauth2Client.getAuthorizeCode({
       redirectUri: `${GOOGLE_OAUTH2_REDIRECT_URI}:${getListeningPort(server)}`,
       scope: ['https://www.googleapis.com/auth/blogger'],
       blog: this.profileData.endpoint,

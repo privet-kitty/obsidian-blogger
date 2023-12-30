@@ -14,8 +14,13 @@ export const MathJaxOutputType = {
 } as const;
 export type MathJaxOutputType = (typeof MathJaxOutputType)[keyof typeof MathJaxOutputType];
 
+export type Oauth2ClientCredentials = {
+  clientId: string;
+  clientSecret: string;
+};
+
 export type PluginSettings = {
-  version?: SettingsVersion;
+  version: SettingsVersion;
 
   /**
    * Plugin language.
@@ -42,9 +47,18 @@ export type PluginSettings = {
   mathJaxOutputType: MathJaxOutputType;
 
   enableHtml: boolean;
+} & Partial<Oauth2ClientCredentials>;
+
+export type PluginSettingsWithOAuth2 = PluginSettings & Oauth2ClientCredentials;
+
+export const isPluginSettingsWithOAuth2 = (
+  settings: PluginSettings,
+): settings is PluginSettingsWithOAuth2 => {
+  return !!(settings.clientId && settings.clientSecret);
 };
 
 export const DEFAULT_SETTINGS: PluginSettings = {
+  version: SettingsVersion.V1,
   lang: 'auto',
   profiles: [],
   showRibbonIcon: false,
