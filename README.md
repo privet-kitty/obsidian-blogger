@@ -4,7 +4,21 @@
 
 This plugin makes you publish Obsidian documents to Blogger.
 
-## Usages
+## Install
+
+This pluging has not been published to the community plugins yet. You'll need to clone and build it by yourself if you want to try it. The procedure will be as follows:
+
+1. Clone this repository to your local machine and build it.
+   ```bash
+   cd /path/to/your/obsidian/vault/.obsidian/plugins
+   git clone git@github.com:privet-kitty/obsidian-blogger.git
+   cd obsidian-blogger
+   npm install
+   npm run build
+   ```
+2. Enable `Blogger` plugin in the `Community plugins` tab in the settings. You might need to reload plugins.
+
+## Usage
 
 First you need to create your profile from `Profiles` in the plugin settings tab. You'll need to do OAuth2 authentication to get access to your Blogger account in the middle of creating profile.
 
