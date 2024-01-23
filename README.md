@@ -24,7 +24,7 @@ First you need to create your profile from `Profiles` in the plugin settings tab
 
 Then you can publish your document to Blogger by using `Publish to Blogger` in [Command Palette](https://help.obsidian.md/Plugins/Command+palette) or you could just use a button in the side bar. The document will be published to the Blogger URL that you set.
 
-You could add YAML front matter in front of your note. The plugin will read meta-data from the front matter such as override the title or labels. Also, a Blogger post ID will be added to this front matter after the note has been published successfully.
+You could add YAML front matter in front of your note. The plugin will read meta-data from the front matter such as the title and labels. Also, a Blogger post ID will be added to this front matter after the note has been published successfully.
 
 An example of a front matter is as follows:
 
@@ -38,3 +38,7 @@ labels:
 
 Note content here.
 ```
+
+## Other information
+
+- [Tips](https://github.com/privet-kitty/obsidian-blogger/blob/main/docs/tips.md)
