@@ -18,7 +18,7 @@ This pluging has not been published to the community plugins yet. You'll need to
    ```
 2. Enable `Blogger` plugin in the `Community plugins` tab in the settings. You might need to reload plugins.
 
-## Usage
+## Basic usage
 
 First you need to create your profile from `Profiles` in the plugin settings tab. You'll need to do OAuth2 authentication to get access to your Blogger account in the middle of creating profile.
 
