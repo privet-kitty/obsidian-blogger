@@ -4,7 +4,7 @@
 
 You can put any CSS or JS scripts you want to use into the `head` tag in the HTML template of your blog. (You need to go to your Blogger dashboard, click on the `Theme` tab, and click on the `Edit HTML` button to edit the template.)
 
-Below are some examples of how to introduce CSS or JS scripts. **I don't recommend you copy and paste them directly** because they are just an example as of this writing and may be out of date.
+Below are some examples of how to introduce CSS or JS scripts. **I don't recommend you copy and paste them directly** because they are just an example as of this writing. Instead you should go to the official website of the tool you want to use and follow the instructions there.
 
 ### CSS
 
