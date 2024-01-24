@@ -41,8 +41,8 @@ https://katex.org/docs/autorender
   document.addEventListener(&quot;DOMContentLoaded&quot;, () => {
       renderMathInElement(document.body, {
         delimiters: [
-            {left: &quot;$$&quot;, right: &quot;$$&quot;, display: true},
-            {left: &quot;$&quot;, right: &quot;$&quot;, display: false},
+          {left: &quot;$$&quot;, right: &quot;$$&quot;, display: true},
+          {left: &quot;$&quot;, right: &quot;$&quot;, display: false},
         ],
         throwOnError : false
       });
@@ -78,7 +78,7 @@ https://prismjs.com/#basic-usage-cdn
 <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/prism.min.js" />
 <script>
   document.addEventListener(&quot;DOMContentLoaded&quot;, async () =&gt; {
-  		Prism.highlightAll();
+    Prism.highlightAll();
   });
 </script>
 ```
@@ -113,12 +113,12 @@ http://mermaid.js.org/intro/getting-started.html?#_4-calling-the-mermaid-javascr
 <!-- mermaid -->
 <script type="module">
   import mermaid from &quot;https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs&quot;;
-   	document.addEventListener(&quot;DOMContentLoaded&quot;, async () =&gt; {
-   		document.querySelectorAll(&quot;pre code.language-mermaid&quot;).forEach((node) =&gt; {
-   			node.parentNode.classList.add(&quot;mermaid&quot;);
-   			node.parentNode.innerHTML = node.innerHTML;
-   		})
-   		await mermaid.run();
+     document.addEventListener(&quot;DOMContentLoaded&quot;, async () =&gt; {
+       document.querySelectorAll(&quot;pre code.language-mermaid&quot;).forEach((node) =&gt; {
+         node.parentNode.classList.add(&quot;mermaid&quot;);
+         node.parentNode.innerHTML = node.innerHTML;
+       })
+       await mermaid.run();
      });
 </script>
 ```
