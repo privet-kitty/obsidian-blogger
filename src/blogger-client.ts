@@ -70,7 +70,10 @@ export abstract class AbstractBloggerClient implements BloggerClient {
     const { postParams, updateMatterData } = params;
     const result = await this.publish(
       postParams.title ?? 'A post from Obsidian!',
-      getGlobalMarkdownParser().render(postParams.content) ?? '',
+      // FIXME: this modification should be done on the renderer side
+      `<div class="obsidian-blogger-post">
+      ${getGlobalMarkdownParser().render(postParams.content)}
+      </div>`,
       postParams,
     );
     if (result.code === BloggerClientReturnCode.Error) {
