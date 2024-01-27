@@ -1,14 +1,14 @@
 # obsidian-blogger
 
-**This plugin is still in alpha stage.**
+**This plugin is currently in the alpha stage.**
 
 This plugin makes you publish Obsidian documents to Blogger.
 
-## Install
+## Installation
 
-This pluging has not been published to the community plugins yet. You'll need to clone and build it by yourself if you want to try it. The procedure will be as follows:
+This plugin has not yet been released to the Community plugins. To experiment with this plugin, you must manually clone and build it. The process is as follows:
 
-1. Clone this repository to your local machine and build it.
+1. Clone this repository to your local machine and execute the build process.
    ```bash
    cd /path/to/your/obsidian/vault/.obsidian/plugins
    git clone git@github.com:privet-kitty/obsidian-blogger.git
@@ -16,17 +16,17 @@ This pluging has not been published to the community plugins yet. You'll need to
    npm install
    npm run build
    ```
-2. Enable `Blogger` plugin in the `Community plugins` tab in the settings. You might need to reload plugins.
+2. Activate the `Blogger` plugin within the `Community Plugins` section of the settings. A reload of the plugins may be required.
 
-## Basic usage
+## Fundamental Usage
 
-First you need to create your profile from `Profiles` in the plugin settings tab. You'll need to do OAuth2 authentication to get access to your Blogger account in the middle of creating profile.
+Initially, create your profile via the `Profiles` section in the plugin settings tab. During this process, OAuth2 authentication is necessary to access your Blogger account.
 
-Then you can publish your document to Blogger by using `Publish to Blogger` in [Command Palette](https://help.obsidian.md/Plugins/Command+palette) or you could just use a button in the side bar. The document will be published to the Blogger URL that you set.
+Subsequently, you can publish your document to Blogger using `Publish to Blogger` found in the [Command Palette](https://help.obsidian.md/Plugins/Command+palette) or through a dedicated button in the sidebar. The document will be published to the Blogger URL you set.
 
-You could add YAML front matter in front of your note. The plugin will read meta-data from the front matter such as the title and labels. Also, a Blogger post ID will be added to this front matter after the note has been published successfully.
+You could add YAML front matter at the beginning of your note. The plugin will interpret metadata from the front matter, such as the title and labels. Furthermore, a Blogger post ID will be appended to this front matter after the note has been published successfully.
 
-An example of a front matter is as follows:
+An example of front matter is as follows:
 
 ```markdown
 ---
@@ -36,9 +36,9 @@ labels:
   - not required
 ---
 
-Note content here.
+Content here.
 ```
 
-## Other information
+## Additional Information
 
 - [Tips](https://github.com/privet-kitty/obsidian-blogger/blob/main/docs/tips.md)
