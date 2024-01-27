@@ -40,9 +40,9 @@ export type PluginSettings = {
   defaultPostStatus: PostStatus;
 
   /**
-   * If Blogger edit confirm modal will be shown when published successfully.
+   * If the page is opened with browser when published successfully.
    */
-  showBloggerEditConfirm: boolean;
+  openPublishedPageWithBrowser: boolean;
 
   mathJaxOutputType: MathJaxOutputType;
 
@@ -63,7 +63,7 @@ export const DEFAULT_SETTINGS: PluginSettings = {
   profiles: [],
   showRibbonIcon: false,
   defaultPostStatus: PostStatus.Draft,
-  showBloggerEditConfirm: false,
+  openPublishedPageWithBrowser: false,
   mathJaxOutputType: MathJaxOutputType.SVG,
   enableHtml: false,
 };

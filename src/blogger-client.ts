@@ -18,7 +18,6 @@ import { BloggerPublishModal } from './blogger-publish-modal';
 import { BLOGGER_DEFAULT_PROFILE_NAME } from './consts';
 import { openWithBrowser, processFile, showError } from './utils';
 import { ConfirmCode, openConfirmModal } from './confirm-modal';
-import { openPostPublishedModal } from './post-published-modal';
 import { getGlobalI18n } from './i18n';
 import { getGlobalMarkdownParser } from './markdown-it-default';
 import { PluginSettings, isPluginSettingsWithOAuth2 } from './plugin-settings';
@@ -101,13 +100,8 @@ export abstract class AbstractBloggerClient implements BloggerClient {
           });
         }
 
-        if (this.settings.showBloggerEditConfirm) {
-          openPostPublishedModal(this.app).then(() => {
-            openWithBrowser(`${this.profile.endpoint}/blogger-admin/post.php`, {
-              action: 'edit',
-              post: postId,
-            });
-          });
+        if (this.settings.openPublishedPageWithBrowser) {
+          openWithBrowser(result.data.url);
         }
       }
     }
@@ -396,6 +390,8 @@ export class BloggerRestClientGoogleOAuth2Context implements BloggerRestClientCo
         }
         return {
           postId: response.id,
+          url: response.url,
+          status: response.status,
         };
       }
       throw new Error('xx');

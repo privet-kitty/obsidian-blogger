@@ -101,11 +101,11 @@ export class BloggerSettingTab extends PluginSettingTab {
       });
 
     new Setting(containerEl)
-      .setName(t('settings_showBloggerEditPageModal'))
-      .setDesc(t('settings_showBloggerEditPageModalDesc'))
+      .setName(t('settings_openPublishedPageWithBrowser'))
+      .setDesc(t('settings_openPublishedPageWithBrowserDesc'))
       .addToggle((toggle) =>
-        toggle.setValue(this.settings.showBloggerEditConfirm).onChange(async (value) => {
-          this.settings.showBloggerEditConfirm = value;
+        toggle.setValue(this.settings.openPublishedPageWithBrowser).onChange(async (value) => {
+          this.settings.openPublishedPageWithBrowser = value;
           await this.saveSettings();
         }),
       );

@@ -45,16 +45,18 @@ export class BloggerPublishModal extends Modal {
     contentEl.empty();
     contentEl.createEl('h1', { text: t('publishModal_title') });
 
-    new Setting(contentEl).setName(t('publishModal_postStatus')).addDropdown((dropdown) => {
-      dropdown
-        .addOption(PostStatus.Draft, t('publishModal_postStatusDraft'))
-        .addOption(PostStatus.Live, t('publishModal_postStatusPublish'))
-        // .addOption(PostStatus.Future, 'future')
-        .setValue(this.settings.defaultPostStatus)
-        .onChange((value) => {
-          params.status = value as PostStatus;
-        });
-    });
+    new Setting(contentEl)
+      .setName(t('publishModal_postStatus'))
+      .setDesc(t('publishModal_postStatusDesc'))
+      .addDropdown((dropdown) => {
+        dropdown
+          .addOption(PostStatus.Draft, t('publishModal_postStatusDraft'))
+          .addOption(PostStatus.Live, t('publishModal_postStatusLive'))
+          .setValue(this.settings.defaultPostStatus)
+          .onChange((value) => {
+            params.status = value as PostStatus;
+          });
+      });
 
     new Setting(contentEl).addButton((button) =>
       button
