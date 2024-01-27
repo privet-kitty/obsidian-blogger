@@ -84,7 +84,7 @@ export default class BloggerPlugin extends Plugin {
     });
 
     this.addCommand({
-      id: 'publish',
+      id: 'LIVE',
       name: getGlobalI18n().t('command_publish'),
       editorCallback: () => {
         this.openProfileChooser();

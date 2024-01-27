@@ -91,7 +91,7 @@ export class BloggerSettingTab extends PluginSettingTab {
       .addDropdown((dropdown) => {
         dropdown
           .addOption(PostStatus.Draft, t('settings_defaultPostStatusDraft'))
-          .addOption(PostStatus.Publish, t('settings_defaultPostStatusPublish'))
+          .addOption(PostStatus.Live, t('settings_defaultPostStatusLive'))
           // .addOption(PostStatus.Future, 'future')
           .setValue(this.settings.defaultPostStatus)
           .onChange(async (value) => {

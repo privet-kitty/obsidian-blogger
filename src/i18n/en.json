@@ -47,7 +47,7 @@
   "settings_defaultPostStatus": "Default Post Status",
   "settings_defaultPostStatusDesc": "Post status which will be published to Blogger.",
   "settings_defaultPostStatusDraft": "Draft",
-  "settings_defaultPostStatusPublish": "Publish",
+  "settings_defaultPostStatusLive": "Live",
   "settings_fetchBlogIdButtonText": "Fetch Blog ID",
   "settings_showBloggerEditPageModal": "Show Blogger edit confirmation",
   "settings_showBloggerEditPageModalDesc": "Show open Blogger edit page confirmation when publish successfully",

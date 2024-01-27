@@ -1,8 +1,8 @@
 import { SafeAny } from './types';
 
 export const PostStatus = {
-  Draft: 'draft',
-  Publish: 'publish',
+  Draft: 'DRAFT',
+  Live: 'LIVE',
 } as const;
 export type PostStatus = (typeof PostStatus)[keyof typeof PostStatus];
 

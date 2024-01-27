@@ -287,6 +287,7 @@ export class BloggerRestClient extends AbstractBloggerClient {
         title,
         content,
         labels: postParams.labels ?? [],
+        status: postParams.status,
       },
       {
         headers: await this.getHeaders(),

@@ -48,7 +48,7 @@ export class BloggerPublishModal extends Modal {
     new Setting(contentEl).setName(t('publishModal_postStatus')).addDropdown((dropdown) => {
       dropdown
         .addOption(PostStatus.Draft, t('publishModal_postStatusDraft'))
-        .addOption(PostStatus.Publish, t('publishModal_postStatusPublish'))
+        .addOption(PostStatus.Live, t('publishModal_postStatusPublish'))
         // .addOption(PostStatus.Future, 'future')
         .setValue(this.settings.defaultPostStatus)
         .onChange((value) => {
