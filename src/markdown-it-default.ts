@@ -6,7 +6,7 @@ import MarkdownItMathJax3Plugin from './markdown-it-mathjax3-plugin';
 import footnote from 'markdown-it-footnote';
 
 const createDefaultMarkdownParser = () => {
-  const markdownParser = new MarkdownIt({ linkify: true })
+  const markdownParser = new MarkdownIt({ linkify: true, breaks: true })
     .use(MarkdownItImagePluginInstance.plugin)
     .use(footnote);
   markdownParser.renderer.rules.image = (tokens, idx) => {
