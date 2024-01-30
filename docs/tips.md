@@ -1,6 +1,6 @@
 # Tips
 
-## Use CSS or JS
+## How to introduce CSS or JS scripts into your blog
 
 You can put any CSS or JS scripts you want to use into the `head` tag in the HTML template of your blog. (You need to go to your Blogger dashboard, click on the `Theme` tab, and click on the `Edit HTML` button to edit the template.)
 
@@ -121,4 +121,20 @@ http://mermaid.js.org/intro/getting-started.html?#_4-calling-the-mermaid-javascr
        await mermaid.run();
      });
 </script>
+```
+
+### How to apply CSS only only to the posts published by this plugin
+
+`obsidian-blogger` wraps the output HTML by `<div class="obsidian-blogger-post">...</div>`. You can use this class to apply CSS only to the posts published by this plugin. An example would be as follows:
+
+```css
+.obsidian-blogger-post {
+  margin-bottom: 90px;
+  padding-left: 15px;
+  padding-right: 15px;
+}
+
+.obsidian-blogger-post h1 {
+  font-size: 2.5rem;
+}
 ```
