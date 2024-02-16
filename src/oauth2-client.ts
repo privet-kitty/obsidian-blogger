@@ -9,20 +9,20 @@ import { Brand } from './types';
 import { getGlobalI18n } from './i18n';
 import { Oauth2ClientCredentials } from './plugin-settings';
 
-export interface OAuth2Token {
+export type OAuth2TokenProto = {
   accessToken: string;
   tokenType: string;
-}
+};
 
-export interface BloggerOAuth2Token extends OAuth2Token {
+export type OAuth2Token = OAuth2TokenProto & {
   expiresIn: number;
   refreshToken: string;
   scope: string;
-}
+};
 
-export interface InternalOAuth2Token extends BloggerOAuth2Token {
+export type InternalOAuth2Token = OAuth2Token & {
   expiresAt: number;
-}
+};
 
 export type FreshInternalOAuth2Token = Brand<InternalOAuth2Token, 'FreshInternalOAuth2Token'>;
 
@@ -32,37 +32,37 @@ const isFreshInternalOAuth2Token = (
   return token.expiresAt > Date.now();
 };
 
-export interface GetAuthorizeCodeParams {
+export type GetAuthorizeCodeParams = {
   redirectUri: string;
   scope?: string[];
   blog?: string;
   codeVerifier: string;
   state?: string;
-}
+};
 
-export interface GetTokenParams {
+export type GetTokenParams = {
   code: string;
   redirectUri: string;
   codeVerifier: string;
-}
+};
 
-export interface RefreshTokenParams {
+export type RefreshTokenParams = {
   client_id: string;
   client_secret: string;
   refresh_token: string;
-}
+};
 
-export interface ValidateTokenParams {
+export type ValidateTokenParams = {
   token: string;
-}
+};
 
-export interface OAuth2Options {
+export type OAuth2Options = {
   clientId: string;
   clientSecret: string;
   tokenEndpoint: string;
   authorizeEndpoint: string;
   validateTokenEndpoint: string;
-}
+};
 
 export const getGoogleOAuth2Client = (
   oauth2ClientCredentials: Oauth2ClientCredentials,
@@ -80,7 +80,7 @@ export class OAuth2Client {
     console.log(options);
   }
 
-  async getAuthorizeCode(params: GetAuthorizeCodeParams): Promise<void> {
+  getAuthorizeCode = async (params: GetAuthorizeCodeParams): Promise<void> => {
     const query: {
       client_id: string;
       response_type: 'code';
@@ -107,9 +107,9 @@ export class OAuth2Client {
       query.code_challenge = codeChallenge?.[1];
     }
     openWithBrowser(this.options.authorizeEndpoint, query);
-  }
+  };
 
-  async getToken(params: GetTokenParams): Promise<FreshInternalOAuth2Token> {
+  getToken = async (params: GetTokenParams): Promise<FreshInternalOAuth2Token> => {
     const body: {
       grant_type: 'authorization_code';
       client_id: string;
@@ -150,9 +150,9 @@ export class OAuth2Client {
       throw new Error(getGlobalI18n().t('error_invalidGoogleToken'));
     }
     return res;
-  }
+  };
 
-  async refreshToken(params: RefreshTokenParams): Promise<FreshInternalOAuth2Token> {
+  refreshToken = async (params: RefreshTokenParams): Promise<FreshInternalOAuth2Token> => {
     const body: {
       grant_type: 'refresh_token';
       client_id: string;
@@ -189,9 +189,9 @@ export class OAuth2Client {
       throw new Error(getGlobalI18n().t('error_invalidGoogleToken'));
     }
     return res;
-  }
+  };
 
-  async ensureFreshToken(token: InternalOAuth2Token): Promise<FreshInternalOAuth2Token> {
+  ensureFreshToken = async (token: InternalOAuth2Token): Promise<FreshInternalOAuth2Token> => {
     if (isFreshInternalOAuth2Token(token)) {
       return token;
     } else {
@@ -201,9 +201,9 @@ export class OAuth2Client {
         refresh_token: token.refreshToken,
       }) as Promise<FreshInternalOAuth2Token>;
     }
-  }
+  };
 
-  async validateToken(params: ValidateTokenParams): Promise<void> {
+  validateToken = async (params: ValidateTokenParams): Promise<void> => {
     const response = await requestUrl({
       url: `${this.options.validateTokenEndpoint}?access_token=${params.token}`,
       method: 'GET',
@@ -213,30 +213,30 @@ export class OAuth2Client {
       },
     });
     console.log('validateToken response', response);
-  }
+  };
 }
 
-export function generateCodeVerifier(): string {
+export const generateCodeVerifier = (): string => {
   const arr = new Uint8Array(32);
   crypto.getRandomValues(arr);
   return base64Url(arr);
-}
+};
 
-async function getCodeChallenge(codeVerifier: string): Promise<['plain' | 'S256', string]> {
+const getCodeChallenge = async (codeVerifier: string): Promise<['plain' | 'S256', string]> => {
   return ['S256', base64Url(await crypto.subtle.digest('SHA-256', stringToBuffer(codeVerifier)))];
-}
+};
 
-function stringToBuffer(input: string): ArrayBuffer {
+const stringToBuffer = (input: string): ArrayBuffer => {
   const buf = new Uint8Array(input.length);
   for (let i = 0; i < input.length; i++) {
     buf[i] = input.charCodeAt(i) & 0xff;
   }
   return buf;
-}
+};
 
-function base64Url(buf: ArrayBuffer): string {
+const base64Url = (buf: ArrayBuffer): string => {
   return btoa(String.fromCharCode(...new Uint8Array(buf)))
     .replace(/\+/g, '-')
     .replace(/\//g, '_')
     .replace(/=+$/, '');
-}
+};

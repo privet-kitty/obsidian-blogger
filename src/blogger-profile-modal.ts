@@ -1,18 +1,17 @@
 import { App, Modal, Notice, Setting, requestUrl } from 'obsidian';
 import { TranslateKey, getGlobalI18n } from './i18n';
 import { BloggerProfile } from './blogger-profile';
-import { BLOGGER_API_ENDPOINT, GOOGLE_OAUTH2_REDIRECT_URI } from './consts';
-import { FreshInternalOAuth2Token, generateCodeVerifier, OAuth2Client } from './oauth2-client';
+import { BLOGGER_API_ENDPOINT } from './consts';
+import { FreshInternalOAuth2Token, OAuth2Client } from './oauth2-client';
 import { generateQueryString, isValidBloggerUrl, showError } from './utils';
-import { createServer } from 'http';
-import { randomUUID } from 'crypto';
+import { reauthorizeGoogleToken } from './blogger-oauth2-client';
 
-export function openProfileModal(
+export const openProfileModal = (
   app: App,
   profile: Partial<BloggerProfile>,
   oAuth2Client: OAuth2Client,
   atIndex = -1,
-): Promise<{ profile: BloggerProfile; atIndex?: number }> {
+): Promise<{ profile: BloggerProfile; atIndex?: number }> => {
   return new Promise((resolve, reject) => {
     const modal = new BloggerProfileModal(
       app,
@@ -28,16 +27,6 @@ export function openProfileModal(
     );
     modal.open();
   });
-}
-
-const getListeningPort = (server: ReturnType<typeof createServer>): number => {
-  const address = server.address();
-  if (!address || typeof address === 'string') {
-    throw new Error(
-      getGlobalI18n().t('error_localServerAddressNotAvailable', { address: String(address) }),
-    );
-  }
-  return address.port;
 };
 
 // TODO: integrate this into blogger-rest-client.ts
@@ -80,7 +69,7 @@ class BloggerProfileModal extends Modal {
     this.profileData = Object.assign({}, profile);
   }
 
-  onOpen() {
+  onOpen = () => {
     const t = (key: TranslateKey, vars?: Record<string, string>): string => {
       return getGlobalI18n().t(key, vars);
     };
@@ -120,7 +109,14 @@ class BloggerProfileModal extends Modal {
             ? t('settings_googleOAuth2ReauthorizeTokenButtonText')
             : t('settings_googleOAuth2AuthorizeTokenButtonText');
           button.setButtonText(buttonText).onClick(async () => {
-            await this.reauthorizeGoogleToken();
+            const endpoint = this.profileData.endpoint;
+            if (endpoint === undefined || !isValidBloggerUrl(endpoint)) {
+              showError(new Error(getGlobalI18n().t('error_notGoogle')));
+            } else {
+              await reauthorizeGoogleToken(this.oauth2Client, endpoint, (token) => {
+                this.profileData.googleOAuth2Token = token;
+              });
+            }
           });
         })
         .addButton((button) => {
@@ -148,14 +144,15 @@ class BloggerProfileModal extends Modal {
         button
           .setButtonText(t('profileModal_Save'))
           .setCta()
-          .onClick(async () => {
-            try {
-              const fullProfile = await this.createFullProfile();
-              this.onSubmit(fullProfile, this.atIndex);
-              this.close();
-            } catch (e) {
-              showError(e);
-            }
+          .onClick(() => {
+            this.createFullProfile()
+              .then((fullProfile) => {
+                this.onSubmit(fullProfile, this.atIndex);
+                this.close();
+              })
+              .catch((e) => {
+                showError(e);
+              });
           }),
       );
     };
@@ -166,12 +163,12 @@ class BloggerProfileModal extends Modal {
 
     const content = contentEl.createEl('div');
     renderProfile();
-  }
+  };
 
-  onClose() {
+  onClose = () => {
     const { contentEl } = this;
     contentEl.empty();
-  }
+  };
 
   private createFullProfile = async (): Promise<BloggerProfile> => {
     const name = this.profileData.name;
@@ -190,99 +187,5 @@ class BloggerProfileModal extends Modal {
     const blogId = await fetchBlogId(endpoint, fresh_token);
     const isDefault = this.profileData.isDefault ?? false;
     return { name, endpoint, blogId, googleOAuth2Token, isDefault };
-  };
-
-  private fetchAndRegisterToken = async (
-    params: { [key: string]: string },
-    codeVerifier: string,
-    port: number,
-  ): Promise<void> => {
-    if (params.error) {
-      this.profileData.googleOAuth2Token = undefined;
-      throw new Error(
-        getGlobalI18n().t('error_googleAuthFailed', {
-          error: params.error,
-          desc: params.error_description?.replace(/\+/g, ' ') ?? '<no error description>',
-        }),
-      );
-    } else if (params.code) {
-      const token = await this.oauth2Client.getToken({
-        code: params.code,
-        redirectUri: `${GOOGLE_OAUTH2_REDIRECT_URI}:${port}`,
-        codeVerifier,
-      });
-      console.log(token);
-      this.profileData.googleOAuth2Token = token;
-    } else {
-      this.profileData.googleOAuth2Token = undefined;
-      throw new Error(
-        getGlobalI18n().t('server_googleOAuth2InvalidResponse', {
-          response: JSON.stringify(params),
-        }),
-      );
-    }
-  };
-
-  private reauthorizeGoogleToken = async (): Promise<void> => {
-    const codeVerifier = generateCodeVerifier();
-    const state = randomUUID();
-
-    const server = createServer();
-    server.on('request', async (req, res) => {
-      const closeWithMessage = (message: string): void => {
-        res.writeHead(200, {
-          'Content-Type': 'text/html',
-        });
-        res.end(`<html>
-<head>
-  <title>Blogger OAuth2</title>
-</head>
-<body>
-  <h1>Blogger OAuth2</h1>
-  <p>${message}</p>
-</body>
-</html>`);
-        server.close();
-      };
-
-      // Exceptions should be displayed in the browser whenever possible.
-      try {
-        // Request.url cannot be undefined. See https://stackoverflow.com/questions/58377623/request-url-undefined-type-why.
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        const url = new URL(req.url!, GOOGLE_OAUTH2_REDIRECT_URI);
-        if (url.pathname === '/') {
-          const response_state = url.searchParams.get('state');
-          if (state !== response_state) {
-            closeWithMessage(
-              getGlobalI18n().t('server_googleOAuth2StateMismatch', {
-                req: state,
-                res: String(response_state),
-              }),
-            );
-          }
-          await this.fetchAndRegisterToken(
-            Object.fromEntries(url.searchParams),
-            codeVerifier,
-            getListeningPort(server),
-          );
-          closeWithMessage(getGlobalI18n().t('server_googleOAuth2TokenObtained'));
-        }
-      } catch (e) {
-        closeWithMessage(
-          getGlobalI18n().t('server_googleOAuth2ServerError', {
-            error: JSON.stringify(e),
-          }),
-        );
-      }
-    });
-    server.listen(0);
-
-    this.oauth2Client.getAuthorizeCode({
-      redirectUri: `${GOOGLE_OAUTH2_REDIRECT_URI}:${getListeningPort(server)}`,
-      scope: ['https://www.googleapis.com/auth/blogger'],
-      blog: this.profileData.endpoint,
-      codeVerifier,
-      state,
-    });
   };
 }
