@@ -5,5 +5,5 @@
   "minAppVersion": "1.1.1",
   "description": "A plugin for publishing Obsidian documents to Blogger.",
   "author": "Hugo Sansaqua",
-  "isDesktopOnly": true
+  "isDesktopOnly": false
 }

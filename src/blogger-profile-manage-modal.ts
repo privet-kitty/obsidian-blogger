@@ -1,4 +1,4 @@
-import { App, Modal, Setting } from 'obsidian';
+import { Modal, Plugin, Setting } from 'obsidian';
 import { BloggerProfile, rendererProfile } from './blogger-profile';
 import { TranslateKey, getGlobalI18n } from './i18n';
 import { openProfileModal } from './blogger-profile-modal';
@@ -13,11 +13,11 @@ import { getGoogleOAuth2Client } from './oauth2-client';
 export class BloggerProfileManageModal extends Modal {
   private readonly profiles: BloggerProfile[];
   constructor(
-    readonly app: App,
+    readonly plugin: Plugin,
     readonly settings: PluginSettings,
     private readonly saveSettings: () => Promise<void>,
   ) {
-    super(app);
+    super(plugin.app);
     this.profiles = settings.profiles;
   }
 
@@ -47,7 +47,7 @@ export class BloggerProfileManageModal extends Modal {
               return;
             }
             const { profile: newProfile, atIndex } = await openProfileModal(
-              this.app,
+              this.plugin,
               profile,
               getGoogleOAuth2Client(this.settings),
               index,
@@ -98,7 +98,7 @@ export class BloggerProfileManageModal extends Modal {
               return;
             }
             const { profile } = await openProfileModal(
-              this.app,
+              this.plugin,
               {},
               getGoogleOAuth2Client(this.settings),
             );

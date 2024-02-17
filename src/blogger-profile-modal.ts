@@ -1,4 +1,4 @@
-import { App, Modal, Notice, Setting, requestUrl } from 'obsidian';
+import { Modal, Notice, Platform, Plugin, Setting, requestUrl } from 'obsidian';
 import { TranslateKey, getGlobalI18n } from './i18n';
 import { BloggerProfile } from './blogger-profile';
 import { BLOGGER_API_ENDPOINT } from './consts';
@@ -7,14 +7,14 @@ import { generateQueryString, isValidBloggerUrl, showError } from './utils';
 import { reauthorizeGoogleToken } from './blogger-oauth2-client';
 
 export const openProfileModal = (
-  app: App,
+  plugin: Plugin,
   profile: Partial<BloggerProfile>,
   oAuth2Client: OAuth2Client,
   atIndex = -1,
 ): Promise<{ profile: BloggerProfile; atIndex?: number }> => {
   return new Promise((resolve, reject) => {
     const modal = new BloggerProfileModal(
-      app,
+      plugin,
       (profile, atIndex) => {
         resolve({
           profile,
@@ -58,13 +58,13 @@ class BloggerProfileModal extends Modal {
   private readonly profileData: Partial<BloggerProfile>;
 
   constructor(
-    readonly app: App,
+    readonly plugin: Plugin,
     private readonly onSubmit: (profile: BloggerProfile, atIndex?: number) => void,
     profile: Partial<BloggerProfile>,
     private readonly oauth2Client: OAuth2Client,
     private readonly atIndex: number = -1,
   ) {
-    super(app);
+    super(plugin.app);
 
     this.profileData = Object.assign({}, profile);
   }
@@ -113,8 +113,17 @@ class BloggerProfileModal extends Modal {
             if (endpoint === undefined || !isValidBloggerUrl(endpoint)) {
               showError(new Error(getGlobalI18n().t('error_notGoogle')));
             } else {
-              await reauthorizeGoogleToken(this.oauth2Client, endpoint, (token) => {
-                this.profileData.googleOAuth2Token = token;
+              await reauthorizeGoogleToken({
+                isDesktop: Platform.isDesktop,
+                oauth2Client: this.oauth2Client,
+                blogEndpoint: endpoint,
+                setGoogleOAuth2Token: (token) => {
+                  this.profileData.googleOAuth2Token = token;
+                },
+                // HACK: `this` is determined by the dynamic scope within the callback.
+                registerObsidianProtocolHandler: this.plugin.registerObsidianProtocolHandler.bind(
+                  this.plugin,
+                ),
               });
             }
           });

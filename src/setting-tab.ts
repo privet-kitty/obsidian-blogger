@@ -69,7 +69,7 @@ export class BloggerSettingTab extends PluginSettingTab {
       .setDesc(t('settings_profilesDesc'))
       .addButton((button) =>
         button.setButtonText(t('settings_profilesModal')).onClick(() => {
-          new BloggerProfileManageModal(this.app, this.settings, this.saveSettings).open();
+          new BloggerProfileManageModal(this.plugin, this.settings, this.saveSettings).open();
         }),
       );
 
