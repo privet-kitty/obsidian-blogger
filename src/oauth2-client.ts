@@ -65,10 +65,10 @@ export type OAuth2Options = {
 };
 
 export const getGoogleOAuth2Client = (
-  oauth2ClientCredentials: Oauth2ClientCredentials,
+  oAuth2ClientCredentials: Oauth2ClientCredentials,
 ): OAuth2Client => {
   return new OAuth2Client({
-    ...oauth2ClientCredentials,
+    ...oAuth2ClientCredentials,
     tokenEndpoint: GOOGLE_OAUTH2_TOKEN_ENDPOINT,
     authorizeEndpoint: GOOGLE_OAUTH2_AUTHORIZE_ENDPOINT,
     validateTokenEndpoint: GOOGLE_OAUTH2_VALIDATE_TOKEN_ENDPOINT,

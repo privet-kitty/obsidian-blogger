@@ -8,7 +8,7 @@ import {
 import { getGlobalI18n } from './i18n';
 import { FreshInternalOAuth2Token, OAuth2Client, generateCodeVerifier } from './oauth2-client';
 import { createServer } from 'http';
-import { ObsidianProtocolHandler } from 'obsidian';
+import { Notice, Plugin } from 'obsidian';
 
 const getListeningPort = (server: ReturnType<typeof createServer>): number => {
   const address = server.address();
@@ -21,7 +21,7 @@ const getListeningPort = (server: ReturnType<typeof createServer>): number => {
 };
 
 const fetchAndRegisterToken = async (
-  oauth2Client: OAuth2Client,
+  oAuth2Client: OAuth2Client,
   params: { [key: string]: string },
   requestState: string,
   codeVerifier: string,
@@ -46,7 +46,7 @@ const fetchAndRegisterToken = async (
     );
   }
   if (params.code) {
-    const token = await oauth2Client.getToken({
+    const token = await oAuth2Client.getToken({
       code: params.code,
       redirectUri: redirectUri,
       codeVerifier,
@@ -63,27 +63,12 @@ const fetchAndRegisterToken = async (
   }
 };
 
-type reauthorizeGoogleTokenDesktopParams = {
-  isDesktop: true;
-  oauth2Client: OAuth2Client;
+export type reauthorizeGoogleTokenParams = {
+  isDesktop: boolean;
+  oAuth2Client: OAuth2Client;
   blogEndpoint: string;
   setGoogleOAuth2Token: (token?: FreshInternalOAuth2Token) => void;
 };
-
-type reauthorizeGoogleTokenMobileParams = {
-  isDesktop: false;
-  oauth2Client: OAuth2Client;
-  blogEndpoint: string;
-  setGoogleOAuth2Token: (token?: FreshInternalOAuth2Token) => void;
-  registerObsidianProtocolHandler: (
-    action: string,
-    protocolHandler: ObsidianProtocolHandler,
-  ) => void;
-};
-
-type reauthorizeGoogleTokenParams =
-  | reauthorizeGoogleTokenDesktopParams
-  | reauthorizeGoogleTokenMobileParams;
 
 export const reauthorizeGoogleToken = async (
   params: reauthorizeGoogleTokenParams,
@@ -95,47 +80,70 @@ export const reauthorizeGoogleToken = async (
   }
 };
 
+export class MobileOAuth2Helper {
+  private static oAuth2Record: {
+    oAuth2Client: OAuth2Client;
+    state: string;
+    codeVerifier: string;
+    setGoogleOAuth2Token: (token?: FreshInternalOAuth2Token) => void;
+  } | null = null;
+  private static isSetUp = false;
+  static setoAuth2Record = (oAuth2Record: (typeof MobileOAuth2Helper)['oAuth2Record']): void => {
+    MobileOAuth2Helper.oAuth2Record = oAuth2Record;
+  };
+  static setUp(plugin: Plugin) {
+    if (MobileOAuth2Helper.isSetUp) return;
+    MobileOAuth2Helper.isSetUp = true;
+    plugin.registerObsidianProtocolHandler(BLOGGER_OAUTH2_URL_ACTION, async (e) => {
+      if (e.action === BLOGGER_OAUTH2_URL_ACTION) {
+        const params: { [key: string]: string } = { ...e };
+        delete params.action;
+        if (MobileOAuth2Helper.oAuth2Record === null) {
+          throw new Error('oAuth2Record === null');
+        }
+        const { oAuth2Client, state, codeVerifier, setGoogleOAuth2Token } =
+          MobileOAuth2Helper.oAuth2Record;
+        await fetchAndRegisterToken(
+          oAuth2Client,
+          params,
+          state,
+          codeVerifier,
+          GOOGLE_OAUTH2_REDIRECT_URI_WEB,
+          setGoogleOAuth2Token,
+        );
+        new Notice(getGlobalI18n().t('message_googleOAuth2TokenObtained'));
+      }
+    });
+  }
+}
+
 const reauthorizeGoogleTokenOnWeb = async ({
-  oauth2Client,
+  oAuth2Client,
   blogEndpoint,
   setGoogleOAuth2Token,
-  registerObsidianProtocolHandler,
-}: reauthorizeGoogleTokenMobileParams): Promise<void> => {
+}: reauthorizeGoogleTokenParams): Promise<void> => {
   const codeVerifier = generateCodeVerifier();
   const state = randomUUID();
-
-  oauth2Client.getAuthorizeCode({
+  MobileOAuth2Helper.setoAuth2Record({
+    oAuth2Client,
+    state,
+    codeVerifier,
+    setGoogleOAuth2Token,
+  });
+  oAuth2Client.getAuthorizeCode({
     redirectUri: GOOGLE_OAUTH2_REDIRECT_URI_WEB,
     scope: [BLOGGER_OAUTH2_SCOPE],
     blog: blogEndpoint,
     codeVerifier,
     state,
   });
-  // FIXME: I found no way to unregister a protocol handler.
-  let already_called = false;
-  registerObsidianProtocolHandler(BLOGGER_OAUTH2_URL_ACTION, async (e) => {
-    if (already_called) return;
-    already_called = true;
-    if (e.action === BLOGGER_OAUTH2_URL_ACTION) {
-      const params: { [key: string]: string } = { ...e };
-      delete params.action;
-      await fetchAndRegisterToken(
-        oauth2Client,
-        params,
-        state,
-        codeVerifier,
-        GOOGLE_OAUTH2_REDIRECT_URI_WEB,
-        setGoogleOAuth2Token,
-      );
-    }
-  });
 };
 
 export const reauthorizeGoogleTokenOnLocalHost = async ({
-  oauth2Client,
+  oAuth2Client,
   blogEndpoint,
   setGoogleOAuth2Token,
-}: reauthorizeGoogleTokenDesktopParams): Promise<void> => {
+}: reauthorizeGoogleTokenParams): Promise<void> => {
   const codeVerifier = generateCodeVerifier();
   const state = randomUUID();
 
@@ -164,7 +172,7 @@ export const reauthorizeGoogleTokenOnLocalHost = async ({
       const url = new URL(req.url!, GOOGLE_OAUTH2_REDIRECT_URI_LOCAL);
       if (url.pathname === '/') {
         await fetchAndRegisterToken(
-          oauth2Client,
+          oAuth2Client,
           Object.fromEntries(url.searchParams),
           state,
           codeVerifier,
@@ -183,7 +191,7 @@ export const reauthorizeGoogleTokenOnLocalHost = async ({
   });
   server.listen(0);
 
-  oauth2Client.getAuthorizeCode({
+  oAuth2Client.getAuthorizeCode({
     redirectUri: `${GOOGLE_OAUTH2_REDIRECT_URI_LOCAL}:${getListeningPort(server)}`,
     scope: [BLOGGER_OAUTH2_SCOPE],
     blog: blogEndpoint,

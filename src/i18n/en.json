@@ -20,6 +20,7 @@
   "error_googleOAuth2StateMismatch": "Google OAuth2 request and response mismatch.: <%= req %> vs <%= res %>",
   "message_publishSuccessfully": "Post published successfully!",
   "message_publishFailed": "Post published failed!",
+  "message_googleOAuth2TokenObtained": "Google token obtained successfully!",
   "message_googleTokenValidated": "Google OAuth2 token validated successfully!",
   "ribbon_iconTitle": "Blogger Publish",
   "command_publish": "Publish current note",

@@ -1,4 +1,4 @@
-import { Plugin } from 'obsidian';
+import { Platform, Plugin } from 'obsidian';
 import { BloggerSettingTab } from './setting-tab';
 import { addIcons } from './icons';
 import { BloggerPostParams, PostStatus } from './blogger-client-interface';
@@ -15,6 +15,7 @@ import { BloggerProfile } from './blogger-profile';
 import { getBloggerClient } from './blogger-client';
 import { getGlobalMarkdownParser, setupMarkdownParser } from './markdown-it-default';
 import { getGlobalI18n, setGlobalLang } from './i18n';
+import { MobileOAuth2Helper } from './blogger-oauth2-client';
 
 const doClientPublish = (
   plugin: BloggerPlugin,
@@ -56,10 +57,11 @@ export default class BloggerPlugin extends Plugin {
     await this.loadSettings();
     // lang should be load early, but after settings
     setGlobalLang(this.#settings?.lang);
-
     setupMarkdownParser(getGlobalMarkdownParser(), this.settings);
-
     addIcons();
+    if (Platform.isMobile) {
+      MobileOAuth2Helper.setUp(this);
+    }
 
     // this.registerProtocolHandler();
     this.updateRibbonIcon();

@@ -61,7 +61,7 @@ class BloggerProfileModal extends Modal {
     readonly plugin: Plugin,
     private readonly onSubmit: (profile: BloggerProfile, atIndex?: number) => void,
     profile: Partial<BloggerProfile>,
-    private readonly oauth2Client: OAuth2Client,
+    private readonly oAuth2Client: OAuth2Client,
     private readonly atIndex: number = -1,
   ) {
     super(plugin.app);
@@ -115,15 +115,11 @@ class BloggerProfileModal extends Modal {
             } else {
               await reauthorizeGoogleToken({
                 isDesktop: Platform.isDesktop,
-                oauth2Client: this.oauth2Client,
+                oAuth2Client: this.oAuth2Client,
                 blogEndpoint: endpoint,
                 setGoogleOAuth2Token: (token) => {
                   this.profileData.googleOAuth2Token = token;
                 },
-                // HACK: `this` is determined by the dynamic scope within the callback.
-                registerObsidianProtocolHandler: this.plugin.registerObsidianProtocolHandler.bind(
-                  this.plugin,
-                ),
               });
             }
           });
@@ -131,7 +127,7 @@ class BloggerProfileModal extends Modal {
         .addButton((button) => {
           button.setButtonText(t('settings_googleOAuth2ValidateTokenButtonText')).onClick(() => {
             if (this.profileData.googleOAuth2Token) {
-              this.oauth2Client
+              this.oAuth2Client
                 .validateToken({
                   token: this.profileData.googleOAuth2Token.accessToken,
                 })
@@ -192,7 +188,7 @@ class BloggerProfileModal extends Modal {
     if (googleOAuth2Token === undefined) {
       throw new Error(getGlobalI18n().t('error_invalidGoogleToken'));
     }
-    const fresh_token = await this.oauth2Client.ensureFreshToken(googleOAuth2Token);
+    const fresh_token = await this.oAuth2Client.ensureFreshToken(googleOAuth2Token);
     const blogId = await fetchBlogId(endpoint, fresh_token);
     const isDefault = this.profileData.isDefault ?? false;
     return { name, endpoint, blogId, googleOAuth2Token, isDefault };
