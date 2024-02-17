@@ -14,6 +14,11 @@
     "release-minor-test": "commit-and-tag-version --dry-run --release-as minor",
     "version": "node version-bump.mjs && git add manifest.json versions.json"
   },
+  "commit-and-tag-version": {
+    "scripts": {
+      "postbump": "npm run version"
+    }
+  },
   "keywords": [
     "blogger",
     "obsidian",
