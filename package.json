@@ -17,7 +17,8 @@
   "commit-and-tag-version": {
     "scripts": {
       "postbump": "npm run version"
-    }
+    },
+    "commitAll": true
   },
   "keywords": [
     "blogger",
