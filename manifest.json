@@ -1,9 +1,9 @@
 {
-	"id": "obsidian-blogger",
-	"name": "Blogger",
-	"version": "0.5.0",
-	"minAppVersion": "1.1.1",
-	"description": "A plugin for publishing Obsidian documents to Blogger.",
-	"author": "Hugo Sansaqua",
-	"isDesktopOnly": true
+  "id": "obsidian-blogger",
+  "name": "Blogger",
+  "version": "0.6.0",
+  "minAppVersion": "1.1.1",
+  "description": "A plugin for publishing Obsidian documents to Blogger.",
+  "author": "Hugo Sansaqua",
+  "isDesktopOnly": true
 }
