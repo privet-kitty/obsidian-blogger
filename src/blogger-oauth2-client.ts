@@ -1,4 +1,3 @@
-import { randomUUID } from 'crypto';
 import {
   BLOGGER_OAUTH2_SCOPE,
   BLOGGER_OAUTH2_URL_ACTION,
@@ -123,7 +122,7 @@ const reauthorizeGoogleTokenOnWeb = async ({
   setGoogleOAuth2Token,
 }: reauthorizeGoogleTokenParams): Promise<void> => {
   const codeVerifier = generateCodeVerifier();
-  const state = randomUUID();
+  const state = crypto.randomUUID();
   MobileOAuth2Helper.setOAuth2Record({
     oAuth2Client,
     state,
@@ -145,7 +144,7 @@ export const reauthorizeGoogleTokenOnLocalHost = async ({
   setGoogleOAuth2Token,
 }: reauthorizeGoogleTokenParams): Promise<void> => {
   const codeVerifier = generateCodeVerifier();
-  const state = randomUUID();
+  const state = crypto.randomUUID();
 
   const server = createServer();
   server.on('request', async (req, res) => {
