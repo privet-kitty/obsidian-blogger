@@ -20,7 +20,8 @@
     "scripts": {
       "postbump": "npm run version"
     },
-    "commitAll": true
+    "commitAll": true,
+    "tagPrefix": ""
   },
   "keywords": [
     "blogger",
