@@ -146,7 +146,8 @@ export const reauthorizeGoogleTokenOnLocalHost = async ({
   const codeVerifier = generateCodeVerifier();
   const state = crypto.randomUUID();
 
-  const server = createServer();
+  const server = createServer().listen(0);
+  const redirectUri = `${GOOGLE_OAUTH2_REDIRECT_URI_LOCAL}:${getListeningPort(server)}`;
   server.on('request', async (req, res) => {
     const closeWithMessage = (message: string): void => {
       res.writeHead(200, {
@@ -175,7 +176,7 @@ export const reauthorizeGoogleTokenOnLocalHost = async ({
           Object.fromEntries(url.searchParams),
           state,
           codeVerifier,
-          `${GOOGLE_OAUTH2_REDIRECT_URI_LOCAL}:${getListeningPort(server)}`,
+          redirectUri,
           setGoogleOAuth2Token,
         );
         closeWithMessage(getGlobalI18n().t('server_googleOAuth2TokenObtained'));
@@ -188,10 +189,9 @@ export const reauthorizeGoogleTokenOnLocalHost = async ({
       );
     }
   });
-  server.listen(0);
 
   oAuth2Client.getAuthorizeCode({
-    redirectUri: `${GOOGLE_OAUTH2_REDIRECT_URI_LOCAL}:${getListeningPort(server)}`,
+    redirectUri: redirectUri,
     scope: [BLOGGER_OAUTH2_SCOPE],
     blog: blogEndpoint,
     codeVerifier,
