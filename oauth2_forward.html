@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>OAuth2 Redirect Handler for Obsidian Mobile Blogger Plugin</title>
+    <script type="text/javascript">
+      window.onload = function () {
+        const queryParams = new URLSearchParams(window.location.search);
+        const error = queryParams.get('error');
+        if (error !== null) {
+          document.getElementById('errorMessage').innerText = `Error: ${error}`;
+          return;
+        }
+        const code = queryParams.get('code');
+        const state = queryParams.get('state');
+        const scope = queryParams.get('scope');
+        if (
+          code === null ||
+          state === null ||
+          scope !== 'https://www.googleapis.com/blogger/v3/blogs'
+        ) {
+          document.getElementById(
+            'errorMessage',
+          ).innerText = `Error: Invalid parameters ${queryParams.toString()}`;
+          return;
+        }
+        const obsidianUri = `obsidian://obsidian-blogger-oauth2?code=${encodeURIComponent(
+          code,
+        )}&state=${encodeURIComponent(state)}`;
+        window.location.href = obsidianUri;
+      };
+    </script>
+  </head>
+  <body>
+    <h1>Transferring authentication data...</h1>
+    <p id="errorMessage">
+      This page will automatically close. If nothing happens, please ensure Obsidian and the Blogger
+      plugin are installed and try again.
+    </p>
+  </body>
+</html>
