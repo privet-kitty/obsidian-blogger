@@ -88,7 +88,7 @@ export class MobileOAuth2Helper {
     setGoogleOAuth2Token: (token?: FreshInternalOAuth2Token) => void;
   } | null = null;
   private static isSetUp = false;
-  static setoAuth2Record = (oAuth2Record: (typeof MobileOAuth2Helper)['oAuth2Record']): void => {
+  static setOAuth2Record = (oAuth2Record: (typeof MobileOAuth2Helper)['oAuth2Record']): void => {
     MobileOAuth2Helper.oAuth2Record = oAuth2Record;
   };
   static setUp(plugin: Plugin) {
@@ -124,7 +124,7 @@ const reauthorizeGoogleTokenOnWeb = async ({
 }: reauthorizeGoogleTokenParams): Promise<void> => {
   const codeVerifier = generateCodeVerifier();
   const state = randomUUID();
-  MobileOAuth2Helper.setoAuth2Record({
+  MobileOAuth2Helper.setOAuth2Record({
     oAuth2Client,
     state,
     codeVerifier,
