@@ -1,3 +1,4 @@
+import { omit } from 'lodash-es';
 import {
   BLOGGER_OAUTH2_SCOPE,
   BLOGGER_OAUTH2_URL_ACTION,
@@ -95,8 +96,6 @@ export class MobileOAuth2Helper {
     MobileOAuth2Helper.isSetUp = true;
     plugin.registerObsidianProtocolHandler(BLOGGER_OAUTH2_URL_ACTION, async (e) => {
       if (e.action === BLOGGER_OAUTH2_URL_ACTION) {
-        const params: { [key: string]: string } = { ...e };
-        delete params.action;
         if (MobileOAuth2Helper.oAuth2Record === null) {
           throw new Error('oAuth2Record === null');
         }
@@ -104,7 +103,7 @@ export class MobileOAuth2Helper {
           MobileOAuth2Helper.oAuth2Record;
         await fetchAndRegisterToken(
           oAuth2Client,
-          params,
+          omit(e, 'action'),
           state,
           codeVerifier,
           GOOGLE_OAUTH2_REDIRECT_URI_WEB,
