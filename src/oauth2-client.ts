@@ -90,6 +90,10 @@ export class OAuth2Client {
       blog?: string;
       scope?: string;
       state?: string;
+      // The following fields are for ensuring getting a refresh token
+      // See https://stackoverflow.com/questions/10827920/not-receiving-google-oauth-refresh-token
+      access_type: 'offline';
+      prompt: 'consent';
     } = {
       client_id: this.options.clientId,
       response_type: 'code',
@@ -97,6 +101,8 @@ export class OAuth2Client {
       blog: params.blog,
       scope: undefined,
       state: params.state,
+      access_type: 'offline',
+      prompt: 'consent',
     };
     if (params.scope) {
       query.scope = params.scope.join(' ');
