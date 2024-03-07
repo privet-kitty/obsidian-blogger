@@ -123,7 +123,7 @@ http://mermaid.js.org/intro/getting-started.html?#_4-calling-the-mermaid-javascr
 </script>
 ```
 
-### Applying CSS only to the posts published by this plugin
+## Applying CSS only to the posts published by this plugin
 
 `obsidian-blogger` wraps the output HTML by `<div class="obsidian-blogger-post">...</div>`. You can use this class to apply CSS only to the posts published by this plugin. An example would be as follows:
 
@@ -139,6 +139,6 @@ http://mermaid.js.org/intro/getting-started.html?#_4-calling-the-mermaid-javascr
 }
 ```
 
-### Uploading Images
+## Uploading Images
 
 Unfortunately this plugin does not support uploading images to Blogger. You need to manually upload your images to Blogger (or any other public server) and link to them in your posts with standard syntax, such as `![alt text](https://example.com/image.png)`. This is due to the fact that Blogger does not provide an API for managing images.
