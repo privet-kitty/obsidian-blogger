@@ -1,9 +1,9 @@
 {
-  "id": "obsidian-blogger",
+  "id": "blogger",
   "name": "Blogger",
   "version": "0.9.0",
   "minAppVersion": "1.1.1",
-  "description": "A plugin for publishing Obsidian documents to Blogger.",
+  "description": "A plugin for publishing Obsidian documents to Google Blogger.",
   "author": "Hugo Sansaqua",
   "isDesktopOnly": false
 }
