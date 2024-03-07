@@ -1,6 +1,6 @@
 {
-  "id": "blogger",
-  "name": "Blogger",
+  "id": "google-blogger",
+  "name": "Google Blogger",
   "version": "0.9.1",
   "minAppVersion": "1.1.1",
   "description": "A plugin for publishing Obsidian documents to Google Blogger.",
