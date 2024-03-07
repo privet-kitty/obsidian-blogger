@@ -33,6 +33,8 @@ Before starting to use this plugin, you need to create an OAuth2 client ID and a
 
 ## Fundamental Usage
 
+_Please see [Tips](https://github.com/privet-kitty/obsidian-blogger/blob/main/docs/tips.md) for information beyond this README._
+
 Initially, create your profile via the `Profiles` section in the plugin settings tab. During this process, OAuth2 authentication is necessary to access your Blogger account.
 
 Subsequently, you can publish your document to Blogger using `Publish to Blogger` found in the [Command Palette](https://help.obsidian.md/Plugins/Command+palette) or through a dedicated button in the sidebar. The document will be published to the Blogger URL you set.
@@ -52,6 +54,6 @@ labels:
 Content here.
 ```
 
-## Additional Information
+## Acknowledgements
 
-- [Tips](https://github.com/privet-kitty/obsidian-blogger/blob/main/docs/tips.md)
+This plugin is based on Cheng Liang's [obsidian-wordpress](https://github.com/devbean/obsidian-wordpress).
