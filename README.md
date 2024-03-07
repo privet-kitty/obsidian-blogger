@@ -18,6 +18,19 @@ This plugin has not yet been released to the Community plugins. To experiment wi
    ```
 2. Activate the `Blogger` plugin within the `Community Plugins` section of the settings. A reload of the plugins may be required.
 
+## Create a Credential for Blogger API
+
+Before starting to use this plugin, you need to create an OAuth2 client ID and a secret. Note that this procedure depends on whether you are using a desktop or a mobile.
+
+1. Go to the [Credentials page on Google Cloud Console](https://console.cloud.google.com/apis/credentials).
+2. Click `Create Credentials` and select `OAuth client ID` from the drop-down menu.
+3. (**Desktop** only) Select `Desktop app` and create a key with your favorite name.
+4. (**Mobile** only) Select `Web application`, click `ADD URI` from `Autorized redirect URIs` and add `https://privet-kitty.github.io/obsidian-blogger/oauth2_forward.html`. Then, create a key with your favorite name.
+5. The credentials will be created. Please note your client ID and secret.
+6. Open the plugin settings and set your client ID and secret.
+
+(The strange procedure in step 4 is due to the fact that it's not possible to create a local server in the Mobile Obsidian and that Google imposes restrictions on the use of custom URI schemes.)
+
 ## Fundamental Usage
 
 Initially, create your profile via the `Profiles` section in the plugin settings tab. During this process, OAuth2 authentication is necessary to access your Blogger account.
