@@ -1,10 +1,10 @@
 # Tips
 
-## How to introduce CSS or JS scripts into your blog
+## Integrating CSS or JavaScript into Your Blog
 
-You can put any CSS or JS scripts you want to use into the `head` tag in the HTML template of your blog. (You need to go to your Blogger dashboard, click on the `Theme` tab, and click on the `Edit HTML` button to edit the template.)
+To incorporate CSS or JavaScript scripts into your blog, insert them within the head tag of your blog's HTML template. This requires accessing your Blogger dashboard, selecting the Theme tab, and pressing the Edit HTML button to modify the template.
 
-Below are some examples of how to introduce CSS or JS scripts. **I don't recommend you copy and paste them directly** because they are just an example as of this writing. Instead you should go to the official website of the tool you want to use and follow the instructions there.
+The examples below illustrate how to integrate CSS or JavaScript scripts. **Direct copying and pasting is not recommended** as they serve merely as examples at the time of writing. It's best to visit the official website of the tool you wish to use and adhere to the provided instructions.
 
 ### CSS
 
@@ -50,7 +50,7 @@ https://katex.org/docs/autorender
 </script>
 ```
 
-### highlight
+### Highlight.js
 
 https://highlightjs.org/#usage
 
@@ -68,7 +68,7 @@ https://highlightjs.org/#usage
 </script>
 ```
 
-### prism
+### Prism.js
 
 https://prismjs.com/#basic-usage-cdn
 
@@ -83,7 +83,7 @@ https://prismjs.com/#basic-usage-cdn
 </script>
 ```
 
-### pseudocode
+### Pseudocode.js
 
 https://github.com/SaswatPadhi/pseudocode.js
 
@@ -105,7 +105,7 @@ https://github.com/SaswatPadhi/pseudocode.js
 </script>
 ```
 
-### mermaid
+### Mermaid.js
 
 http://mermaid.js.org/intro/getting-started.html?#_4-calling-the-mermaid-javascript-api
 
@@ -123,7 +123,7 @@ http://mermaid.js.org/intro/getting-started.html?#_4-calling-the-mermaid-javascr
 </script>
 ```
 
-### How to apply CSS only only to the posts published by this plugin
+### Applying CSS only to the posts published by this plugin
 
 `obsidian-blogger` wraps the output HTML by `<div class="obsidian-blogger-post">...</div>`. You can use this class to apply CSS only to the posts published by this plugin. An example would be as follows:
 
@@ -138,3 +138,7 @@ http://mermaid.js.org/intro/getting-started.html?#_4-calling-the-mermaid-javascr
   font-size: 2.5rem;
 }
 ```
+
+### Uploading Images
+
+Unfortunately this plugin does not support uploading images to Blogger. You need to manually upload your images to Blogger (or any other public server) and link to them in your posts with standard syntax, such as `![alt text](https://example.com/image.png)`. This is due to the fact that Blogger does not provide an API for managing images.
