@@ -1,6 +1,6 @@
 # obsidian-blogger
 
-**This plugin is currently in the alpha stage.**
+**This plugin is currently in the beta stage.**
 
 This plugin makes you publish Obsidian documents to Blogger.
 
