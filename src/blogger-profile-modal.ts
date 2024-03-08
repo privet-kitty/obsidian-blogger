@@ -37,7 +37,6 @@ const fetchBlogId = async (
   const blogIdEndpoint = `${BLOGGER_API_ENDPOINT}/byurl?${generateQueryString({
     url: blogEndpoint,
   })}`;
-  console.log('REST GET', blogIdEndpoint);
   const response = await requestUrl({
     url: blogIdEndpoint,
     method: 'GET',
@@ -47,7 +46,6 @@ const fetchBlogId = async (
       authorization: `Bearer ${token.accessToken}`,
     },
   });
-  console.log('GET response', response);
   return response.json.id;
 };
 

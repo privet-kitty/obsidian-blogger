@@ -287,7 +287,6 @@ export class BloggerRestClient extends AbstractBloggerClient {
         headers: await this.getHeaders(),
       },
     );
-    console.log('BloggerRestClient response', resp);
     try {
       const result = this.context.responseParser.toBloggerPublishResult(postParams, resp);
       return {
@@ -366,9 +365,7 @@ export class BloggerRestClientGoogleOAuth2Context implements BloggerRestClientCo
     editPost: () => `/${this.blogId}/posts/<%= postId %>`,
   };
 
-  constructor(private readonly blogId: string) {
-    console.log(`${this.name} loaded`);
-  }
+  constructor(private readonly blogId: string) {}
 
   formItemNameMapper(name: string, isArray: boolean): string {
     if (name === 'file' && !isArray) {

@@ -52,8 +52,6 @@ export default class BloggerPlugin extends Plugin {
   private ribbonBloggerIcon: HTMLElement | null = null;
 
   onload = async () => {
-    console.log('loading obsidian-wordpress plugin');
-
     await this.loadSettings();
     // lang should be load early, but after settings
     setGlobalLang(this.#settings?.lang);

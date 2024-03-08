@@ -51,7 +51,6 @@ const fetchAndRegisterToken = async (
       redirectUri: redirectUri,
       codeVerifier,
     });
-    console.log(token);
     setGoogleOAuth2Token(token);
   } else {
     setGoogleOAuth2Token(undefined);

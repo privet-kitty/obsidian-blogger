@@ -76,9 +76,7 @@ export const getGoogleOAuth2Client = (
 };
 
 export class OAuth2Client {
-  constructor(private readonly options: OAuth2Options) {
-    console.log(options);
-  }
+  constructor(private readonly options: OAuth2Options) {}
 
   getAuthorizeCode = async (params: GetAuthorizeCodeParams): Promise<void> => {
     const query: {
@@ -210,7 +208,7 @@ export class OAuth2Client {
   };
 
   validateToken = async (params: ValidateTokenParams): Promise<void> => {
-    const response = await requestUrl({
+    await requestUrl({
       url: `${this.options.validateTokenEndpoint}?access_token=${params.token}`,
       method: 'GET',
       headers: {
@@ -218,7 +216,6 @@ export class OAuth2Client {
         'User-Agent': 'obsidian.md',
       },
     });
-    console.log('validateToken response', response);
   };
 }
 

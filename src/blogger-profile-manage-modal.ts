@@ -52,7 +52,6 @@ export class BloggerProfileManageModal extends Modal {
               getGoogleOAuth2Client(this.settings),
               index,
             );
-            console.log('updateProfile', newProfile, atIndex);
             if (!isNil(atIndex) && atIndex > -1) {
               if (newProfile.isDefault) {
                 this.profiles.forEach((it) => (it.isDefault = false));
@@ -102,7 +101,6 @@ export class BloggerProfileManageModal extends Modal {
               {},
               getGoogleOAuth2Client(this.settings),
             );
-            console.log('appendProfile', profile);
             // if no profile, make the first one default
             if (this.profiles.length === 0) {
               profile.isDefault = true;
