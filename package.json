@@ -1,6 +1,6 @@
 {
   "name": "obsidian-blogger",
-  "version": "0.9.4",
+  "version": "0.9.5",
   "description": "A plugin for publishing Obsidian notes to Blogger.",
   "main": "main.js",
   "scripts": {
