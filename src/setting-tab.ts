@@ -11,7 +11,6 @@ export class BloggerSettingTab extends PluginSettingTab {
     private readonly settings: PluginSettings,
     private readonly saveSettings: () => Promise<void>,
     readonly plugin: Plugin,
-    private readonly updateRibbonIcon: () => void,
   ) {
     super(plugin.app, plugin);
   }
@@ -70,18 +69,6 @@ export class BloggerSettingTab extends PluginSettingTab {
       .addButton((button) =>
         button.setButtonText(t('settings_profilesModal')).onClick(() => {
           new BloggerProfileManageModal(this.plugin, this.settings, this.saveSettings).open();
-        }),
-      );
-
-    new Setting(containerEl)
-      .setName(t('settings_showRibbonIcon'))
-      .setDesc(t('settings_showRibbonIconDesc'))
-      .addToggle((toggle) =>
-        toggle.setValue(this.settings.showRibbonIcon).onChange(async (value) => {
-          this.settings.showRibbonIcon = value;
-          await this.saveSettings();
-
-          this.updateRibbonIcon();
         }),
       );
 

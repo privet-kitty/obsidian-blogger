@@ -62,7 +62,9 @@ export default class BloggerPlugin extends Plugin {
     }
 
     // this.registerProtocolHandler();
-    this.updateRibbonIcon();
+    this.addRibbonIcon('blogger-logo', getGlobalI18n().t('ribbon_iconTitle'), () => {
+      this.openProfileChooser();
+    });
 
     this.addCommand({
       id: 'defaultPublish',
@@ -91,15 +93,7 @@ export default class BloggerPlugin extends Plugin {
       },
     });
 
-    this.addSettingTab(
-      new BloggerSettingTab(
-        this.app,
-        this.settings,
-        this.saveSettings,
-        this,
-        this.updateRibbonIcon,
-      ),
-    );
+    this.addSettingTab(new BloggerSettingTab(this.app, this.settings, this.saveSettings, this));
   };
 
   onunload = () => {};
