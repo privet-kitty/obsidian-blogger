@@ -2,7 +2,7 @@
 
 **This plugin is currently in the beta stage.**
 
-This plugin makes you publish Obsidian documents to Blogger.
+This plugin makes you publish Obsidian notes to Blogger.
 
 ## Installation
 

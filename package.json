@@ -1,7 +1,7 @@
 {
   "name": "obsidian-blogger",
   "version": "0.9.4",
-  "description": "A plugin for publishing Obsidian documents to Blogger.",
+  "description": "A plugin for publishing Obsidian notes to Blogger.",
   "main": "main.js",
   "scripts": {
     "dev": "node esbuild.config.mjs",
