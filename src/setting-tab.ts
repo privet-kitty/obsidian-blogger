@@ -35,8 +35,6 @@ export class BloggerSettingTab extends PluginSettingTab {
 
     containerEl.empty();
 
-    containerEl.createEl('h1', { text: t('settings_title') });
-
     let mathJaxOutputTypeDesc = getMathJaxOutputTypeDesc(this.settings.mathJaxOutputType);
 
     new Setting(containerEl)
