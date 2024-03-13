@@ -35,7 +35,6 @@
   "settings_clientIdDesc": "OAuth2 client ID for Google API.",
   "settings_clientSecret": "OAuth2 client secret",
   "settings_clientSecretDesc": "OAuth2 client secret for Google API.",
-  "settings_title": "Blogger Publish",
   "settings_profiles": "Profiles",
   "settings_profilesDesc": "Manage Blogger profiles.",
   "settings_profilesModal": "Open",
