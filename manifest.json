@@ -3,7 +3,7 @@
   "name": "Google Blogger",
   "version": "0.9.5",
   "minAppVersion": "1.1.1",
-  "description": "A plugin for publishing notes to Google Blogger.",
+  "description": "Publish notes to Google Blogger.",
   "author": "Hugo Sansaqua",
   "isDesktopOnly": false
 }
