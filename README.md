@@ -22,14 +22,18 @@ This plugin has not yet been released to the Community plugins. To experiment wi
 
 Before starting to use this plugin, you need to create an OAuth2 client ID and a secret. Note that this procedure depends on whether you are using a desktop or a mobile.
 
-1. Go to the [Credentials page on Google Cloud Console](https://console.cloud.google.com/apis/credentials).
-2. Click `Create Credentials` and select `OAuth client ID` from the drop-down menu.
-3. (**Desktop** only) Select `Desktop app` and create a key with your favorite name.
-4. (**Mobile** only) Select `Web application`, click `ADD URI` from `Autorized redirect URIs` and add `https://privet-kitty.github.io/obsidian-blogger/oauth2_forward.html`. Then, create a key with your favorite name.
-5. The credentials will be created. Please note your client ID and secret.
-6. Open the plugin settings and set your client ID and secret.
+1. Go to the [Google Cloud Console](https://console.cloud.google.com/apis/dashboard).
+2. (You may want to create a new project.)
+3. Go to `Enabled APIs & services ` and click `ENABLE APIS AND SERVICES`. Search for `Blogger API` and enable it.
+4. Go to the [Credentials page on Google Cloud Console](https://console.cloud.google.com/apis/credentials).
+5. Click `Create Credentials` and select `OAuth client ID` from the drop-down menu.
+6. (For the first time, you may need to compose an OAuth2 consent screen.)
+7. (**Desktop** only) Select `Desktop app` and create a key with your favorite name.
+8. (**Mobile** only) Select `Web application`, click `ADD URI` from `Autorized redirect URIs` and add `https://privet-kitty.github.io/obsidian-blogger/oauth2_forward.html`. Then, create a key with your favorite name.
+9. The credentials will be created. Please note your client ID and secret.
+10. Open the plugin settings and set your client ID and secret.
 
-(The strange procedure in step 4 is due to the fact that it's not possible to create a local server in the Mobile Obsidian and that Google imposes restrictions on the use of custom URI schemes.)
+The strange procedure in step 4 is due to the fact that it's not possible to create a local server in the Mobile Obsidian and that Google imposes restrictions on the use of custom URI schemes.
 
 ## Fundamental Usage
 
