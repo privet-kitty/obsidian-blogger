@@ -20,6 +20,8 @@ This plugin has not yet been released to the Community plugins. To experiment wi
 
 ## Create a Credential for Blogger API
 
+TODO: more detailed intructions
+
 Before starting to use this plugin, you need to create an OAuth2 client ID and a secret. Note that this procedure depends on whether you are using a desktop or a mobile.
 
 1. Go to the [Google Cloud Console](https://console.cloud.google.com/apis/dashboard).
