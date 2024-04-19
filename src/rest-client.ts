@@ -44,6 +44,7 @@ export class RestClient {
         'user-agent': 'obsidian.md',
         ...opts.headers,
       },
+      throw: false,
     });
     return response.json;
   };
@@ -85,6 +86,7 @@ export class RestClient {
         ...options.headers,
       },
       body: requestBody,
+      throw: false,
     });
     return response.json;
   };
@@ -127,6 +129,7 @@ export class RestClient {
         ...options.headers,
       },
       body: requestBody,
+      throw: false,
     });
     return response.json;
   };

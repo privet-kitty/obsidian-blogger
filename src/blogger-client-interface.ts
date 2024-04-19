@@ -32,13 +32,7 @@ interface BloggerClientOkResult<T> extends _bloggerClientResult {
 
 interface BloggerClientErrorResult extends _bloggerClientResult {
   code: 'Error';
-  error: {
-    /**
-     * This code could be returned from remote server
-     */
-    code: BloggerClientReturnCode | string;
-    message: string;
-  };
+  message: string;
 }
 
 export type BloggerClientResult<T> = BloggerClientOkResult<T> | BloggerClientErrorResult;

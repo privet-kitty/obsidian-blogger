@@ -58,10 +58,7 @@ export function showError<T>(error: unknown): BloggerClientResult<T> {
   new Notice(errorMessage, ERROR_NOTICE_TIMEOUT);
   return {
     code: BloggerClientReturnCode.Error,
-    error: {
-      code: BloggerClientReturnCode.Error,
-      message: errorMessage,
-    },
+    message: errorMessage,
   };
 }
 

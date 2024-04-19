@@ -78,8 +78,7 @@ export abstract class AbstractBloggerClient implements BloggerClient {
     if (result.code === BloggerClientReturnCode.Error) {
       throw new Error(
         getGlobalI18n().t('error_publishFailed', {
-          code: result.error.code as string,
-          message: result.error.message,
+          message: result.message,
         }),
       );
     } else {
@@ -287,6 +286,21 @@ export class BloggerRestClient extends AbstractBloggerClient {
         headers: await this.getHeaders(),
       },
     );
+    if (resp.error !== undefined) {
+      let message = getGlobalI18n().t('error_requestFailed', {
+        code: resp.error.code,
+        message: resp.error.message,
+      });
+      // Detect typical error cases
+      if (method === this.client.httpPut && resp.error.code === 404) {
+        message = `${message} ${getGlobalI18n().t('error_postNotFound')}`;
+      }
+      return {
+        code: BloggerClientReturnCode.Error,
+        message,
+        response: resp,
+      };
+    }
     try {
       const result = this.context.responseParser.toBloggerPublishResult(postParams, resp);
       return {
@@ -297,10 +311,7 @@ export class BloggerRestClient extends AbstractBloggerClient {
     } catch (e) {
       return {
         code: BloggerClientReturnCode.Error,
-        error: {
-          code: BloggerClientReturnCode.ServerInternalError,
-          message: getGlobalI18n().t('error_cannotParseResponse'),
-        },
+        message: getGlobalI18n().t('error_cannotParseResponse'),
         response: resp,
       };
     }
