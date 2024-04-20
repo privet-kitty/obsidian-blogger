@@ -5,7 +5,7 @@
   "error_noProfileName": "No profile name",
   "error_noSuchProfile": "No profile with name <%= profileName %>",
   "error_invalidUrl": "Invalid URL",
-  "error_publishFailed": "Post published failed: <%= message %>",
+  "error_publishFailed": "Publish failed: <%= message %>",
   "error_googleAuthFailed": "Google authorization failed!\n<%= error %>: <%= desc %>",
   "error_localServerAddressNotAvailable": "Failed to get local server port: <%= address %>",
   "error_noBlogId": "No blog ID fetched.",
