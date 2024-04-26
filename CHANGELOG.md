@@ -2,6 +2,8 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [0.9.7](https://github.com/privet-kitty/obsidian-blogger/compare/0.9.6...0.9.7) (2024-04-26)
+
 ## [0.9.6](https://github.com/privet-kitty/obsidian-blogger/compare/0.9.5...0.9.6) (2024-04-14)
 
 ## [0.9.5](https://github.com/privet-kitty/obsidian-blogger/compare/0.9.4...0.9.5) (2024-03-13)
