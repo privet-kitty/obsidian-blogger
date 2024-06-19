@@ -6,7 +6,7 @@ This plugin makes you publish Obsidian notes to Blogger.
 
 ## Installation
 
-This plugin has not yet been released to the Community plugins. To experiment with this plugin, you must manually clone and build it. The process is as follows:
+This plugin has already been released to the Community plugins. You can install it from the Obsidian settings. If you want to use development versions, you can install it manually by following the instructions below.
 
 1. Clone this repository to your local machine and execute the build process.
    ```bash
