@@ -34,7 +34,7 @@ Before starting to use this plugin, you need to create an OAuth2 client ID and a
 8. The credentials will be created. Please note your client ID and secret.
 9. Open the plugin settings and set your client ID and secret.
 
-The strange procedure in step 4 is due to the fact that it's not possible to create a local server in the Mobile Obsidian and that Google imposes restrictions on the use of custom URI schemes.
+The strange procedure in step 7 is due to the fact that it's not possible to create a local server in the Mobile Obsidian and that Google imposes restrictions on the use of custom URI schemes.
 
 ## Fundamental Usage
 
